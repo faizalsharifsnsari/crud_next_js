@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-  ],
+, "app/profile2/page.js", "app/profile/page.js", "app/api/auth/[...nextauth]/route.js", "app/lib/mongodb.js", "app/user/page.js"  ],
   "exclude": ["node_modules"]
 }
