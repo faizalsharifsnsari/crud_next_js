@@ -1,26 +1,21 @@
-import { cookies, headers } from "next/headers";
-
+import { cookies, headers as nextHeaders } from "next/headers";
+import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/route";
-import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
 
 import TaskList from "./Tasklist";
-
 import UserSidebar from "../components/Usesidebar";
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
-  if (!session) {
-    redirect("/auth/login");
-  }
+  if (!session) redirect("/auth/login");
 
-  // ✅ THIS WAS MISSING
   const cookieStore = cookies();
-
-  const headersList = headers();
+  const headersList = nextHeaders();
 
   const host = headersList.get("host");
-  const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+  const protocol =
+    process.env.NODE_ENV === "production" ? "https" : "http";
 
   const res = await fetch(`${protocol}://${host}/api/products`, {
     headers: {
@@ -38,42 +33,36 @@ export default async function ProfilePage() {
   const tasksWithColors = (data.result || []).map((task) => ({
     id: task._id.toString(),
     title: task.title,
-    description: task.description || "", // ✅ include description
+    description: task.description || "",
     priority: task.priority,
     status: task.status,
-    dueDate: task.dueDate || null, // ✅ include due date
-    createdAt: task.createdAt, // ✅ include createdAt
-    updatedAt: task.updatedAt, // ✅ include updatedAt
-
+    dueDate: task.dueDate || null,
+    createdAt: task.createdAt,
+    updatedAt: task.updatedAt,
     priorityBorder:
       task.priority === "high"
         ? "border-l-rose-300"
         : task.priority === "medium"
-          ? "border-l-amber-300"
-          : "border-l-emerald-300",
+        ? "border-l-amber-300"
+        : "border-l-emerald-300",
   }));
 
   const statusCount = {
-    notStarted: tasksWithColors.filter((t) => t.status === "not started")
-      .length,
-    ongoing: tasksWithColors.filter((t) => t.status === "ongoing").length,
-    completed: tasksWithColors.filter((t) => t.status === "completed").length,
+    notStarted: tasksWithColors.filter(t => t.status === "not started").length,
+    ongoing: tasksWithColors.filter(t => t.status === "ongoing").length,
+    completed: tasksWithColors.filter(t => t.status === "completed").length,
   };
 
   const priorityCount = {
-    high: tasksWithColors.filter((t) => t.priority === "high").length,
-    medium: tasksWithColors.filter((t) => t.priority === "medium").length,
-    low: tasksWithColors.filter((t) => t.priority === "low").length,
+    high: tasksWithColors.filter(t => t.priority === "high").length,
+    medium: tasksWithColors.filter(t => t.priority === "medium").length,
+    low: tasksWithColors.filter(t => t.priority === "low").length,
   };
-
-  const user = session.user;
-
-  //status icon
 
   return (
     <main className="flex min-h-screen">
       <UserSidebar
-        user={user}
+        user={session.user}
         statusCount={statusCount}
         priorityCount={priorityCount}
       />
