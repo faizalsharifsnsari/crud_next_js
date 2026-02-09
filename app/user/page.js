@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
@@ -13,22 +13,26 @@ const STATUS = {
 };
 
 export default async function ProfilePage() {
-  // 1️⃣ Auth protection
   const session = await getServerSession(authOptions);
   if (!session) redirect("/auth/login");
 
-  // 2️⃣ Forward cookies for authenticated API request
   const cookieStore = cookies();
+  const headersList = headers();
 
-  // 3️⃣ Use RELATIVE URL (production safe)
-  const res = await fetch("/api/products", {
+  // ✅ Build absolute URL safely
+  const host = headersList.get("host");
+  const protocol =
+    process.env.NODE_ENV === "development" ? "http" : "https";
+
+  const baseUrl = `${protocol}://${host}`;
+
+  const res = await fetch(`${baseUrl}/api/products`, {
     headers: {
       Cookie: cookieStore.toString(),
     },
     cache: "no-store",
   });
 
-  // 4️⃣ Proper error handling
   if (!res.ok) {
     console.error("Failed to fetch tasks:", res.status);
     throw new Error("Failed to load tasks");
@@ -37,7 +41,6 @@ export default async function ProfilePage() {
   const data = await res.json();
   const tasks = Array.isArray(data.result) ? data.result : [];
 
-  // 5️⃣ Normalize data once
   const tasksWithColors = tasks.map((task) => ({
     id: task._id?.toString(),
     title: task.title,
@@ -55,18 +58,8 @@ export default async function ProfilePage() {
         : "border-l-emerald-300",
   }));
 
-  // 6️⃣ Single-pass counting (better performance)
-  const statusCount = {
-    notStarted: 0,
-    ongoing: 0,
-    completed: 0,
-  };
-
-  const priorityCount = {
-    high: 0,
-    medium: 0,
-    low: 0,
-  };
+  const statusCount = { notStarted: 0, ongoing: 0, completed: 0 };
+  const priorityCount = { high: 0, medium: 0, low: 0 };
 
   for (const task of tasksWithColors) {
     if (task.status === STATUS.NOT_STARTED) statusCount.notStarted++;
@@ -78,7 +71,6 @@ export default async function ProfilePage() {
     if (task.priority === "low") priorityCount.low++;
   }
 
-  // 7️⃣ Render
   return (
     <main className="flex min-h-screen">
       <UserSidebar
