@@ -1,4 +1,5 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
+
 import { authOptions } from "../api/auth/[...nextauth]/route";
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
@@ -6,8 +7,6 @@ import { redirect } from "next/navigation";
 import TaskList from "./Tasklist";
 
 import UserSidebar from "../components/Usesidebar";
-
-
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
@@ -18,7 +17,11 @@ export default async function ProfilePage() {
   // ✅ await cookies()
   const cookieStore = await cookies();
 
-  const res = await fetch("/api/products", {
+  const headersList = headers();
+  const host = headersList.get("host");
+  const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+
+  const res = await fetch(`${protocol}://${host}/api/products`, {
     headers: {
       Cookie: cookieStore.toString(),
     },
@@ -31,50 +34,42 @@ export default async function ProfilePage() {
 
   const data = await res.json();
 
-const tasksWithColors = (data.result || []).map((task) => ({
-  id: task._id.toString(),
-  title: task.title,
-  description: task.description || "",   // ✅ include description
-  priority: task.priority,
-  status: task.status,
-  dueDate: task.dueDate || null,         // ✅ include due date
-  createdAt: task.createdAt,             // ✅ include createdAt
-  updatedAt: task.updatedAt,             // ✅ include updatedAt
+  const tasksWithColors = (data.result || []).map((task) => ({
+    id: task._id.toString(),
+    title: task.title,
+    description: task.description || "", // ✅ include description
+    priority: task.priority,
+    status: task.status,
+    dueDate: task.dueDate || null, // ✅ include due date
+    createdAt: task.createdAt, // ✅ include createdAt
+    updatedAt: task.updatedAt, // ✅ include updatedAt
 
-  priorityBorder:
-    task.priority === "high"
-      ? "border-l-rose-300"
-      : task.priority === "medium"
-      ? "border-l-amber-300"
-      : "border-l-emerald-300",
-}));
+    priorityBorder:
+      task.priority === "high"
+        ? "border-l-rose-300"
+        : task.priority === "medium"
+          ? "border-l-amber-300"
+          : "border-l-emerald-300",
+  }));
 
+  const statusCount = {
+    notStarted: tasksWithColors.filter((t) => t.status === "not started")
+      .length,
+    ongoing: tasksWithColors.filter((t) => t.status === "ongoing").length,
+    completed: tasksWithColors.filter((t) => t.status === "completed").length,
+  };
 
-const statusCount = {
-  notStarted: tasksWithColors.filter(t => t.status === "not started").length,
-  ongoing: tasksWithColors.filter(t => t.status === "ongoing").length,
-  completed: tasksWithColors.filter(t => t.status === "completed").length,
-};
-
-const priorityCount = {
-  high: tasksWithColors.filter(t => t.priority === "high").length,
-  medium: tasksWithColors.filter(t => t.priority === "medium").length,
-  low: tasksWithColors.filter(t => t.priority === "low").length,
-};
-
-
-
-
+  const priorityCount = {
+    high: tasksWithColors.filter((t) => t.priority === "high").length,
+    medium: tasksWithColors.filter((t) => t.priority === "medium").length,
+    low: tasksWithColors.filter((t) => t.priority === "low").length,
+  };
 
   const user = session.user;
 
-//status icon
+  //status icon
 
-
-
-  
-
- return (
+  return (
     <main className="flex min-h-screen">
       <UserSidebar
         user={user}
