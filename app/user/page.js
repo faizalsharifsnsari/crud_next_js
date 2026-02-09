@@ -1,10 +1,13 @@
-import { cookies, headers } from "next/headers";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
 import { authOptions } from "../api/auth/[...nextauth]/route";
 import TaskList from "./Tasklist";
 import UserSidebar from "../components/Usesidebar";
+
+import mongoose from "mongoose";
+import Taskify from "@/models/Taskify"; // adjust path
+import { connectionStr } from "@/lib/db"; // adjust path
 
 const STATUS = {
   NOT_STARTED: "not started",
@@ -13,36 +16,23 @@ const STATUS = {
 };
 
 export default async function ProfilePage() {
+  // 🔐 Auth
   const session = await getServerSession(authOptions);
   if (!session) redirect("/auth/login");
 
-  const cookieStore = cookies();
-  const headersList = headers();
-
-  // ✅ Build absolute URL safely
-  const host = headersList.get("host");
-  const protocol =
-    process.env.NODE_ENV === "development" ? "http" : "https";
-
-  const baseUrl = `${protocol}://${host}`;
-
-  const res = await fetch(`${baseUrl}/api/products`, {
-    headers: {
-      Cookie: cookieStore.toString(),
-    },
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    console.error("Failed to fetch tasks:", res.status);
-    throw new Error("Failed to load tasks");
+  // 🔌 DB connect (safe for prod)
+  if (mongoose.connection.readyState === 0) {
+    await mongoose.connect(connectionStr);
   }
 
-  const data = await res.json();
-  const tasks = Array.isArray(data.result) ? data.result : [];
+  // 🔥 DIRECT DATA ACCESS (NO API)
+  const tasks = await Taskify.find({
+    userId: session.user.id, // OR userEmail if that’s what you store
+  }).sort({ order: 1 });
 
+  // 🧼 Normalize
   const tasksWithColors = tasks.map((task) => ({
-    id: task._id?.toString(),
+    id: task._id.toString(),
     title: task.title,
     description: task.description ?? "",
     priority: task.priority,
@@ -58,6 +48,7 @@ export default async function ProfilePage() {
         : "border-l-emerald-300",
   }));
 
+  // 📊 Counts
   const statusCount = { notStarted: 0, ongoing: 0, completed: 0 };
   const priorityCount = { high: 0, medium: 0, low: 0 };
 
@@ -71,6 +62,7 @@ export default async function ProfilePage() {
     if (task.priority === "low") priorityCount.low++;
   }
 
+  // 🖥️ Render
   return (
     <main className="flex min-h-screen">
       <UserSidebar
