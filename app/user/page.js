@@ -1,5 +1,4 @@
-import { cookies } from "next/headers";
-
+import { cookies, headers } from "next/headers";
 
 import { authOptions } from "../api/auth/[...nextauth]/route";
 import { getServerSession } from "next-auth/next";
@@ -15,16 +14,20 @@ export default async function ProfilePage() {
     redirect("/auth/login");
   }
 
-    // ✅ THIS WAS MISSING
+  // ✅ THIS WAS MISSING
   const cookieStore = cookies();
 
- const res = await fetch("/api/products", {
-  headers: {
-    Cookie: cookieStore.toString(),
-  },
-  cache: "no-store",
-});
+  const headersList = headers();
 
+  const host = headersList.get("host");
+  const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+
+  const res = await fetch(`${protocol}://${host}/api/products`, {
+    headers: {
+      Cookie: cookieStore.toString(),
+    },
+    cache: "no-store",
+  });
 
   if (!res.ok) {
     return <p>Failed to load tasks</p>;
