@@ -1,13 +1,16 @@
+
+
+import mongoose from "mongoose";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
-import { authOptions } from "../api/auth/[...nextauth]/route";
+import { connectionStr } from "../../lib/mongodb";
+import { Taskify } from "../../lib/model/Product";
+import { authOptions } from "../auth/[...nextauth]/route";
+
 import TaskList from "./Tasklist";
 import UserSidebar from "../components/Usesidebar";
 
-import mongoose from "mongoose";
-import Taskify from "@/models/Taskify"; // adjust path
-import { connectionStr } from "@/lib/db"; // adjust path
 
 const STATUS = {
   NOT_STARTED: "not started",
