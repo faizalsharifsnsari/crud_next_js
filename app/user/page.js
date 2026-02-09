@@ -18,7 +18,7 @@ export default async function ProfilePage() {
   // ✅ await cookies()
   const cookieStore = await cookies();
 
-  const res = await fetch("http://localhost:3000/api/products", {
+  const res = await fetch("/api/products", {
     headers: {
       Cookie: cookieStore.toString(),
     },
