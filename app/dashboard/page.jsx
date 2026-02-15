@@ -108,15 +108,20 @@ export default function ProfilePreview() {
         {/* Profile Card */}
         <div className="col-span-4 bg-white rounded-2xl shadow p-6">
           <div className="flex flex-col items-center text-center">
-            {session?.user?.image && (
-              <Image
-                src={user?.image}
-                alt="Profile"
-                width={80}
-                height={80}
-                className="rounded-full object-cover"
-              />
-            )}
+            {user?.image && user.image.trim() !== "" ? (
+  <Image
+    src={user.image}
+    alt="Profile"
+    width={80}
+    height={80}
+    className="rounded-full object-cover"
+  />
+) : (
+  <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-xs">
+    No Image
+  </div>
+)}
+
 
             <h2 className="text-xl font-bold text-gray-800">{user?.name}</h2>
 
@@ -255,8 +260,26 @@ export default function ProfilePreview() {
             isOpen={isAvatarOpen}
             onClose={() => setIsAvatarOpen(false)}
             user={user}
-            onSave={(newImage) => {
-              setUser({ ...user, image: newImage });
+            onSave={async (newImageUrl) => {
+              try {
+                const res = await fetch("/api/user", {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ image: newImageUrl }),
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                  setUser(data.user); // use updated DB user
+                } else {
+                  alert("Failed to update avatar");
+                }
+              } catch (error) {
+                console.error(error);
+                alert("Something went wrong");
+              }
+
               setIsAvatarOpen(false);
             }}
           />
