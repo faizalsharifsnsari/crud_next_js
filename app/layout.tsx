@@ -1,5 +1,7 @@
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Providers from "./provider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -22,11 +24,12 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
+return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {children}
+        {/* ✅ Client Providers live here */}
+        <Providers>{children}</Providers>
       </body>
     </html>
-  );
+);
 }

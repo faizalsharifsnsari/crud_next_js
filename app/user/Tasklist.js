@@ -106,9 +106,17 @@ function SortableTask({ task, onDelete, onEdit, onView }) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} className={styles.task}>
+   <div
+  ref={setNodeRef}
+  style={style}
+  className={`${styles.task} cursor-grab active:cursor-grabbing`}
+  {...attributes}
+  {...listeners}
+>
+
+
       {/* Left side: status + title */}
-      <div className={styles.taskInfo} {...attributes} {...listeners}>
+      <div className={styles.taskInfo}>
         <StatusIcon status={task.status} />
 
         <div className="flex items-center justify-between flex-1 px-2">
@@ -145,12 +153,20 @@ function SortableTask({ task, onDelete, onEdit, onView }) {
 
       {/* Right side: actions */}
       <div className={styles.taskActions}>
-        <button className={styles.edit} onClick={() => onEdit(task)}>
+       {/* EDIT */}
+      <button
+          className="pointer-events-auto cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(task);
+          }}
+        >
           Edit
         </button>
 
+        {/* DELETE */}
         <button
-          className={styles.delete}
+          className="pointer-events-auto cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
             onDelete(task.id);

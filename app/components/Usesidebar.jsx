@@ -4,7 +4,8 @@ import Image from "next/image";
 import { signOut } from "next-auth/react";
 import { CheckIcon, PlayIcon, ClockIcon } from "@heroicons/react/24/solid";
 import { redirect } from "next/navigation";
-
+import AddTaskDialog from "./AddTaskdialuge"
+import { useState } from "react";
 /* 🔹 Status Icon (reused everywhere) */
 function StatusIcon({ status, size = "md" }) {
   const sizeClasses = size === "sm" ? "w-6 h-6" : "w-9 h-9";
@@ -37,8 +38,16 @@ function StatusIcon({ status, size = "md" }) {
 }
 
 export default function UserSidebar({ user, statusCount, priorityCount }) {
+  const [open,setOpen] = useState(false);
+  
+
   return (
     <aside className="w-72 bg-white border-r px-5 py-6 flex flex-col">
+      <AddTaskDialog
+  isOpen={open}
+  onClose={() => setOpen(false)}
+/>
+
       {/* Profile */}
       <div className="flex flex-col items-center text-center">
         {user?.image && (
@@ -51,23 +60,16 @@ export default function UserSidebar({ user, statusCount, priorityCount }) {
           />
         )}
 
-        <p className="mt-3 font-semibold text-gray-900">{user.name}</p>
+        <p className="mt-3 text-lg font-extrabold tracking-wide text-emerald-600 font-serif">
+  Hello Mr. {user?.name?.split(" ")[0]}!!!
+</p>
 
-        <p className="text-xs text-gray-500 break-all">{user.email}</p>
+
+
+       
 
         {/* Logout */}
-        <button
-          onClick={() => signOut()}
-          className="
-            mt-4 px-4 py-2 text-sm font-medium
-            rounded-md border border-red-500
-            text-red-500
-            hover:bg-red-50
-            transition
-          "
-        >
-          Logout
-        </button>
+       
       </div>
 
       {/* Divider */}
@@ -141,7 +143,7 @@ export default function UserSidebar({ user, statusCount, priorityCount }) {
             {/* Bottom action */}
             <div className="mt-auto pt-6">
               <button
-                onClick={() => redirect("/dashboard")}
+                onClick={() => setOpen(true)}
                 className="
           w-full py-2.5
           rounded-md

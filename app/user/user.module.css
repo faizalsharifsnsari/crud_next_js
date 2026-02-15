@@ -100,11 +100,13 @@
 .edit {
   background: #e0f2fe;
   color: #0369a1;
+  cursor: pointer;
 }
 
 .delete {
   background: #fee2e2;
   color: #b91c1c;
+  cursor: pointer;
 }
 
 

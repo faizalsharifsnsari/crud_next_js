@@ -7,9 +7,10 @@ export default async function LoginPage() {
   const session = await getServerSession(authOptions);
 
   // ✅ If already logged in, go to dashboard
-  if (session) {
-    redirect("/user");
-  }
+ if (session) {
+  redirect("/user?from=login");
+}
+
 
   return <LoginClient />;
 }

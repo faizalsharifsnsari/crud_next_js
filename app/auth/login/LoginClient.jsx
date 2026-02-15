@@ -1,20 +1,85 @@
 "use client";
 
-
-
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import AuthDialog from "../../components/AuthDialog";
 
 export default function LoginClient() {
+  const { status } = useSession(); // 👈 key change
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const error = searchParams.get("error");
+
+  const [loading, setLoading] = useState(false);
+  const [dialog, setDialog] = useState(null);
+
+  /* ------------------------------
+     ❌ Login failed (OAuth error)
+  --------------------------------*/
+  useEffect(() => {
+    if (error) {
+      setDialog({
+        type: "error",
+        message: "Login failed. Please try again.",
+      });
+      setLoading(false);
+    }
+  }, [error]);
+
+  /* ------------------------------
+     ✅ Login success (after return)
+  --------------------------------*/
+  useEffect(() => {
+    if (status === "authenticated") {
+      setDialog({
+        type: "success",
+        message: "Login successful. Redirecting to home…",
+      });
+
+      setTimeout(() => {
+        router.push("/user");
+      }, 1500);
+    }
+  }, [status, router]);
+
+  /* ------------------------------
+     🔐 Start Google login
+  --------------------------------*/
+  const handleLogin = () => {
+    setLoading(true);
+    signIn("google"); // 🚀 OAuth redirect happens here
+  };
+
   return (
-    <main className="min-h-screen flex items-center justify-center px-4
+    <main className="relative min-h-screen flex items-center justify-center px-4
       bg-gradient-to-br from-emerald-100 via-emerald-50 to-amber-50
     ">
-      <div className="
-        w-full max-w-md
-        rounded-2xl
-        bg-white/90 backdrop-blur
-        shadow-2xl
-        border border-emerald-200
+
+      {/* Glass blur when dialog is visible */}
+      <div
+        className={`absolute inset-0 transition-all duration-300
+          ${dialog ? "backdrop-blur-md bg-black/30 z-40" : ""}
+        `}
+      />
+
+      {/* Dialog */}
+      {dialog && (
+        <AuthDialog
+          type={dialog.type}
+          message={dialog.message}
+          onAction={
+            dialog.type === "error"
+              ? () => window.location.reload()
+              : null
+          }
+        />
+      )}
+
+      {/* Login Card */}
+      <div className="relative z-10 w-full max-w-md rounded-2xl
+        bg-white/90 backdrop-blur-xl
+        shadow-2xl border border-emerald-200
       ">
         {/* Header */}
         <div className="px-6 py-6 text-center border-b border-emerald-100">
@@ -25,7 +90,6 @@ export default function LoginClient() {
             Sign in to continue to <span className="font-semibold">Taskify</span>
           </p>
 
-          {/* Accent bar */}
           <div className="mt-4 flex justify-center gap-2">
             <span className="w-3 h-3 rounded-sm bg-rose-300" />
             <span className="w-3 h-3 rounded-sm bg-amber-300" />
@@ -35,27 +99,26 @@ export default function LoginClient() {
 
         {/* Body */}
         <div className="px-6 py-6 space-y-4">
-          {/* Google */}
           <button
-            onClick={() => signIn("google", { callbackUrl: "/user" })}
-            className="
-              w-full py-3 rounded-lg
+            disabled={loading || status === "loading"}
+            onClick={handleLogin}
+            className="w-full py-3 rounded-lg
               bg-emerald-500 text-white
               font-semibold text-sm
               hover:bg-emerald-600
               active:scale-[0.98]
-              transition
-              shadow-md
+              transition shadow-md
+              disabled:opacity-60 disabled:cursor-not-allowed
             "
           >
-            Continue with Google
+            {loading || status === "loading"
+              ? "Signing you in…"
+              : "Continue with Google"}
           </button>
 
-          {/* Phone (disabled) */}
           <button
             disabled
-            className="
-              w-full py-3 rounded-lg
+            className="w-full py-3 rounded-lg
               bg-amber-100
               text-amber-700 text-sm font-medium
               cursor-not-allowed
@@ -64,8 +127,6 @@ export default function LoginClient() {
             Continue with Phone
           </button>
         </div>
-
-       
       </div>
     </main>
   );

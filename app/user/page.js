@@ -8,9 +8,7 @@ import { authOptions } from "../api/auth/[...nextauth]/route";
 
 import TaskList from "./Tasklist";
 import UserSidebar from "../components/Usesidebar";
-
-
-
+import ProfileClient from "./ProfileClient";
 
 const STATUS = {
   NOT_STARTED: "not started",
@@ -19,21 +17,17 @@ const STATUS = {
 };
 
 export default async function ProfilePage() {
-  // 🔐 Auth
   const session = await getServerSession(authOptions);
   if (!session) redirect("/auth/login");
 
-  // 🔌 DB connect (safe for prod)
   if (mongoose.connection.readyState === 0) {
     await mongoose.connect(connectionStr);
   }
 
-  // 🔥 DIRECT DATA ACCESS (NO API)
   const tasks = await Taskify.find({
-    userId: session.user.id, // OR userEmail if that’s what you store
+    userId: session.user.id,
   }).sort({ order: 1 });
 
-  // 🧼 Normalize
   const tasksWithColors = tasks.map((task) => ({
     id: task._id.toString(),
     title: task.title,
@@ -51,7 +45,6 @@ export default async function ProfilePage() {
         : "border-l-emerald-300",
   }));
 
-  // 📊 Counts
   const statusCount = { notStarted: 0, ongoing: 0, completed: 0 };
   const priorityCount = { high: 0, medium: 0, low: 0 };
 
@@ -65,19 +58,21 @@ export default async function ProfilePage() {
     if (task.priority === "low") priorityCount.low++;
   }
 
-  // 🖥️ Render
   return (
-    <main className="flex min-h-screen">
-      <UserSidebar
-        user={session.user}
-        statusCount={statusCount}
-        priorityCount={priorityCount}
-      />
-
-      <section className="flex-1 p-6">
-        <h1 className="text-xl font-semibold mb-4">My Tasks</h1>
-        <TaskList initialTasks={tasksWithColors} />
-      </section>
-    </main>
+    <ProfileClient
+      sidebar={
+        <UserSidebar
+          user={session.user}
+          statusCount={statusCount}
+          priorityCount={priorityCount}
+        />
+      }
+      content={
+        <section className="flex-1 p-6">
+          <h1 className="text-xl font-semibold mb-4">My Tasks</h1>
+          <TaskList initialTasks={tasksWithColors} />
+        </section>
+      }
+    />
   );
 }
