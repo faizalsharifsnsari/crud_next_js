@@ -14,34 +14,33 @@ export default function LoginClient() {
   const [loading, setLoading] = useState(false);
   const [dialog, setDialog] = useState(null);
 
-  /* ------------------------------
-     ❌ Login failed (OAuth error)
-  --------------------------------*/
+  //truecaller api integration
   useEffect(() => {
-    if (error) {
-      setDialog({
-        type: "error",
-        message: "Login failed. Please try again.",
-      });
-      setLoading(false);
-    }
-  }, [error]);
+    const script = document.createElement("script");
+    script.src = "https://sdk.truecaller.com/sdk/v1.5.0/sdk.js";
+    script.async = true;
 
-  /* ------------------------------
-     ✅ Login success (after return)
-  --------------------------------*/
-  useEffect(() => {
-    if (status === "authenticated") {
-      setDialog({
-        type: "success",
-        message: "Login successful. Redirecting to home…",
-      });
+    document.body.appendChild(script);
 
-      setTimeout(() => {
-        router.push("/user");
-      }, 1500);
-    }
-  }, [status, router]);
+    script.onload = () => {
+      if (window.Truecaller) {
+        window.Truecaller.initialize({
+          appKey: process.env.NEXT_PUBLIC_TRUECALLER_APP_KEY,
+          containerId: "truecaller-container",
+          buttonColor: "blue",
+          buttonText: "login",
+          loginPrefix: "getstarted",
+          callback: function (data) {
+            console.log("Truecaller Response:", data);
+          },
+        });
+      }
+    };
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   /* ------------------------------
      🔐 Start Google login
@@ -52,10 +51,11 @@ export default function LoginClient() {
   };
 
   return (
-    <main className="relative min-h-screen flex items-center justify-center px-4
+    <main
+      className="relative min-h-screen flex items-center justify-center px-4
       bg-gradient-to-br from-emerald-100 via-emerald-50 to-amber-50
-    ">
-
+    "
+    >
       {/* Glass blur when dialog is visible */}
       <div
         className={`absolute inset-0 transition-all duration-300
@@ -69,25 +69,24 @@ export default function LoginClient() {
           type={dialog.type}
           message={dialog.message}
           onAction={
-            dialog.type === "error"
-              ? () => window.location.reload()
-              : null
+            dialog.type === "error" ? () => window.location.reload() : null
           }
         />
       )}
 
       {/* Login Card */}
-      <div className="relative z-10 w-full max-w-md rounded-2xl
+      <div
+        className="relative z-10 w-full max-w-md rounded-2xl
         bg-white/90 backdrop-blur-xl
         shadow-2xl border border-emerald-200
-      ">
+      "
+      >
         {/* Header */}
         <div className="px-6 py-6 text-center border-b border-emerald-100">
-          <h1 className="text-2xl font-bold text-gray-900">
-            Welcome back
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
           <p className="text-sm text-gray-600 mt-1">
-            Sign in to continue to <span className="font-semibold">Taskify</span>
+            Sign in to continue to{" "}
+            <span className="font-semibold">Taskify</span>
           </p>
 
           <div className="mt-4 flex justify-center gap-2">
@@ -116,16 +115,10 @@ export default function LoginClient() {
               : "Continue with Google"}
           </button>
 
-          <button
-            disabled
-            className="w-full py-3 rounded-lg
-              bg-amber-100
-              text-amber-700 text-sm font-medium
-              cursor-not-allowed
-            "
-          >
-            Continue with Phone
-          </button>
+          <div
+            id="truecaller-container"
+            className="w-full flex justify-center"
+          ></div>
         </div>
       </div>
     </main>
