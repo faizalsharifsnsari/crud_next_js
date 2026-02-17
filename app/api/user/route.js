@@ -36,9 +36,8 @@ export async function GET() {
 
 export async function PATCH(req) {
   try {
-    const body = await req.json();
-
     const session = await getServerSession(authOptions);
+
     if (!session) {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
@@ -46,14 +45,32 @@ export async function PATCH(req) {
       );
     }
 
-    // 🔥 Connect to MongoDB (same as GET)
+    const body = await req.json();
+
     if (mongoose.connection.readyState === 0) {
       await mongoose.connect(connectionStr);
     }
 
+    const updateData = {};
+
+    // ✅ Only update fields that exist
+    if (body.name !== undefined) {
+      if (body.name.trim() === "") {
+        return NextResponse.json(
+          { success: false, message: "Name is required" },
+          { status: 400 }
+        );
+      }
+      updateData.name = body.name.trim();
+    }
+
+    if (body.image !== undefined) {
+      updateData.image = body.image;
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
       session.user.id,
-      body,
+      updateData,
       { new: true }
     ).select("name email image");
 
@@ -65,7 +82,7 @@ export async function PATCH(req) {
   } catch (error) {
     console.error("PATCH ERROR:", error);
     return NextResponse.json(
-      { success: false, error: error.message },
+      { success: false, message: error.message },
       { status: 500 }
     );
   }

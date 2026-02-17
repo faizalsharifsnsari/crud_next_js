@@ -15,7 +15,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import styles from "./user.module.css";
 
 //priority colours
@@ -181,11 +181,15 @@ function SortableTask({ task, onDelete, onEdit, onView }) {
 
 /* ---------------- TASK LIST ---------------- */
 export default function TaskList({ initialTasks }) {
-  console.log("Tasks received in TaskList:", initialTasks);
   const [tasks, setTasks] = useState(initialTasks);
   const [editingTask, setEditingTask] = useState(null);
   const [viewTask, setViewTask] = useState(null);
   const [loadingViewTask, setLoadingViewTask] = useState(false);
+
+  //dynamic update 
+  useEffect(() => {
+    setTasks(initialTasks);
+  }, [initialTasks]);
 
   // 🗑️ DELETE
   const deleteTask = async (id) => {

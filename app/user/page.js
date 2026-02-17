@@ -5,9 +5,8 @@ import { redirect } from "next/navigation";
 import { connectionStr } from "../lib/mongodb";
 import { Taskify } from "../lib/model/Product";
 import { authOptions } from "../api/auth/[...nextauth]/route";
+import User from "../lib/model/User";
 
-import TaskList from "./Tasklist";
-import UserSidebar from "../components/Usesidebar";
 import ProfileClient from "./ProfileClient";
 
 const STATUS = {
@@ -24,9 +23,9 @@ export default async function ProfilePage() {
     await mongoose.connect(connectionStr);
   }
 
-  const tasks = await Taskify.find({
-    userId: session.user.id,
-  }).sort({ order: 1 });
+  const dbUser = await User.findById(session.user.id).select("name email image");
+
+  const tasks = await Taskify.find({ userId: session.user.id }).sort({ order: 1 });
 
   const tasksWithColors = tasks.map((task) => ({
     id: task._id.toString(),
@@ -60,19 +59,15 @@ export default async function ProfilePage() {
 
   return (
     <ProfileClient
-      sidebar={
-        <UserSidebar
-          user={session.user}
-          statusCount={statusCount}
-          priorityCount={priorityCount}
-        />
-      }
-      content={
-        <section className="flex-1 p-6">
-          <h1 className="text-xl font-semibold mb-4">My Tasks</h1>
-          <TaskList initialTasks={tasksWithColors} />
-        </section>
-      }
+      sidebar={{
+        id: dbUser?._id?.toString() ?? "",
+        name: dbUser?.name ?? "",
+        email: dbUser?.email ?? "",
+        image: dbUser?.image ?? "",
+      }}
+      tasksWithColors={tasksWithColors}
+      statusCount={statusCount}
+      priorityCount={priorityCount}
     />
   );
 }
