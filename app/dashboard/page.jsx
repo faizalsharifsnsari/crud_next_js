@@ -1,5 +1,5 @@
 "use client";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import { useState } from "react";
 import { useEffect } from "react";
@@ -223,7 +223,7 @@ export default function ProfilePreview() {
       <div className="space-y-3">
         <button className="w-full py-2 rounded-lg border text-sm hover:bg-gray-50" onClick={() => setIsEditModalOpen(true)}>Edit Profile</button>
         <button className="w-full py-2 rounded-lg border text-sm hover:bg-gray-50" onClick={() => setIsAvatarOpen(true)}>Change Avatar</button>
-        <button className="w-full py-2 rounded-lg text-sm bg-red-50 text-red-600 hover:bg-red-100">Logout</button>
+        <button className="w-full py-2 rounded-lg text-sm bg-red-50 text-red-600 hover:bg-red-100" onClick={()=>signOut({callbackUrl: "/"})}>Logout</button>
       </div>
 
       <EditProfileModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} user={user} onSave={handleNameSave} />
