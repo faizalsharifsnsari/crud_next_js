@@ -16,16 +16,18 @@ export default function LoginClient() {
 
   //truecaller api integration
   const handleTruecallerLogin = () => {
-    const requestNonce = crypto.randomUUID();
-    const appKey = process.env.NEXT_PUBLIC_TRUECALLER_APP_KEY;
-    const appName = "Taskify otpless login";
+  const requestNonce = crypto.randomUUID();
+  const appKey = process.env.NEXT_PUBLIC_TRUECALLER_APP_KEY;
+  const appName = "Taskify otpless login";
 
-    const deepLink = `truecallersdk://truesdk/web_verify?
+  const deepLink = `truecallersdk://truesdk/web_verify?
     type=btmsheet
     &requestNonce=${requestNonce}
     &partnerKey=${appKey}
     &partnerName=${encodeURIComponent(appName)}
     &lang=en
+    &privacyUrl=https://crud-next-js-beta.vercel.app/privacy
+    &termsUrl=https://crud-next-js-beta.vercel.app/terms
     &loginPrefix=getstarted
     &loginSuffix=login
     &ctaPrefix=continuewith
@@ -35,8 +37,19 @@ export default function LoginClient() {
     &skipOption=manualdetails
     &ttl=10000`;
 
-    window.location.href = deepLink.replace(/\s+/g, "");
-  };
+  window.location.href = deepLink.replace(/\s+/g, "");
+
+  setTimeout(function () {
+    if (document.hasFocus()) {
+      // Truecaller NOT installed
+      console.log("Truecaller app not installed");
+    } else {
+      // Truecaller installed
+      console.log("Truecaller flow started");
+    }
+  }, 600);
+};
+
 
   /* ------------------------------
      🔐 Start Google login
