@@ -15,32 +15,45 @@ export default function LoginClient() {
   const [dialog, setDialog] = useState(null);
 
   //truecaller api integration
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://sdk.truecaller.com/sdk/v1.5.0/sdk.js";
-    script.async = true;
+useEffect(() => {
+  console.log("Loading Truecaller SDK...");
 
-    document.body.appendChild(script);
+  const script = document.createElement("script");
+  script.src = "https://sdk.truecaller.com/sdk/v1.5.0/sdk.js";
+  script.async = true;
 
-    script.onload = () => {
-      if (window.Truecaller) {
-        window.Truecaller.initialize({
-          appKey: process.env.NEXT_PUBLIC_TRUECALLER_APP_KEY,
-          containerId: "truecaller-container",
-          buttonColor: "blue",
-          buttonText: "login",
-          loginPrefix: "getstarted",
-          callback: function (data) {
-            console.log("Truecaller Response:", data);
-          },
-        });
-      }
-    };
+  document.body.appendChild(script);
 
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
+  script.onload = () => {
+    console.log("SDK Loaded");
+
+    if (window.Truecaller) {
+      console.log("Truecaller object found");
+
+      window.Truecaller.initialize({
+        appKey: process.env.NEXT_PUBLIC_TRUECALLER_APP_KEY,
+        containerId: "truecaller-container",
+        buttonColor: "blue",
+        buttonText: "login",
+        loginPrefix: "getstarted",
+        callback: function (data) {
+          console.log("Truecaller Response:", data);
+        },
+      });
+    } else {
+      console.log("Truecaller object NOT found");
+    }
+  };
+
+  script.onerror = () => {
+    console.log("SDK failed to load");
+  };
+
+  return () => {
+    document.body.removeChild(script);
+  };
+}, []);
+
 
   /* ------------------------------
      🔐 Start Google login
