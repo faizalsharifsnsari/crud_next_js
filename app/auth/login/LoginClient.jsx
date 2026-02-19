@@ -15,45 +15,28 @@ export default function LoginClient() {
   const [dialog, setDialog] = useState(null);
 
   //truecaller api integration
-useEffect(() => {
-  console.log("Loading Truecaller SDK...");
+  const handleTruecallerLogin = () => {
+    const requestNonce = crypto.randomUUID();
+    const appKey = process.env.NEXT_PUBLIC_TRUECALLER_APP_KEY;
+    const appName = "Taskify otpless login";
 
-  const script = document.createElement("script");
-  script.src = "https://sdk.truecaller.com/sdk/v1.5.0/sdk.js";
-  script.async = true;
+    const deepLink = `truecallersdk://truesdk/web_verify?
+    type=btmsheet
+    &requestNonce=${requestNonce}
+    &partnerKey=${appKey}
+    &partnerName=${encodeURIComponent(appName)}
+    &lang=en
+    &loginPrefix=getstarted
+    &loginSuffix=login
+    &ctaPrefix=continuewith
+    &ctaColor=%2300a884
+    &ctaTextColor=%23ffffff
+    &btnShape=round
+    &skipOption=manualdetails
+    &ttl=10000`;
 
-  document.body.appendChild(script);
-
-  script.onload = () => {
-    console.log("SDK Loaded");
-
-    if (window.Truecaller) {
-      console.log("Truecaller object found");
-
-      window.Truecaller.initialize({
-        appKey: process.env.NEXT_PUBLIC_TRUECALLER_APP_KEY,
-        containerId: "truecaller-container",
-        buttonColor: "blue",
-        buttonText: "login",
-        loginPrefix: "getstarted",
-        callback: function (data) {
-          console.log("Truecaller Response:", data);
-        },
-      });
-    } else {
-      console.log("Truecaller object NOT found");
-    }
+    window.location.href = deepLink.replace(/\s+/g, "");
   };
-
-  script.onerror = () => {
-    console.log("SDK failed to load");
-  };
-
-  return () => {
-    document.body.removeChild(script);
-  };
-}, []);
-
 
   /* ------------------------------
      🔐 Start Google login
@@ -128,10 +111,12 @@ useEffect(() => {
               : "Continue with Google"}
           </button>
 
-          <div
-            id="truecaller-container"
-            className="w-full flex justify-center"
-          ></div>
+          <button
+            onClick={handleTruecallerLogin}
+            className="w-full py-3 rounded-lg bg-blue-600 text-white font-semibold"
+          >
+            Continue with Truecaller
+          </button>
         </div>
       </div>
     </main>
