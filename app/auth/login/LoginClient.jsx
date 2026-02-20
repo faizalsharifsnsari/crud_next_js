@@ -13,6 +13,15 @@ export default function LoginClient() {
 
   const [loading, setLoading] = useState(false);
   const [dialog, setDialog] = useState(null);
+ useEffect(() => {
+  console.log("All URL params:");
+
+  searchParams.forEach((value, key) => {
+    console.log(key, value);
+  });
+}, [searchParams]);
+
+
 
   //truecaller api integration
   const handleTruecallerLogin = () => {
