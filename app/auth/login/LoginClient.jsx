@@ -16,15 +16,27 @@ export default function LoginClient() {
 
   //truecaller api integration
   const handleTruecallerLogin = () => {
+
+  const isIOS =
+    /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+  if (isIOS) {
+    console.log("Truecaller not supported on iOS");
+    return;
+  }
+
   const requestNonce = crypto.randomUUID();
   const appKey = process.env.NEXT_PUBLIC_TRUECALLER_APP_KEY;
   const appName = "Taskify otpless login";
+
+  const redirectUrl = "https://crud-next-js-beta.vercel.app/auth/login";
 
   const deepLink = `truecallersdk://truesdk/web_verify?
     type=btmsheet
     &requestNonce=${requestNonce}
     &partnerKey=${appKey}
     &partnerName=${encodeURIComponent(appName)}
+    &redirectUrl=${encodeURIComponent(redirectUrl)}
     &lang=en
     &privacyUrl=https://crud-next-js-beta.vercel.app/privacy
     &termsUrl=https://crud-next-js-beta.vercel.app/terms
@@ -41,14 +53,13 @@ export default function LoginClient() {
 
   setTimeout(function () {
     if (document.hasFocus()) {
-      // Truecaller NOT installed
       console.log("Truecaller app not installed");
     } else {
-      // Truecaller installed
       console.log("Truecaller flow started");
     }
   }, 600);
 };
+
 
 
   /* ------------------------------
