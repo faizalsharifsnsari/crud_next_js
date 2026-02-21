@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 import clientPromise from "../../../lib/mongoClient";
 
@@ -7,9 +8,33 @@ export const authOptions = {
   adapter: MongoDBAdapter(clientPromise),
 
   providers: [
+    // ✅ Google login
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
+
+    // ✅ Truecaller login
+    CredentialsProvider({
+      name: "truecaller",
+      credentials: {
+        profile: { label: "profile", type: "text" },
+      },
+      async authorize(credentials) {
+        const profile = JSON.parse(credentials.profile);
+
+        const phone = profile.phoneNumbers?.[0];
+        const email = profile.onlineIdentities?.email || null;
+
+        if (!phone) return null;
+
+        return {
+          id: phone, // unique identifier
+          name: profile.name?.first || "Truecaller User",
+          email: email,
+          image: profile.avatarUrl || null,
+        };
+      },
     }),
   ],
 
@@ -21,7 +46,6 @@ export const authOptions = {
 
   callbacks: {
     async jwt({ token, user }) {
-      // Runs only at sign-in
       if (user) {
         token.id = user.id;
       }
@@ -30,7 +54,7 @@ export const authOptions = {
 
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id; // ✅ always available
+        session.user.id = token.id;
       }
       return session;
     },
@@ -40,8 +64,6 @@ export const authOptions = {
     signIn: "/auth/login",
   },
 };
-// ✅ Create the handler
-const handler = NextAuth(authOptions);
 
-// ✅ Export named HTTP methods
+const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };

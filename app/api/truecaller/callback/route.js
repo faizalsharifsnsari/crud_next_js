@@ -1,21 +1,20 @@
 export const runtime = "nodejs";
 
+let verifiedUsers = {}; // simple in-memory store (for now)
+
 export async function POST(request) {
   try {
     const body = await request.json();
 
-    console.log("Truecaller initial body:", body);
+    const { accessToken, endpoint, requestId } = body;
 
-    const { accessToken, endpoint } = body;
-
-    if (!accessToken || !endpoint) {
+    if (!accessToken || !endpoint || !requestId) {
       return Response.json(
         { error: "Invalid Truecaller response" },
         { status: 400 }
       );
     }
 
-    // 🔥 Fetch actual user profile
     const profileRes = await fetch(endpoint, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -24,18 +23,32 @@ export async function POST(request) {
 
     const profile = await profileRes.json();
 
-    console.log("Truecaller profile:", profile);
+    // ✅ Store using requestId
+    verifiedUsers[requestId] = profile;
 
-    return Response.json(
-      { success: true, profile },
-      { status: 200 }
-    );
+    return Response.json({ success: true });
 
   } catch (error) {
-    console.error("Callback error:", error);
-    return Response.json(
-      { error: "Internal error" },
-      { status: 500 }
-    );
+    return Response.json({ error: "Internal error" }, { status: 500 });
   }
+}
+
+// 👇 ADD THIS
+export async function GET(request) {
+  const { searchParams } = new URL(request.url);
+  const requestId = searchParams.get("requestId");
+
+  const profile = verifiedUsers[requestId];
+
+  if (!profile) {
+    return Response.json({ verified: false });
+  }
+
+  // delete after use
+  delete verifiedUsers[requestId];
+
+  return Response.json({
+    verified: true,
+    profile,
+  });
 }
