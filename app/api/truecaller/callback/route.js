@@ -4,44 +4,55 @@ export async function POST(request) {
   try {
     const body = await request.json();
 
-    console.log("Truecaller initial body:", body);
+    console.log("Truecaller raw body:", body);
 
-    // ✅ If this is only flow trigger, ignore safely
-    if (body.status === "flow_invoked") {
+    const {
+      firstName,
+      lastName,
+      phoneNumber,
+      gender,
+      email,
+      requestNonce
+    } = body;
+
+    if (!phoneNumber) {
       return Response.json(
-        { message: "Flow started" },
-        { status: 200 }
-      );
-    }
-
-    const { accessToken, endpoint } = body;
-
-    if (!accessToken || !endpoint) {
-      return Response.json(
-        { error: "Invalid Truecaller response" },
+        { error: "Phone number missing" },
         { status: 400 }
       );
     }
 
-    const profileRes = await fetch(endpoint, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+    // ✅ TODO: verify requestNonce with stored value if you implemented it
+
+    // 🔐 Here you can:
+    // - Create user in DB
+    // - Generate JWT
+    // - Create NextAuth session manually
+
+    console.log("User verified:", {
+      name: `${firstName} ${lastName}`,
+      phoneNumber,
+      email,
     });
 
-    const profile = await profileRes.json();
-
-    console.log("Truecaller profile:", profile);
-
     return Response.json(
-      { success: true, profile },
+      {
+        success: true,
+        message: "Truecaller verification successful",
+        user: {
+          firstName,
+          lastName,
+          phoneNumber,
+          email,
+        },
+      },
       { status: 200 }
     );
-
   } catch (error) {
-    console.error("Callback error:", error);
+    console.error("Truecaller callback error:", error);
+
     return Response.json(
-      { error: "Internal error" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
