@@ -4,10 +4,11 @@ import { authOptions } from "./api/auth/[...nextauth]/route";
 
 export default async function Home() {  const session = await getServerSession(authOptions);
 
-  if (session) {
-    redirect("/user");
-  }
+//   if (session) {
+//     redirect("/user");
+//   }
 
- redirect("/auth/login");
+//  redirect("/auth/login);
+redirect("/tc_test");
  }
 
