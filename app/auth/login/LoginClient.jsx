@@ -39,22 +39,25 @@ export default function LoginClient() {
     const appKey = process.env.NEXT_PUBLIC_TRUECALLER_APP_KEY;
     const appName = "Taskify otpless login";
 
-    const deepLink =
-      "truecallersdk://truesdk/web_verify?type=btmsheet" +
-      `&requestNonce=${requestNonce}` +
-      `&partnerKey=${appKey}` +
-      `&partnerName=${encodeURIComponent(appName)}` +
-      "&lang=en" +
-      "&privacyUrl=https://crud-next-js-beta.vercel.app/privacy" +
-      "&termsUrl=https://crud-next-js-beta.vercel.app/terms" +
-      "&loginPrefix=getstarted" +
-      "&loginSuffix=login" +
-      "&ctaPrefix=continuewith" +
-      "&ctaColor=%2300a884" +
-      "&ctaTextColor=%23ffffff" +
-      "&btnShape=round" +
-      "&skipOption=manualdetails" +
-      "&ttl=10000";
+    const deepLink = `
+truecallersdk://truesdk/web_verify?type=btmsheet
+&requestNonce=${requestNonce}
+&partnerKey=${appKey}
+&partnerName=${encodeURIComponent(appName)}
+&lang=en
+&privacyUrl=https://crud-next-js-beta.vercel.app/privacy
+&termsUrl=https://crud-next-js-beta.vercel.app/terms
+&loginPrefix=getstarted
+&loginSuffix=login
+&ctaPrefix=continuewith
+&ctaColor=%2300a884
+&ctaTextColor=%23ffffff
+&btnShape=round
+&skipOption=manualdetails
+&ttl=60000
+`.replace(/\n/g, "");
+// 👇 PASTE IT HERE
+  console.log("DEEPLINK:", deepLink);
 
     window.location.href = deepLink;
 
@@ -77,7 +80,6 @@ export default function LoginClient() {
   return (
     <main className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-emerald-100 via-emerald-50 to-amber-50">
       <div className="relative z-10 w-full max-w-md rounded-2xl bg-white shadow-xl border p-6 space-y-4">
-        
         <h1 className="text-2xl font-bold text-center">Welcome back</h1>
 
         <button
@@ -96,7 +98,6 @@ export default function LoginClient() {
         >
           Continue with Truecaller
         </button>
-
       </div>
     </main>
   );
