@@ -4,6 +4,8 @@ import { signIn, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AuthDialog from "../../components/AuthDialog";
+export const dynamic = "force-dynamic";
+
 
 export default function LoginClient() {
   const { status } = useSession();
