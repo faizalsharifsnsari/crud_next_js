@@ -11,8 +11,7 @@ export default function LoginClient() {
 
   const [loading, setLoading] = useState(false);
   const [isTruecallerFlow, setIsTruecallerFlow] = useState(false);
-  const router = useRouter();
-
+  
   /* -----------------------------------
      🔐 Redirect ONLY when authenticated
   ------------------------------------*/
