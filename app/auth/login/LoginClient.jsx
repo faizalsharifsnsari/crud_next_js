@@ -2,7 +2,7 @@
 
 import { signIn, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { redirect, useRouter, useSearchParams } from "next/navigation";
 
 export default function LoginClient() {
   const { status } = useSession();
@@ -11,6 +11,7 @@ export default function LoginClient() {
 
   const [loading, setLoading] = useState(false);
   const [isTruecallerFlow, setIsTruecallerFlow] = useState(false);
+  const router = useRouter();
 
   /* -----------------------------------
      🔐 Redirect ONLY when authenticated
@@ -98,6 +99,9 @@ truecallersdk://truesdk/web_verify?type=btmsheet
         >
           Continue with Truecaller
         </button>
+        <button onClick={() => router.push("/tc_test")}>
+      Go to User
+    </button>
       </div>
     </main>
   );
