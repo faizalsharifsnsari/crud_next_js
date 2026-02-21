@@ -3,6 +3,7 @@ export const runtime = "nodejs";
 let verifiedUsers = {}; // simple in-memory store (for now)
 
 export async function POST(request) {
+  console.log("🔥 TRUECALLER POST HIT 🔥");
   try {
     const body = await request.json();
 
@@ -50,22 +51,3 @@ export async function POST(request) {
   }
 }
 
-// 👇 ADD THIS
-export async function GET(request) {
-  const { searchParams } = new URL(request.url);
-  const requestId = searchParams.get("requestId");
-
-  const profile = verifiedUsers[requestId];
-
-  if (!profile) {
-    return Response.json({ verified: false });
-  }
-
-  // delete after use
-  delete verifiedUsers[requestId];
-
-  return Response.json({
-    verified: true,
-    profile,
-  });
-}
