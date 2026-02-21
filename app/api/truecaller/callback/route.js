@@ -1,20 +1,18 @@
 export const runtime = "nodejs";
 
-let verifiedUsers = {}; // simple in-memory store (for now)
-
 export async function POST(request) {
   console.log("🔥 TRUECALLER POST HIT 🔥");
+
   try {
     const body = await request.json();
-
-    console.log("---- TRUECALLER CALLBACK ----");
-    console.log("Incoming body:", body);
+    console.log("---- RAW TRUECALLER BODY ----");
+    console.log(JSON.stringify(body, null, 2));
 
     const { accessToken, endpoint, requestId, status } = body;
 
-    // 1️⃣ Flow invoked (ignore)
+    // 1️⃣ Flow invoked (ignore but log)
     if (status === "flow_invoked") {
-      console.log("Flow invoked:", requestId);
+      console.log("Flow invoked for:", requestId);
       return Response.json({ received: true }, { status: 200 });
     }
 
@@ -24,13 +22,13 @@ export async function POST(request) {
       return Response.json({ rejected: true }, { status: 200 });
     }
 
-    // 3️⃣ Final verification (this is what you want)
+    // 3️⃣ If no accessToken, just acknowledge
     if (!accessToken || !endpoint || !requestId) {
-      console.log("Not final verification payload");
+      console.log("Not final verification payload.");
       return Response.json({ ignored: true }, { status: 200 });
     }
 
-    // 🔥 Fetch profile
+    // 🔥 FINAL VERIFICATION — FETCH USER PROFILE
     const profileRes = await fetch(endpoint, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -39,15 +37,13 @@ export async function POST(request) {
 
     const profile = await profileRes.json();
 
-    console.log("User verified successfully:", profile);
+    console.log("✅ TRUECALLER USER PROFILE:");
+    console.log(JSON.stringify(profile, null, 2));
 
-    verifiedUsers[requestId] = profile;
-
-    return Response.json({ success: true });
+    return Response.json({ success: true }, { status: 200 });
 
   } catch (error) {
-    console.error("Truecaller error:", error);
+    console.error("❌ TRUECALLER ERROR:", error);
     return Response.json({ error: "Internal error" }, { status: 500 });
   }
 }
-
