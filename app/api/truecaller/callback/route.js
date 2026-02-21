@@ -6,19 +6,30 @@ export async function POST(request) {
   try {
     const body = await request.json();
 
-    const { accessToken, endpoint, requestId } = body;
+    console.log("---- TRUECALLER CALLBACK ----");
+    console.log("Incoming body:", body);
 
-    console.log("---- TRUECALLER CALLBACK RECEIVED ----");
-    console.log("Request ID:", requestId);
+    const { accessToken, endpoint, requestId, status } = body;
 
-    if (!accessToken || !endpoint || !requestId) {
-      console.log("Invalid Truecaller payload:", body);
-      return Response.json(
-        { error: "Invalid Truecaller response" },
-        { status: 400 }
-      );
+    // 1️⃣ Flow invoked (ignore)
+    if (status === "flow_invoked") {
+      console.log("Flow invoked:", requestId);
+      return Response.json({ received: true }, { status: 200 });
     }
 
+    // 2️⃣ User rejected
+    if (status === "user_rejected") {
+      console.log("User rejected verification:", requestId);
+      return Response.json({ rejected: true }, { status: 200 });
+    }
+
+    // 3️⃣ Final verification (this is what you want)
+    if (!accessToken || !endpoint || !requestId) {
+      console.log("Not final verification payload");
+      return Response.json({ ignored: true }, { status: 200 });
+    }
+
+    // 🔥 Fetch profile
     const profileRes = await fetch(endpoint, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -27,9 +38,7 @@ export async function POST(request) {
 
     const profile = await profileRes.json();
 
-    // 🔥 PRINT USER INFO HERE
-    console.log("---- TRUECALLER USER PROFILE ----");
-    console.log(JSON.stringify(profile, null, 2));
+    console.log("User verified successfully:", profile);
 
     verifiedUsers[requestId] = profile;
 
