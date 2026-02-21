@@ -4,55 +4,37 @@ export async function POST(request) {
   try {
     const body = await request.json();
 
-    console.log("Truecaller raw body:", body);
+    console.log("Truecaller initial body:", body);
 
-    const {
-      firstName,
-      lastName,
-      phoneNumber,
-      gender,
-      email,
-      requestNonce
-    } = body;
+    const { accessToken, endpoint } = body;
 
-    if (!phoneNumber) {
+    if (!accessToken || !endpoint) {
       return Response.json(
-        { error: "Phone number missing" },
+        { error: "Invalid Truecaller response" },
         { status: 400 }
       );
     }
 
-    // ✅ TODO: verify requestNonce with stored value if you implemented it
-
-    // 🔐 Here you can:
-    // - Create user in DB
-    // - Generate JWT
-    // - Create NextAuth session manually
-
-    console.log("User verified:", {
-      name: `${firstName} ${lastName}`,
-      phoneNumber,
-      email,
+    // 🔥 Fetch actual user profile
+    const profileRes = await fetch(endpoint, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
     });
 
-    return Response.json(
-      {
-        success: true,
-        message: "Truecaller verification successful",
-        user: {
-          firstName,
-          lastName,
-          phoneNumber,
-          email,
-        },
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("Truecaller callback error:", error);
+    const profile = await profileRes.json();
+
+    console.log("Truecaller profile:", profile);
 
     return Response.json(
-      { error: "Internal server error" },
+      { success: true, profile },
+      { status: 200 }
+    );
+
+  } catch (error) {
+    console.error("Callback error:", error);
+    return Response.json(
+      { error: "Internal error" },
       { status: 500 }
     );
   }
