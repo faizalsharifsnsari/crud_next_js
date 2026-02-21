@@ -8,7 +8,11 @@ export async function POST(request) {
 
     const { accessToken, endpoint, requestId } = body;
 
+    console.log("---- TRUECALLER CALLBACK RECEIVED ----");
+    console.log("Request ID:", requestId);
+
     if (!accessToken || !endpoint || !requestId) {
+      console.log("Invalid Truecaller payload:", body);
       return Response.json(
         { error: "Invalid Truecaller response" },
         { status: 400 }
@@ -23,12 +27,16 @@ export async function POST(request) {
 
     const profile = await profileRes.json();
 
-    // ✅ Store using requestId
+    // 🔥 PRINT USER INFO HERE
+    console.log("---- TRUECALLER USER PROFILE ----");
+    console.log(JSON.stringify(profile, null, 2));
+
     verifiedUsers[requestId] = profile;
 
     return Response.json({ success: true });
 
   } catch (error) {
+    console.error("Truecaller error:", error);
     return Response.json({ error: "Internal error" }, { status: 500 });
   }
 }
