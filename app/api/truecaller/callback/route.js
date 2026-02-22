@@ -41,9 +41,14 @@ export async function POST(request) {
     }
 
     // Extract fields
-    const phone = profile.phoneNumber;
-    const name = `${profile.firstName || ""} ${profile.lastName || ""}`.trim();
-    const email = profile.email || null;
+   const phone = profile.phoneNumbers?.[0]?.toString();
+
+const firstName = profile.name?.first || "";
+const lastName = profile.name?.last || "";
+const name = `${firstName} ${lastName}`.trim();
+
+const email = profile.onlineIdentities?.email || null;
+const image = profile.avatarUrl || null;
 
     if (!phone) {
       return Response.json(
@@ -60,7 +65,7 @@ export async function POST(request) {
         name,
         phone,
         email,
-        image: null,
+        image,
         provider: "truecaller",
       });
 
