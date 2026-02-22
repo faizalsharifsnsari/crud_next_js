@@ -1,7 +1,27 @@
 "use client";
+import { useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 export default function Test() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Handle redirect after Truecaller callback
+  useEffect(() => {
+    const userId = searchParams.get("userId");
+    if (userId) {
+      // Sign in the user via NextAuth
+      signIn("truecaller", {
+        userId,
+        redirect: true,
+        callbackUrl: "/",
+      });
+    }
+  }, [searchParams]);
+
   const start = () => {
+    // Open Truecaller SDK deep link
     window.location =
       "truecallersdk://truesdk/web_verify?type=btmsheet" +
       "&requestNonce=12345678" +
@@ -17,7 +37,9 @@ export default function Test() {
       "&ctaTextColor=%23ffffff" +
       "&btnShape=round" +
       "&skipOption=manualdetails" +
-      "&ttl=10000";
+      "&ttl=10000" +
+      // 🔥 Add callback URL so Truecaller redirects back to browser
+      "&callbackUrl=https://crud-next-js-beta.vercel.app/tc-success";
   };
 
   return <button onClick={start}>Start Truecaller</button>;

@@ -15,27 +15,32 @@ export const authOptions = {
     }),
 
     // ✅ Truecaller login
-    CredentialsProvider({
-      name: "truecaller",
-      credentials: {
-        profile: { label: "profile", type: "text" },
-      },
-      async authorize(credentials) {
-        const profile = JSON.parse(credentials.profile);
+   CredentialsProvider({
+  name: "truecaller",
+  credentials: {
+    userId: { label: "userId", type: "text" },
+  },
+  async authorize(credentials) {
+    if (!credentials?.userId) return null;
 
-        const phone = profile.phoneNumbers?.[0];
-        const email = profile.onlineIdentities?.email || null;
+    const { MongoClient, ObjectId } = require("mongodb");
+    const client = await clientPromise;
+    const db = client.db();
 
-        if (!phone) return null;
+    const user = await db
+      .collection("users")
+      .findOne({ _id: new ObjectId(credentials.userId) });
 
-        return {
-          id: phone, // unique identifier
-          name: profile.name?.first || "Truecaller User",
-          email: email,
-          image: profile.avatarUrl || null,
-        };
-      },
-    }),
+    if (!user) return null;
+
+    return {
+      id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      image: user.image,
+    };
+  },
+}),
   ],
 
   secret: process.env.NEXTAUTH_SECRET,
