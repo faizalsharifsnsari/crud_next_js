@@ -21,53 +21,8 @@ export default function LoginClient() {
     }
   }, [status, isTruecallerFlow, router]);
 
-  /* -----------------------------------
-     📱 Truecaller Login
-  ------------------------------------*/
-  const handleTruecallerLogin = () => {
-    const isIOS =
-      /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
-    if (isIOS) {
-      console.log("Truecaller not supported on iOS");
-      return;
-    }
-
-    setIsTruecallerFlow(true);
-
-    const requestNonce = crypto.randomUUID();
-    const appKey = process.env.NEXT_PUBLIC_TRUECALLER_APP_KEY;
-    const appName = "Taskify otpless login";
-
-    const deepLink = `
-truecallersdk://truesdk/web_verify?type=btmsheet
-&requestNonce=${requestNonce}
-&partnerKey=${appKey}
-&partnerName=${encodeURIComponent(appName)}
-&lang=en
-&privacyUrl=https://crud-next-js-beta.vercel.app/privacy
-&termsUrl=https://crud-next-js-beta.vercel.app/terms
-&loginPrefix=getstarted
-&loginSuffix=login
-&ctaPrefix=continuewith
-&ctaColor=%2300a884
-&ctaTextColor=%23ffffff
-&btnShape=round
-&skipOption=manualdetails
-&ttl=60000
-`.replace(/\n/g, "");
-// 👇 PASTE IT HERE
-  console.log("DEEPLINK:", deepLink);
-
-    window.location.href = deepLink;
-
-    setTimeout(() => {
-      if (document.hasFocus()) {
-        console.log("Truecaller not installed");
-        setIsTruecallerFlow(false);
-      }
-    }, 600);
-  };
+ 
 
   /* -----------------------------------
      🔵 Google Login
@@ -93,14 +48,13 @@ truecallersdk://truesdk/web_verify?type=btmsheet
         </button>
 
         <button
-          onClick={handleTruecallerLogin}
+          onClick={() => router.push("/tc_test")}
           className="w-full py-3 rounded-lg bg-blue-600 text-white font-semibold"
         >
           Continue with Truecaller
         </button>
-        <button onClick={() => router.push("/tc_test")}>
-      Go to User
-    </button>
+        
+     
       </div>
     </main>
   );
