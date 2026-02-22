@@ -1,6 +1,5 @@
-"use client";
-
-export default function TruecallerLogin() {
+"use client"
+export default function Test() {
   const start = () => {
     window.location =
       "truecallersdk://truesdk/web_verify?type=btmsheet" +
@@ -17,13 +16,7 @@ export default function TruecallerLogin() {
       "&ctaTextColor=%23ffffff" +
       "&btnShape=round" +
       "&skipOption=manualdetails" +
-      "&ttl=10000" +
-      "&callbackUrl=https://crud-next-js-beta.vercel.app/tc_success"; // just redirect to a success page
+      "&ttl=10000";
   };
-
-  return (
-    <button onClick={start} className="px-4 py-2 bg-green-600 text-white rounded">
-      Start Truecaller Login
-    </button>
-  );
+  return <button onClick={start}>Start Truecaller</button>;
 }
