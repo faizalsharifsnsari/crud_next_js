@@ -1,27 +1,46 @@
 "use client";
-import { useEffect } from "react";
+export const dynamic = "force-dynamic"; // prevent prerender
+
+import { Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 
-export default function Test() {
+function TruecallerLoginInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Handle redirect after Truecaller callback
   useEffect(() => {
-    const userId = searchParams.get("userId");
-    if (userId) {
-      // Sign in the user via NextAuth
-      signIn("truecaller", {
-        userId,
-        redirect: true,
-        callbackUrl: "/",
-      });
+    const accessToken = searchParams.get("accessToken");
+    const endpoint = searchParams.get("endpoint");
+
+    if (accessToken && endpoint) {
+      (async () => {
+        try {
+          const res = await fetch("/api/truecaller/callback", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ accessToken, endpoint }),
+          });
+
+          const data = await res.json();
+
+          if (data.success && data.userId) {
+            await signIn("truecaller", {
+              userId: data.userId,
+              redirect: true,
+              callbackUrl: "/",
+            });
+          } else {
+            console.error("Truecaller callback failed:", data);
+          }
+        } catch (err) {
+          console.error("Error calling Truecaller backend:", err);
+        }
+      })();
     }
   }, [searchParams]);
 
   const start = () => {
-    // Open Truecaller SDK deep link
     window.location =
       "truecallersdk://truesdk/web_verify?type=btmsheet" +
       "&requestNonce=12345678" +
@@ -38,9 +57,23 @@ export default function Test() {
       "&btnShape=round" +
       "&skipOption=manualdetails" +
       "&ttl=10000" +
-      // 🔥 Add callback URL so Truecaller redirects back to browser
-      "&callbackUrl=https://crud-next-js-beta.vercel.app/tc-success";
+      "&callbackUrl=https://crud-next-js-beta.vercel.app/tc_test";
   };
 
-  return <button onClick={start}>Start Truecaller</button>;
+  return (
+    <button
+      onClick={start}
+      className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+    >
+      Start Truecaller Login
+    </button>
+  );
+}
+
+export default function TruecallerLogin() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <TruecallerLoginInner />
+    </Suspense>
+  );
 }
