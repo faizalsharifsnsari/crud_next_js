@@ -58,21 +58,41 @@ const image = profile.avatarUrl || null;
     }
 
     // Check existing user
-    let user = await User.findOne({ phone });
+    let user = await User.findOne({
+  $or: [
+    { email: email },
+    { phone: phone }
+  ]
+});
 
-    if (!user) {
-      user = await User.create({
-        name,
-        phone,
-        email,
-        image,
-        provider: "truecaller",
-      });
+   if (!user) {
+  // Create new user
+  user = await User.create({
+    name,
+    phone,
+    email,
+    image,
+    providers: ["truecaller"],
+  });
 
-      console.log("✅ New Truecaller user created");
-    } else {
-      console.log("ℹ️ Existing user found");
-    }
+  console.log("✅ New Truecaller user created");
+
+} else {
+
+  // Update missing fields if needed
+  if (!user.phone) user.phone = phone;
+  if (!user.email) user.email = email;
+  if (!user.image) user.image = image;
+
+  // Add provider if not already added
+  if (!user.providers?.includes("truecaller")) {
+    user.providers = [...(user.providers || []), "truecaller"];
+  }
+
+  await user.save();
+
+  console.log("ℹ️ Existing user updated");
+}
 
     return Response.json(
       {

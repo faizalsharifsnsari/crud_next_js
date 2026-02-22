@@ -7,24 +7,24 @@ const UserSchema = new mongoose.Schema(
     email: {
       type: String,
       unique: true,
-      sparse: true,   // ✅ allows null values
+      sparse: true, // ✅ allows null values
     },
 
     phone: {
       type: String,
       unique: true,
-      sparse: true,   // ✅ allows null values
+      sparse: true, // ✅ allows null values
     },
 
     image: String,
     emailVerified: Date,
 
-    provider: {
-      type: String,   // "google" | "truecaller"
-    }
+    providers: {
+      type: [String],
+      default: [],
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-export default mongoose.models.User ||
-  mongoose.model("User", UserSchema);
+export default mongoose.models.User || mongoose.model("User", UserSchema);
