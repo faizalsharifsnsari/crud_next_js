@@ -1,4 +1,7 @@
 export const runtime = "nodejs";
+import mongoose from "mongoose";
+import { connectionStr } from "../../../lib/mongodb";
+import User from "../../../lib/model/User";
 
 export async function POST(request) {
   try {
@@ -6,7 +9,7 @@ export async function POST(request) {
 
     console.log("Truecaller initial body:", body);
 
-    // ✅ If this is only flow trigger, ignore safely
+    // If flow just started
     if (body.status === "flow_invoked") {
       return Response.json(
         { message: "Flow started" },
@@ -30,11 +33,48 @@ export async function POST(request) {
     });
 
     const profile = await profileRes.json();
-
     console.log("Truecaller profile:", profile);
 
+    // Connect DB
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(connectionStr);
+    }
+
+    // Extract fields
+    const phone = profile.phoneNumber;
+    const name = `${profile.firstName || ""} ${profile.lastName || ""}`.trim();
+    const email = profile.email || null;
+
+    if (!phone) {
+      return Response.json(
+        { error: "Phone number missing from Truecaller" },
+        { status: 400 }
+      );
+    }
+
+    // Check existing user
+    let user = await User.findOne({ phone });
+
+    if (!user) {
+      user = await User.create({
+        name,
+        phone,
+        email,
+        image: null,
+        provider: "truecaller",
+      });
+
+      console.log("✅ New Truecaller user created");
+    } else {
+      console.log("ℹ️ Existing user found");
+    }
+
     return Response.json(
-      { success: true, profile },
+      {
+        success: true,
+        message: "User stored successfully",
+        userId: user._id,
+      },
       { status: 200 }
     );
 
