@@ -21,15 +21,32 @@ export default function TruecallerResponseClient() {
         return;
       }
 
-      const res = await fetch("/api/truecaller/callback", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ accessToken, endpoint }),
-      });
+     
 
-      const data = await res.json();
+      console.log("Calling API...");
+
+const res = await fetch("/api/truecaller/callback", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ accessToken, endpoint }),
+});
+
+console.log("API status:", res.status);
+
+const data = await res.json();
+
+console.log("API response:", data);
+
+if (data.userId) {
+  console.log("Calling signIn...");
+  await signIn("truecaller", {
+    userId: data.userId,
+    redirect: true,
+    callbackUrl: "/user",
+  });
+}
 
       if (data.userId) {
         await signIn("truecaller", {

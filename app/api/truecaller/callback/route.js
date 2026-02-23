@@ -1,31 +1,30 @@
 export const runtime = "nodejs";
+
 import mongoose from "mongoose";
+import { NextResponse } from "next/server";
 import { connectionStr } from "../../../lib/mongodb";
 import User from "../../../lib/model/User";
 
 export async function POST(request) {
   try {
     const body = await request.json();
-
     console.log("Truecaller initial body:", body);
 
-    // If flow just started
+    // Flow started check
     if (body.status === "flow_invoked") {
-      return Response.json(
-        { message: "Flow started" },
-        { status: 200 }
-      );
+      return NextResponse.json({ message: "Flow started" });
     }
 
     const { accessToken, endpoint } = body;
 
     if (!accessToken || !endpoint) {
-      return Response.json(
+      return NextResponse.json(
         { error: "Invalid Truecaller response" },
         { status: 400 }
       );
     }
 
+    // Fetch profile from Truecaller
     const profileRes = await fetch(endpoint, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -41,66 +40,72 @@ export async function POST(request) {
     }
 
     // Extract fields
-   const phone = profile.phoneNumbers?.[0]?.toString();
-
-const firstName = profile.name?.first || "";
-const lastName = profile.name?.last || "";
-const name = `${firstName} ${lastName}`.trim();
-
-const email = profile.onlineIdentities?.email || null;
-const image = profile.avatarUrl || null;
+    const phone = profile.phoneNumbers?.[0]?.toString();
+    const firstName = profile.name?.first || "";
+    const lastName = profile.name?.last || "";
+    const name = `${firstName} ${lastName}`.trim();
+    const email = profile.onlineIdentities?.email || null;
+    const image = profile.avatarUrl || null;
 
     if (!phone) {
-      return Response.json(
-        { error: "Phone number missing from Truecaller" },
+      return NextResponse.json(
+        { error: "Phone number missing" },
         { status: 400 }
       );
     }
 
-    // Check existing user
+    // Find or create user
     let user = await User.findOne({
-  $or: [
-    { email: email },
-    { phone: phone }
-  ]
-});
+      $or: [{ email: email }, { phone: phone }],
+    });
 
-   if (!user) {
-  // Create new user
-  user = await User.create({
-    name,
-    phone,
-    email,
-    image,
-    providers: ["truecaller"],
-  });
+    if (!user) {
+      user = await User.create({
+        name,
+        phone,
+        email,
+        image,
+        providers: ["truecaller"],
+      });
 
-  console.log("✅ New Truecaller user created");
+      console.log("✅ New Truecaller user created");
+    } else {
+      if (!user.phone) user.phone = phone;
+      if (!user.email) user.email = email;
+      if (!user.image) user.image = image;
 
-} else {
+      if (!user.providers?.includes("truecaller")) {
+        user.providers = [...(user.providers || []), "truecaller"];
+      }
 
-  // Update missing fields if needed
-  if (!user.phone) user.phone = phone;
-  if (!user.email) user.email = email;
-  if (!user.image) user.image = image;
+      await user.save();
+      console.log("ℹ️ Existing user updated");
+    }
 
-  // Add provider if not already added
-  if (!user.providers?.includes("truecaller")) {
-    user.providers = [...(user.providers || []), "truecaller"];
-  }
+    // 🔥 IMPORTANT PART
+    // Return HTML that redirects browser to NextAuth credentials login
 
-  await user.save();
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <script>
+            window.location.href = "/api/auth/signin/truecaller?userId=${user._id}&callbackUrl=/user";
+          </script>
+        </head>
+        <body>
+          Logging you in...
+        </body>
+      </html>
+    `;
 
-  console.log("ℹ️ Existing user updated");
-}
-return Response.json({
-  success: true,
-  userId: user._id,
-});
+    return new NextResponse(html, {
+      headers: { "Content-Type": "text/html" },
+    });
 
   } catch (error) {
     console.error("Callback error:", error);
-    return Response.json(
+    return NextResponse.json(
       { error: "Internal error" },
       { status: 500 }
     );
