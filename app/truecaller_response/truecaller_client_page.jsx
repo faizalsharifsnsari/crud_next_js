@@ -34,7 +34,7 @@ export default function TruecallerResponseClient() {
       if (data.userId) {
         await signIn("truecaller", {
           userId: data.userId,
-          callbackUrl: "/profile",
+          callbackUrl: "/user",
         });
       }
     };
