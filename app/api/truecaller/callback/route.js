@@ -93,15 +93,10 @@ const image = profile.avatarUrl || null;
 
   console.log("ℹ️ Existing user updated");
 }
-return Response.json(
-  {
-    success: true,
-    message: "User stored successfully",
-    userId: user._id,
-    redirectUrl: `/api/auth/callback/truecaller?userId=${user._id}` // 🔥 redirect NextAuth
-  },
-  { status: 200 }
-);
+return Response.json({
+  success: true,
+  userId: user._id,
+});
 
   } catch (error) {
     console.error("Callback error:", error);
