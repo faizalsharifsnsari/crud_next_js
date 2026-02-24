@@ -14,33 +14,8 @@ export const authOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
 
-    // ✅ Truecaller login
-   CredentialsProvider({
-  name: "truecaller",
-  credentials: {
-    userId: { label: "userId", type: "text" },
-  },
-  async authorize(credentials) {
-    if (!credentials?.userId) return null;
+   
 
-    const { MongoClient, ObjectId } = require("mongodb");
-    const client = await clientPromise;
-    const db = client.db();
-
-    const user = await db
-      .collection("users")
-      .findOne({ _id: new ObjectId(credentials.userId) });
-
-    if (!user) return null;
-
-    return {
-      id: user._id.toString(),
-      name: user.name,
-      email: user.email,
-      image: user.image,
-    };
-  },
-}),
   ],
 
   secret: process.env.NEXTAUTH_SECRET,

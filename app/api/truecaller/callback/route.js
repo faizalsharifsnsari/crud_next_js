@@ -20,7 +20,7 @@ export async function POST(request) {
     if (!accessToken || !endpoint) {
       return NextResponse.json(
         { error: "Invalid Truecaller response" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -50,7 +50,7 @@ export async function POST(request) {
     if (!phone) {
       return NextResponse.json(
         { error: "Phone number missing" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -85,29 +85,13 @@ export async function POST(request) {
     // 🔥 IMPORTANT PART
     // Return HTML that redirects browser to NextAuth credentials login
 
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <script>
-            window.location.href = "/api/auth/signin/truecaller?userId=${user._id}&callbackUrl=/user";
-          </script>
-        </head>
-        <body>
-          Logging you in...
-        </body>
-      </html>
-    `;
+   
 
-    return new NextResponse(html, {
-      headers: { "Content-Type": "text/html" },
-    });
-
+   return NextResponse.redirect(
+  new URL("/user", request.url)
+);
   } catch (error) {
     console.error("Callback error:", error);
-    return NextResponse.json(
-      { error: "Internal error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
