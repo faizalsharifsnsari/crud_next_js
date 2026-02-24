@@ -1,7 +1,4 @@
-export const runtime = "nodejs";
-import mongoose from "mongoose";
-import { connectionStr } from "../../../lib/mongodb";
-import User from "../../../lib/model/User";
+import { NextResponse } from "next/server";
 
 export async function POST(request) {
   try {
@@ -9,18 +6,14 @@ export async function POST(request) {
 
     console.log("Truecaller initial body:", body);
 
-    // If flow just started
     if (body.status === "flow_invoked") {
-      return Response.json(
-        { message: "Flow started" },
-        { status: 200 }
-      );
+      return NextResponse.json({ message: "Flow started" }, { status: 200 });
     }
 
     const { accessToken, endpoint } = body;
 
     if (!accessToken || !endpoint) {
-      return Response.json(
+      return NextResponse.json(
         { error: "Invalid Truecaller response" },
         { status: 400 }
       );
@@ -35,24 +28,21 @@ export async function POST(request) {
     const profile = await profileRes.json();
     console.log("Truecaller profile:", profile);
 
-    // Connect DB
     if (mongoose.connection.readyState === 0) {
       await mongoose.connect(connectionStr);
     }
 
-    // Extract fields
     const phone = profile.phoneNumber;
     const name = `${profile.firstName || ""} ${profile.lastName || ""}`.trim();
     const email = profile.email || null;
 
     if (!phone) {
-      return Response.json(
+      return NextResponse.json(
         { error: "Phone number missing from Truecaller" },
         { status: 400 }
       );
     }
 
-    // Check existing user
     let user = await User.findOne({ phone });
 
     if (!user) {
@@ -69,18 +59,16 @@ export async function POST(request) {
       console.log("ℹ️ Existing user found");
     }
 
-    return Response.json(
-      {
-        success: true,
-        message: "User stored successfully",
-        userId: user._id,
-      },
-      { status: 200 }
+    // ✅ REDIRECT TO USER PAGE
+    console.log("✅ User stored successfully. Redirecting to /user...");
+
+    return NextResponse.redirect(
+      new URL("/user", request.url)
     );
 
   } catch (error) {
     console.error("Callback error:", error);
-    return Response.json(
+    return NextResponse.json(
       { error: "Internal error" },
       { status: 500 }
     );
