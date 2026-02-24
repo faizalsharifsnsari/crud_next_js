@@ -7,14 +7,30 @@ export default function Test() {
   const router = useRouter();
 
   useEffect(() => {
+    console.log("✅ TC_TEST PAGE MOUNTED");
+    console.log("Initial visibility state:", document.visibilityState);
+
     const handleVisibilityChange = () => {
+      console.log("👀 Visibility changed!");
+      console.log("Current visibility state:", document.visibilityState);
+      console.log("Current URL:", window.location.href);
+
+      if (document.visibilityState === "hidden") {
+        console.log("📱 User left browser (probably opened Truecaller)");
+      }
+
       if (document.visibilityState === "visible") {
-        console.log("User returned from Truecaller");
-        router.replace("/user"); // redirect after returning
+        console.log("🔙 User returned to browser from Truecaller");
+        console.log("➡ Redirecting to /user in 2 seconds...");
+        setTimeout(() => {
+          router.replace("/user");
+        }, 2000);
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    console.log("🚀 Triggering Truecaller deep link now...");
 
     window.location.href =
       "truecallersdk://truesdk/web_verify?type=btmsheet" +
