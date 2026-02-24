@@ -1,9 +1,21 @@
 "use client";
 
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Test() {
+  const router = useRouter();
+
   useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        console.log("User returned from Truecaller");
+        router.replace("/user"); // redirect after returning
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     window.location.href =
       "truecallersdk://truesdk/web_verify?type=btmsheet" +
       "&requestNonce=12345678" +
@@ -12,7 +24,7 @@ export default function Test() {
       "&lang=en" +
       "&privacyUrl=https://crud-next-js-beta.vercel.app/privacy" +
       "&termsUrl=https://crud-next-js-beta.vercel.app/terms" +
-      "&redirectUrl=https://crud-next-js-beta.vercel.app/truecaller_response" +  // ✅ ADD THIS
+      "&redirectUrl=https://crud-next-js-beta.vercel.app/truecaller_response" +
       "&loginPrefix=continue" +
       "&loginSuffix=verifymobile" +
       "&ctaPrefix=continuewith" +
@@ -21,7 +33,11 @@ export default function Test() {
       "&btnShape=round" +
       "&skipOption=manualdetails" +
       "&ttl=10000";
-  }, []);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [router]);
 
   return <div>Opening Truecaller...</div>;
 }
