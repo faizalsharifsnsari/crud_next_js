@@ -9,18 +9,24 @@ export default function TruecallerResponseClient() {
   const executed = useRef(false);
 
   useEffect(() => {
+    console.log("🔥 Truecaller response page loaded");
+
     if (executed.current) return;
     executed.current = true;
 
+    const accessToken = searchParams.get("accessToken");
+    const endpoint = searchParams.get("endpoint");
+
+    console.log("Query string:", searchParams.toString());
+    console.log("AccessToken:", accessToken);
+    console.log("Endpoint:", endpoint);
+
+    if (!accessToken || !endpoint) {
+      console.log("❌ Missing params");
+      return;
+    }
+
     const processTruecaller = async () => {
-      const accessToken = searchParams.get("accessToken");
-      const endpoint = searchParams.get("endpoint");
-
-      if (!accessToken || !endpoint) {
-        console.log("❌ Missing params");
-        return;
-      }
-
       console.log("📡 Calling API...");
 
       const res = await fetch("/api/truecaller/callback", {
@@ -35,7 +41,7 @@ export default function TruecallerResponseClient() {
 
       if (res.ok) {
         console.log("✅ Backend success. Redirecting...");
-        router.push("/privacy"); // change to /user later
+        router.replace("/privacy"); // or /user
       } else {
         console.log("❌ API failed");
       }
