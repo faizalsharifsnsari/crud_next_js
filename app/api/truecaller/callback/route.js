@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-
+export const runtime = "nodejs";
+import mongoose from "mongoose";
+import { connectionStr } from "../../../lib/mongodb";
+import User from "../../../lib/model/User";
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -15,7 +18,7 @@ export async function POST(request) {
     if (!accessToken || !endpoint) {
       return NextResponse.json(
         { error: "Invalid Truecaller response" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -39,7 +42,7 @@ export async function POST(request) {
     if (!phone) {
       return NextResponse.json(
         { error: "Phone number missing from Truecaller" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -62,15 +65,9 @@ export async function POST(request) {
     // ✅ REDIRECT TO USER PAGE
     console.log("✅ User stored successfully. Redirecting to /user...");
 
-    return NextResponse.redirect(
-      new URL("/user", request.url)
-    );
-
+    return NextResponse.redirect(new URL("/user", request.url));
   } catch (error) {
     console.error("Callback error:", error);
-    return NextResponse.json(
-      { error: "Internal error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
