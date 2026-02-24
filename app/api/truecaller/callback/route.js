@@ -35,9 +35,14 @@ export async function POST(request) {
       await mongoose.connect(connectionStr);
     }
 
-    const phone = profile.phoneNumber;
-    const name = `${profile.firstName || ""} ${profile.lastName || ""}`.trim();
-    const email = profile.email || null;
+    const phone = profile.phoneNumbers?.[0]?.toString() || null;
+    const name =
+      `${profile.name?.first || ""} ${profile.name?.last || ""}`.trim();
+    const email = profile.onlineIdentities?.email || null;
+
+    console.log("Extracted Phone:", phone);
+    console.log("Extracted Name:", name);
+    console.log("Extracted Email:", email);
 
     if (!phone) {
       return NextResponse.json(
