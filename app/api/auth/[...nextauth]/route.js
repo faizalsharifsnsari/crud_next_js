@@ -1,5 +1,4 @@
 export const runtime = "nodejs";
-
 import mongoose from "mongoose";
 import { connectionStr } from "../../../lib/mongodb";
 import User from "../../../lib/model/User";
@@ -7,6 +6,7 @@ import User from "../../../lib/model/User";
 export async function POST(request) {
   try {
     const body = await request.json();
+
     console.log("Truecaller initial body:", body);
 
     // If flow just started
@@ -26,7 +26,6 @@ export async function POST(request) {
       );
     }
 
-    // Fetch Truecaller profile
     const profileRes = await fetch(endpoint, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -42,12 +41,9 @@ export async function POST(request) {
     }
 
     // Extract fields
-    const phone = profile.phoneNumbers?.[0]?.toString();
-    const firstName = profile.name?.first || "";
-    const lastName = profile.name?.last || "";
-    const name = `${firstName} ${lastName}`.trim();
-    const email = profile.onlineIdentities?.email || null;
-    const image = profile.avatarUrl || null;
+    const phone = profile.phoneNumber;
+    const name = `${profile.firstName || ""} ${profile.lastName || ""}`.trim();
+    const email = profile.email || null;
 
     if (!phone) {
       return Response.json(
@@ -57,34 +53,20 @@ export async function POST(request) {
     }
 
     // Check existing user
-    let user = await User.findOne({
-      $or: [{ email: email }, { phone: phone }],
-    });
+    let user = await User.findOne({ phone });
 
     if (!user) {
-      // Create new user
       user = await User.create({
         name,
         phone,
         email,
-        image,
-        providers: ["truecaller"],
+        image: null,
+        provider: "truecaller",
       });
 
       console.log("✅ New Truecaller user created");
     } else {
-      // Update missing fields if needed
-      if (!user.phone) user.phone = phone;
-      if (!user.email) user.email = email;
-      if (!user.image) user.image = image;
-
-      // Add provider if not already added
-      if (!user.providers?.includes("truecaller")) {
-        user.providers = [...(user.providers || []), "truecaller"];
-      }
-
-      await user.save();
-      console.log("ℹ️ Existing user updated");
+      console.log("ℹ️ Existing user found");
     }
 
     return Response.json(
@@ -92,10 +74,10 @@ export async function POST(request) {
         success: true,
         message: "User stored successfully",
         userId: user._id,
-        redirectUrl: `/api/auth/callback/truecaller?userId=${user._id}`,
       },
       { status: 200 }
     );
+
   } catch (error) {
     console.error("Callback error:", error);
     return Response.json(
