@@ -1,89 +1,75 @@
-export const runtime = "nodejs";
-import mongoose from "mongoose";
-import { connectionStr } from "../../../lib/mongodb";
-import User from "../../../lib/model/User";
+import NextAuth from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
+import clientPromise from "../../../lib/mongoClient";
 
-export async function POST(request) {
-  try {
-    const body = await request.json();
+export const authOptions = {
+  adapter: MongoDBAdapter(clientPromise),
 
-    console.log("Truecaller initial body:", body);
+  providers: [
+    // ✅ Google login
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
 
-    // If flow just started
-    if (body.status === "flow_invoked") {
-      return Response.json(
-        { message: "Flow started" },
-        { status: 200 }
-      );
-    }
-
-    const { accessToken, endpoint } = body;
-
-    if (!accessToken || !endpoint) {
-      return Response.json(
-        { error: "Invalid Truecaller response" },
-        { status: 400 }
-      );
-    }
-
-    const profileRes = await fetch(endpoint, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
+    // ✅ Truecaller login
+    CredentialsProvider({
+      name: "truecaller",
+      credentials: {
+        userId: { label: "userId", type: "text" },
       },
-    });
+      async authorize(credentials) {
+        if (!credentials?.userId) return null;
 
-    const profile = await profileRes.json();
-    console.log("Truecaller profile:", profile);
+        const { MongoClient, ObjectId } = require("mongodb");
+        const client = await clientPromise;
+        const db = client.db();
 
-    // Connect DB
-    if (mongoose.connection.readyState === 0) {
-      await mongoose.connect(connectionStr);
-    }
+        const user = await db
+          .collection("users")
+          .findOne({ _id: new ObjectId(credentials.userId) });
 
-    // Extract fields
-    const phone = profile.phoneNumber;
-    const name = `${profile.firstName || ""} ${profile.lastName || ""}`.trim();
-    const email = profile.email || null;
+        if (!user) return null;
 
-    if (!phone) {
-      return Response.json(
-        { error: "Phone number missing from Truecaller" },
-        { status: 400 }
-      );
-    }
-
-    // Check existing user
-    let user = await User.findOne({ phone });
-
-    if (!user) {
-      user = await User.create({
-        name,
-        phone,
-        email,
-        image: null,
-        provider: "truecaller",
-      });
-
-      console.log("✅ New Truecaller user created");
-    } else {
-      console.log("ℹ️ Existing user foundskjfnsjkf");
-
-    }
-
-    return Response.json(
-      {
-        success: true,
-        message: "User stored successfully",
-        userId: user._id,
+        return {
+          id: user._id.toString(),
+          name: user.name,
+          email: user.email,
+          image: user.image,
+        };
       },
-      { status: 200 }
-    );
+    }),
+  ],
 
-  } catch (error) {
-    console.error("Callback error:", error);
-    return Response.json(
-      { error: "Internal error" },
-      { status: 500 }
-    );
-  }
-}
+  secret: process.env.NEXTAUTH_SECRET,
+
+  session: {
+    strategy: "jwt",
+  },
+
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id;
+      }
+      return session;
+    },
+  },
+
+  pages: {
+    signIn: "/auth/login",
+  },
+};
+
+const handler = NextAuth(authOptions);
+
+export { handler as GET, handler as POST };

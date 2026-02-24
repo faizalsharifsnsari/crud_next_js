@@ -1,30 +1,31 @@
 export const runtime = "nodejs";
-
 import mongoose from "mongoose";
-import { NextResponse } from "next/server";
 import { connectionStr } from "../../../lib/mongodb";
 import User from "../../../lib/model/User";
 
 export async function POST(request) {
   try {
     const body = await request.json();
+
     console.log("Truecaller initial body:", body);
 
-    // Flow started check
+    // If flow just started
     if (body.status === "flow_invoked") {
-      return NextResponse.json({ message: "Flow started" });
+      return Response.json(
+        { message: "Flow started" },
+        { status: 200 }
+      );
     }
 
     const { accessToken, endpoint } = body;
 
     if (!accessToken || !endpoint) {
-      return NextResponse.json(
+      return Response.json(
         { error: "Invalid Truecaller response" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    // Fetch profile from Truecaller
     const profileRes = await fetch(endpoint, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -40,58 +41,48 @@ export async function POST(request) {
     }
 
     // Extract fields
-    const phone = profile.phoneNumbers?.[0]?.toString();
-    const firstName = profile.name?.first || "";
-    const lastName = profile.name?.last || "";
-    const name = `${firstName} ${lastName}`.trim();
-    const email = profile.onlineIdentities?.email || null;
-    const image = profile.avatarUrl || null;
+    const phone = profile.phoneNumber;
+    const name = `${profile.firstName || ""} ${profile.lastName || ""}`.trim();
+    const email = profile.email || null;
 
     if (!phone) {
-      return NextResponse.json(
-        { error: "Phone number missing" },
-        { status: 400 },
+      return Response.json(
+        { error: "Phone number missing from Truecaller" },
+        { status: 400 }
       );
     }
 
-    // Find or create user
-    let user = await User.findOne({
-      $or: [{ email: email }, { phone: phone }],
-    });
+    // Check existing user
+    let user = await User.findOne({ phone });
 
     if (!user) {
       user = await User.create({
         name,
         phone,
         email,
-        image,
-        providers: ["truecaller"],
+        image: null,
+        provider: "truecaller",
       });
 
       console.log("✅ New Truecaller user created");
     } else {
-      if (!user.phone) user.phone = phone;
-      if (!user.email) user.email = email;
-      if (!user.image) user.image = image;
-
-      if (!user.providers?.includes("truecaller")) {
-        user.providers = [...(user.providers || []), "truecaller"];
-      }
-
-      await user.save();
-      console.log("ℹ️ Existing user updated");
+      console.log("ℹ️ Existing user found");
     }
 
-    // 🔥 IMPORTANT PART
-    // Return HTML that redirects browser to NextAuth credentials login
+    return Response.json(
+      {
+        success: true,
+        message: "User stored successfully",
+        userId: user._id,
+      },
+      { status: 200 }
+    );
 
-   
-
-   return NextResponse.redirect(
-  new URL("/user", request.url)
-);
   } catch (error) {
     console.error("Callback error:", error);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    return Response.json(
+      { error: "Internal error" },
+      { status: 500 }
+    );
   }
 }
