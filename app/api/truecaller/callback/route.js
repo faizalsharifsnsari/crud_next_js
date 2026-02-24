@@ -68,9 +68,9 @@ export async function POST(request) {
     }
 
     // ✅ REDIRECT TO USER PAGE
-    console.log("✅ User stored successfully. Redirecting to /user...");
+    console.log("✅ Redirecting to /privacy...");
 
-    return NextResponse.redirect(new URL("/user", request.url));
+    return NextResponse.redirect(new URL("/privacy", request.url));
   } catch (error) {
     console.error("Callback error:", error);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
