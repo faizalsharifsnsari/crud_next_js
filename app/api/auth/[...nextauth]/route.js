@@ -66,7 +66,8 @@ export async function POST(request) {
 
       console.log("✅ New Truecaller user created");
     } else {
-      console.log("ℹ️ Existing user found");
+      console.log("ℹ️ Existing user foundskjfnsjkf");
+
     }
 
     return Response.json(
