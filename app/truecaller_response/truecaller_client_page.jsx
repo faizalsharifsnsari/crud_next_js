@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useSearchParams } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { useSearchParams, useRouter } from "next/navigation";
 
 export default function TruecallerResponseClient() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const executed = useRef(false);
 
   useEffect(() => {
@@ -17,47 +17,32 @@ export default function TruecallerResponseClient() {
       const endpoint = searchParams.get("endpoint");
 
       if (!accessToken || !endpoint) {
-        console.log("Missing params");
+        console.log("❌ Missing params");
         return;
       }
 
-     
+      console.log("📡 Calling API...");
 
-      console.log("Calling API...");
+      const res = await fetch("/api/truecaller/callback", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ accessToken, endpoint }),
+      });
 
-const res = await fetch("/api/truecaller/callback", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({ accessToken, endpoint }),
-});
+      console.log("API status:", res.status);
 
-console.log("API status:", res.status);
-
-const data = await res.json();
-
-console.log("API response:", data);
-
-if (data.userId) {
-  console.log("Calling signIn...");
-  await signIn("truecaller", {
-    userId: data.userId,
-    redirect: true,
-    callbackUrl: "/user",
-  });
-}
-
-      if (data.userId) {
-        await signIn("truecaller", {
-          userId: data.userId,
-          callbackUrl: "/user",
-        });
+      if (res.ok) {
+        console.log("✅ Backend success. Redirecting...");
+        router.push("/privacy"); // change to /user later
+      } else {
+        console.log("❌ API failed");
       }
     };
 
     processTruecaller();
-  }, [searchParams]);
+  }, [searchParams, router]);
 
-  return <div>Logging you in...</div>;
+  return <div>Processing Truecaller login...</div>;
 }
