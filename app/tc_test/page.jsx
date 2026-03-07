@@ -13,14 +13,25 @@ export default function Test() {
     // Start polling backend every 2 seconds
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`/api/truecaller/status?requestId=${requestId}`);
+        const res = await fetch(
+          `/api/truecaller/status?requestId=${requestId}`,
+        );
         const data = await res.json();
 
         console.log("🔄 Polling backend status:", data);
 
         if (data.status === "verified") {
-          console.log("✅ Truecaller verification complete. Redirecting...");
+          console.log(
+            "✅ Truecaller verification complete. Setting session cookie...",
+          );
+
+          // ⭐ Set cookie in browser
+          document.cookie = `taskify_session=${data.sessionToken}; path=/; max-age=604800`;
+
           clearInterval(interval);
+
+          console.log("➡️ Redirecting to /user");
+
           router.push("/user");
         }
       } catch (err) {
@@ -32,7 +43,8 @@ export default function Test() {
 
     window.location.href =
       "truecallersdk://truesdk/web_verify?type=btmsheet" +
-      "&requestNonce=" + requestId +
+      "&requestNonce=" +
+      requestId +
       "&partnerKey=p6Zcx4868bc93774f4d97977dd3642db09e60" +
       "&partnerName=Taskify%20otpless%20login" +
       "&lang=en" +
@@ -50,6 +62,4 @@ export default function Test() {
 
     return () => clearInterval(interval);
   }, [router]);
-
- 
 }

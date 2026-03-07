@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
+
 import { connectionStr } from "../../../lib/mongodb";
 import User from "../../../lib/model/User";
 
@@ -14,11 +15,15 @@ export async function GET(req) {
       await mongoose.connect(connectionStr);
     }
 
-    // just check if user exists for now
-    const user = await User.findOne({ phone: { $exists: true } });
+    const user = await User.findOne({
+      sessionToken: { $exists: true },
+    });
 
     if (user) {
-      return NextResponse.json({ status: "verified" });
+      return NextResponse.json({
+        status: "verified",
+        sessionToken: user.sessionToken,
+      });
     }
 
     return NextResponse.json({ status: "pending" });

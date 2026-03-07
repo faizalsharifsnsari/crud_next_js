@@ -18,10 +18,11 @@ export async function POST(request) {
     }
 
     const { accessToken, endpoint } = body;
+
     if (!accessToken || !endpoint) {
       return NextResponse.json(
         { error: "Invalid Truecaller response" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -46,7 +47,7 @@ export async function POST(request) {
     if (!phone) {
       return NextResponse.json(
         { error: "Phone number missing from Truecaller" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -72,23 +73,13 @@ export async function POST(request) {
     user.sessionToken = sessionToken;
     await user.save();
 
-    const response = NextResponse.json({
+    console.log("✅ Session token stored in DB");
+
+    return NextResponse.json({
       success: true,
-      userId: user._id,
+      phone,
     });
 
-    // ⭐ SET COOKIE
-   response.cookies.set("taskify_session", sessionToken, {
-  httpOnly: true,
-  secure: true,
-  sameSite: "lax",
-  path: "/",
-  maxAge: 60 * 60 * 24 * 7 // 7 days
-});
-
-    console.log("✅ Session cookie created");
-
-    return response;
   } catch (error) {
     console.error("Callback error:", error);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
