@@ -22,6 +22,7 @@ export default async function ProfilePage() {
 
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get("taskify_session")?.value;
+  console.log("COOKIE TOKEN:", sessionToken);
 
   if (mongoose.connection.readyState === 0) {
     await mongoose.connect(connectionStr);
@@ -36,6 +37,7 @@ export default async function ProfilePage() {
 
   // ⭐ TRUECALLER LOGIN (Cookie Session)
   if (!user && sessionToken) {
+    console.log("Searching user with sessionToken:", sessionToken);
     user = await User.findOne({ sessionToken }).select("name email image");
   }
 
