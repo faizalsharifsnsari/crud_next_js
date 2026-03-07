@@ -20,7 +20,7 @@ export default async function ProfilePage() {
 
   const session = await getServerSession(authOptions);
 
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const sessionToken = cookieStore.get("taskify_session")?.value;
 
   if (mongoose.connection.readyState === 0) {
