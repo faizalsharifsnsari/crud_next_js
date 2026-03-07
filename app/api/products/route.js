@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { connectionStr } from "../../lib/mongodb";
 import { Taskify } from "../../lib/model/Product";
@@ -41,11 +42,35 @@ export async function GET() {
 export async function POST(request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json(
-        { success: false, message: "Unauthorized" },
-        { status: 401 }
-      );
+
+    let userId = null;
+
+    // ✅ NextAuth user
+    if (session) {
+      userId = session.user.id;
+    } 
+    // ✅ Truecaller user
+    else {
+      const cookieStore = cookies();
+      const sessionToken = cookieStore.get("taskify_session")?.value;
+
+      if (!sessionToken) {
+        return NextResponse.json(
+          { success: false, message: "Unauthorized" },
+          { status: 401 }
+        );
+      }
+
+      const user = await User.findOne({ sessionToken });
+
+      if (!user) {
+        return NextResponse.json(
+          { success: false, message: "Invalid session" },
+          { status: 401 }
+        );
+      }
+
+      userId = user._id;
     }
 
     const payload = await request.json();
@@ -54,15 +79,14 @@ export async function POST(request) {
       await mongoose.connect(connectionStr);
     }
 
-    // 🔥 FIX: calculate order
     const count = await Taskify.countDocuments({
-      userId: session.user.id,
+      userId: userId,
     });
 
     const task = new Taskify({
       ...payload,
-      userId: session.user.id,
-      order: count, // ✅ append at bottom
+      userId: userId,
+      order: count,
     });
 
     const result = await task.save();
@@ -73,67 +97,6 @@ export async function POST(request) {
     });
   } catch (error) {
     console.error(error);
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 }
-    );
-  }
-}
-
-
-
-export async function DELETE(req, { params }) {
-  try {
-    // 🔐 Get logged-in user
-    const session = await getServerSession(authOptions);
-
-    if (!session) {
-      return NextResponse.json(
-        { success: false, message: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
-    // 🔌 Connect DB (same as your GET)
-    if (mongoose.connection.readyState === 0) {
-      await mongoose.connect(connectionStr);
-    }
-
-    const { id } = params;
-
-    // 1️⃣ Find task (user-scoped)
-    const task = await Taskify.findOne({
-      _id: id,
-      userId: session.user.id,
-    });
-
-    if (!task) {
-      return NextResponse.json(
-        { success: false, message: "Task not found" },
-        { status: 404 }
-      );
-    }
-
-    const deletedOrder = task.order;
-
-    // 2️⃣ Delete task
-    await Taskify.deleteOne({ _id: id });
-
-    // 3️⃣ Fix order for remaining tasks
-    await Taskify.updateMany(
-      {
-        userId: session.user.id,
-        order: { $gt: deletedOrder },
-      },
-      { $inc: { order: -1 } }
-    );
-
-    return NextResponse.json({
-      success: true,
-      message: "Task deleted successfully",
-    });
-  } catch (error) {
-    console.error("DELETE error:", error);
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }
