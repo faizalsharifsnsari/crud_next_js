@@ -53,7 +53,7 @@ export default function Test() {
 
   const handleManualRedirect = () => {
     console.log("🧪 Manual button clicked → redirecting to /user");
-    router.push("/user");
+    router.push("/truecaller_response");
   };
 
   return (
