@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { getServerSession } from "next-auth";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { connectionStr } from "../lib/mongodb";
@@ -16,16 +17,34 @@ const STATUS = {
 };
 
 export default async function ProfilePage() {
+
   const session = await getServerSession(authOptions);
-  //if (!session) redirect("/auth/login");
+
+  const cookieStore = cookies();
+  const sessionToken = cookieStore.get("taskify_session")?.value;
 
   if (mongoose.connection.readyState === 0) {
     await mongoose.connect(connectionStr);
   }
 
-  const dbUser = await User.findById(session.user.id).select("name email image");
+  let user = null;
 
-  const tasks = await Taskify.find({ userId: session.user.id }).sort({ order: 1 });
+  // ⭐ GOOGLE LOGIN (NextAuth)
+  if (session?.user?.id) {
+    user = await User.findById(session.user.id).select("name email image");
+  }
+
+  // ⭐ TRUECALLER LOGIN (Cookie Session)
+  if (!user && sessionToken) {
+    user = await User.findOne({ sessionToken }).select("name email image");
+  }
+
+  // ⭐ NO AUTH
+  if (!user) {
+    redirect("/auth/login");
+  }
+
+  const tasks = await Taskify.find({ userId: user._id }).sort({ order: 1 });
 
   const tasksWithColors = tasks.map((task) => ({
     id: task._id.toString(),
@@ -60,10 +79,10 @@ export default async function ProfilePage() {
   return (
     <ProfileClient
       sidebar={{
-        id: dbUser?._id?.toString() ?? "",
-        name: dbUser?.name ?? "",
-        email: dbUser?.email ?? "",
-        image: dbUser?.image ?? "",
+        id: user._id.toString(),
+        name: user.name ?? "",
+        email: user.email ?? "",
+        image: user.image ?? "",
       }}
       tasksWithColors={tasksWithColors}
       statusCount={statusCount}

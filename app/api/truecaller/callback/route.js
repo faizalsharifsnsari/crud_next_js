@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 export const runtime = "nodejs";
+
 import mongoose from "mongoose";
+import crypto from "crypto";
+
 import { connectionStr } from "../../../lib/mongodb";
 import User from "../../../lib/model/User";
+
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -14,7 +18,6 @@ export async function POST(request) {
     }
 
     const { accessToken, endpoint } = body;
-
     if (!accessToken || !endpoint) {
       return NextResponse.json(
         { error: "Invalid Truecaller response" },
@@ -40,10 +43,6 @@ export async function POST(request) {
       `${profile.name?.first || ""} ${profile.name?.last || ""}`.trim();
     const email = profile.onlineIdentities?.email || null;
 
-    console.log("Extracted Phone:", phone);
-    console.log("Extracted Name:", name);
-    console.log("Extracted Email:", email);
-
     if (!phone) {
       return NextResponse.json(
         { error: "Phone number missing from Truecaller" },
@@ -59,7 +58,7 @@ export async function POST(request) {
         phone,
         email,
         image: null,
-        provider: "truecaller",
+        providers: ["truecaller"],
       });
 
       console.log("✅ New Truecaller user created");
@@ -67,13 +66,29 @@ export async function POST(request) {
       console.log("ℹ️ Existing user found");
     }
 
-    // ✅ REDIRECT TO USER PAGE
-    console.log("✅ Sending success response to frontend...");
+    // ⭐ CREATE SESSION TOKEN
+    const sessionToken = crypto.randomBytes(32).toString("hex");
 
-    return NextResponse.json({
+    user.sessionToken = sessionToken;
+    await user.save();
+
+    const response = NextResponse.json({
       success: true,
       userId: user._id,
     });
+
+    // ⭐ SET COOKIE
+   response.cookies.set("taskify_session", sessionToken, {
+  httpOnly: true,
+  secure: true,
+  sameSite: "lax",
+  path: "/",
+  maxAge: 60 * 60 * 24 * 7 // 7 days
+});
+
+    console.log("✅ Session cookie created");
+
+    return response;
   } catch (error) {
     console.error("Callback error:", error);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
