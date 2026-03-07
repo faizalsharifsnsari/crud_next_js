@@ -5,32 +5,34 @@ import { useRouter } from "next/navigation";
 
 export default function Test() {
   const router = useRouter();
+  const requestId = "12345678";
 
   useEffect(() => {
     console.log("✅ TC_TEST PAGE MOUNTED");
-    console.log("Initial visibility state:", document.visibilityState);
 
-    const handleVisibilityChange = () => {
-      console.log("👀 Visibility changed!");
-      console.log("Current visibility state:", document.visibilityState);
-      console.log("Current URL:", window.location.href);
+    // Start polling backend every 2 seconds
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/truecaller/status?requestId=${requestId}`);
+        const data = await res.json();
 
-      if (document.visibilityState === "hidden") {
-        console.log("📱 User left browser (probably opened Truecaller)");
+        console.log("🔄 Polling backend status:", data);
+
+        if (data.status === "verified") {
+          console.log("✅ Truecaller verification complete. Redirecting...");
+          clearInterval(interval);
+          router.push("/user");
+        }
+      } catch (err) {
+        console.log("Polling error:", err);
       }
-
-      if (document.visibilityState === "visible") {
-        console.log("🔙 User returned to browser from Truecaller");
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+    }, 2000);
 
     console.log("🚀 Triggering Truecaller deep link now...");
 
     window.location.href =
       "truecallersdk://truesdk/web_verify?type=btmsheet" +
-      "&requestNonce=12345678" +
+      "&requestNonce=" + requestId +
       "&partnerKey=p6Zcx4868bc93774f4d97977dd3642db09e60" +
       "&partnerName=Taskify%20otpless%20login" +
       "&lang=en" +
@@ -46,35 +48,13 @@ export default function Test() {
       "&skipOption=manualdetails" +
       "&ttl=10000";
 
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
+    return () => clearInterval(interval);
   }, [router]);
 
-  const handleManualRedirect = () => {
-    console.log("🧪 Manual button clicked → redirecting to /user");
-    router.push("/truecaller_response");
-  };
-
   return (
-    <div> 
+    <div>
       <h2>Opening Truecaller...</h2>
-
-      <button
-        onClick={handleManualRedirect}
-        style={{
-          marginTop: "20px",
-          padding: "10px 20px",
-          background: "#00a884",
-          color: "white",
-          border: "none",
-          borderRadius: "8px",
-          fontSize: "16px",
-          cursor: "pointer"
-        }}
-      >
-        Test Redirect to /user
-      </button>
+      <p>Waiting for verification...</p>
     </div>
   );
 }
