@@ -1,13 +1,10 @@
-import { NextResponse } from "next/server";
 import mongoose from "mongoose";
-
-import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
 import { cookies } from "next/headers";
-
-import { connectionStr } from "../../../lib/mongodb";
-import User from "../../lib/model/User";
+import { NextResponse } from "next/server";
+import { connectionStr } from "../../lib/mongodb";
 import { Taskify } from "../../lib/model/Product";
+import { authOptions } from "../auth/[...nextauth]/route";
+import { getServerSession } from "next-auth";
 
 export async function GET() {
   try {
