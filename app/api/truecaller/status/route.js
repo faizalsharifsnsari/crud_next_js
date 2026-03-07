@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import { cookies } from "next/headers";
 
 import { connectionStr } from "../../../lib/mongodb";
-import Taskify from "../../../lib/model/Product";
+import { Taskify } from "../../../lib/model/Product";
 import User from "../../../lib/model/User";
 
 export async function GET(req) {
