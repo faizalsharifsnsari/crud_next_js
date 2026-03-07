@@ -124,7 +124,7 @@ export default function ProfileClient({
 
         {/* Main Content */}
         <section className="flex-1 p-6 overflow-auto">
-          <h1 className="text-xl font-semibold mb-4">My Tasks</h1>
+          <h1 className="text-xl font-semibold mb-4">Code Block</h1>
           <TaskList initialTasks={filteredTasks} />
         </section>  
       </div>

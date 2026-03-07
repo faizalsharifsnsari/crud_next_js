@@ -21,10 +21,6 @@ export default function Test() {
 
       if (document.visibilityState === "visible") {
         console.log("🔙 User returned to browser from Truecaller");
-        console.log("➡ Redirecting to /user in 2 seconds...");
-        setTimeout(() => {
-          router.replace("/user");
-        }, 2000);
       }
     };
 
@@ -55,5 +51,30 @@ export default function Test() {
     };
   }, [router]);
 
-  return <div>Opening Truecaller...</div>;
+  const handleManualRedirect = () => {
+    console.log("🧪 Manual button clicked → redirecting to /user");
+    router.push("/user");
+  };
+
+  return (
+    <div>
+      <h2>Opening Truecaller...</h2>
+
+      <button
+        onClick={handleManualRedirect}
+        style={{
+          marginTop: "20px",
+          padding: "10px 20px",
+          background: "#00a884",
+          color: "white",
+          border: "none",
+          borderRadius: "8px",
+          fontSize: "16px",
+          cursor: "pointer"
+        }}
+      >
+        Test Redirect to /user
+      </button>
+    </div>
+  );
 }
