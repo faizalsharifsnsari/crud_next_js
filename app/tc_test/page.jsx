@@ -21,7 +21,7 @@ export default function Test() {
         if (data.status === "verified") {
           console.log("✅ Truecaller verification complete. Redirecting...");
           clearInterval(interval);
-          router.push("/user");
+          router.push("/truecaller_response");
         }
       } catch (err) {
         console.log("Polling error:", err);
