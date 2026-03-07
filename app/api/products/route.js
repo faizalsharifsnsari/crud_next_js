@@ -7,7 +7,7 @@ import { cookies } from "next/headers";
 
 import { connectionStr } from "../../../lib/mongodb";
 import User from "../../../lib/model/User";
-import Taskify from "../../../lib/model/Product";
+import { Taskify } from "../../lib/model/Product";
 
 export async function GET() {
   try {
