@@ -17,7 +17,6 @@ const STATUS = {
 };
 
 export default async function ProfilePage() {
-
   const session = await getServerSession(authOptions);
 
   const cookieStore = await cookies();
@@ -42,10 +41,15 @@ export default async function ProfilePage() {
   }
 
   // ⭐ NO AUTH
-  if (!user) {
+  // If neither Google session nor Truecaller cookie exists
+  if (!session?.user?.id && !sessionToken) {
     redirect("/auth/login");
   }
 
+  // If tokens exist but user not found in DB
+  if (!user) {
+    redirect("/auth/login");
+  }
   const tasks = await Taskify.find({ userId: user._id }).sort({ order: 1 });
 
   const tasksWithColors = tasks.map((task) => ({
@@ -61,8 +65,8 @@ export default async function ProfilePage() {
       task.priority === "high"
         ? "border-l-rose-300"
         : task.priority === "medium"
-        ? "border-l-amber-300"
-        : "border-l-emerald-300",
+          ? "border-l-amber-300"
+          : "border-l-emerald-300",
   }));
 
   const statusCount = { notStarted: 0, ongoing: 0, completed: 0 };
