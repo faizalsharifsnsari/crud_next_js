@@ -1,6 +1,5 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import CredentialsProvider from "next-auth/providers/credentials";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 import clientPromise from "../../../lib/mongoClient";
 
@@ -13,15 +12,14 @@ export const authOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
-
-    // ✅ Truecaller login
-  
   ],
 
   secret: process.env.NEXTAUTH_SECRET,
 
+  debug: true, // helpful while debugging login issues
+
   session: {
-    strategy: "jwt",
+    strategy: "database", // ✅ recommended with MongoDB adapter
   },
 
   callbacks: {
@@ -41,7 +39,7 @@ export const authOptions = {
   },
 
   pages: {
-    signIn: "/auth/login",
+    signIn: "/auth/login", // custom login page
   },
 };
 
