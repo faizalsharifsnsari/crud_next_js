@@ -16,7 +16,7 @@ const STATUS = {
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
 
-  //if (!session) redirect("/auth/login");
+  if (!session) redirect("/auth/login");
   console.log("SESSION:", session);
 
   if (mongoose.connection.readyState === 0) {
