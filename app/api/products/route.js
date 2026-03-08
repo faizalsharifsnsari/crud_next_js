@@ -51,7 +51,7 @@ export async function POST(request) {
     } 
     // ✅ Truecaller user
     else {
-      const cookieStore = cookies();
+      const cookieStore =await cookies();
       const sessionToken = cookieStore.get("taskify_session")?.value;
 
       if (!sessionToken) {
