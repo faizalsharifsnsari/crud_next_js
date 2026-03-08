@@ -1,13 +1,10 @@
 import mongoose from "mongoose";
 import { getServerSession } from "next-auth";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-
 import { connectionStr } from "../lib/mongodb";
 import { Taskify } from "../lib/model/Product";
 import { authOptions } from "../api/auth/[...nextauth]/route";
 import User from "../lib/model/User";
-
 import ProfileClient from "./ProfileClient";
 
 const STATUS = {
@@ -19,38 +16,16 @@ const STATUS = {
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
 
-  const cookieStore = await cookies();
-  const sessionToken = cookieStore.get("taskify_session")?.value;
-  console.log("COOKIE TOKEN:", sessionToken);
+  //if (!session) redirect("/auth/login");
+  console.log("SESSION:", session);
 
   if (mongoose.connection.readyState === 0) {
     await mongoose.connect(connectionStr);
   }
 
-  let user = null;
+  const dbUser = await User.findById(session.user.id).select("name email image");
 
-  // ⭐ GOOGLE LOGIN (NextAuth)
-  if (session?.user?.id) {
-    user = await User.findById(session.user.id).select("name email image");
-  }
-
-  // ⭐ TRUECALLER LOGIN (Cookie Session)
-  if (!user && sessionToken) {
-    console.log("Searching user with sessionToken:", sessionToken);
-    user = await User.findOne({ sessionToken }).select("name email image");
-  }
-
-  // ⭐ NO AUTH
-  // If neither Google session nor Truecaller cookie exists
-  if (!session?.user?.id && !sessionToken) {
-    redirect("/auth/login");
-  }
-
-  // If tokens exist but user not found in DB
-  if (!user) {
-    redirect("/auth/login");
-  }
-  const tasks = await Taskify.find({ userId: user._id }).sort({ order: 1 });
+  const tasks = await Taskify.find({ userId: session.user.id }).sort({ order: 1 });
 
   const tasksWithColors = tasks.map((task) => ({
     id: task._id.toString(),
@@ -65,12 +40,21 @@ export default async function ProfilePage() {
       task.priority === "high"
         ? "border-l-rose-300"
         : task.priority === "medium"
-          ? "border-l-amber-300"
-          : "border-l-emerald-300",
+        ? "border-l-amber-300"
+        : "border-l-emerald-300",
   }));
 
-  const statusCount = { notStarted: 0, ongoing: 0, completed: 0 };
-  const priorityCount = { high: 0, medium: 0, low: 0 };
+  const statusCount = {
+    notStarted: 0,
+    ongoing: 0,
+    completed: 0,
+  };
+
+  const priorityCount = {
+    high: 0,
+    medium: 0,
+    low: 0,
+  };
 
   for (const task of tasksWithColors) {
     if (task.status === STATUS.NOT_STARTED) statusCount.notStarted++;
@@ -85,10 +69,10 @@ export default async function ProfilePage() {
   return (
     <ProfileClient
       sidebar={{
-        id: user._id.toString(),
-        name: user.name ?? "",
-        email: user.email ?? "",
-        image: user.image ?? "",
+        id: dbUser?._id?.toString() ?? "",
+        name: dbUser?.name ?? "",
+        email: dbUser?.email ?? "",
+        image: dbUser?.image ?? "",
       }}
       tasksWithColors={tasksWithColors}
       statusCount={statusCount}
