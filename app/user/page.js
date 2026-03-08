@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { getServerSession } from "next-auth";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { connectionStr } from "../lib/mongodb";
 import { Taskify } from "../lib/model/Product";
@@ -16,16 +17,48 @@ const STATUS = {
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
 
-  if (!session) redirect("/auth/login");
-  console.log("SESSION:", session);
+  const cookieStore = cookies();
+  const sessionToken = cookieStore.get("taskify_session")?.value;
+
+  console.log("COOKIE TOKEN:", sessionToken);
 
   if (mongoose.connection.readyState === 0) {
     await mongoose.connect(connectionStr);
   }
 
-  const dbUser = await User.findById(session.user.id).select("name email image");
+  let user = null;
 
-  const tasks = await Taskify.find({ userId: session.user.id }).sort({ order: 1 });
+  // ⭐ GOOGLE LOGIN
+  if (session?.user?.id) {
+    console.log("Google login detected:", session.user.id);
+
+    user = await User.findById(session.user.id).select(
+      "name email image sessionToken"
+    );
+  }
+
+  // ⭐ TRUECALLER LOGIN
+  if (!user && sessionToken) {
+    console.log("Truecaller login detected. Searching with sessionToken:", sessionToken);
+
+    user = await User.findOne({ sessionToken }).select(
+      "name email image sessionToken"
+    );
+  }
+
+  // ⭐ NO AUTH FOUND
+  if (!session?.user?.id && !sessionToken) {
+    console.log("No authentication found. Redirecting to login.");
+    redirect("/auth/login");
+  }
+
+  // ⭐ TOKEN EXISTS BUT USER NOT FOUND
+  if (!user) {
+    console.log("User not found in database. Redirecting to login.");
+    redirect("/auth/login");
+  }
+
+  const tasks = await Taskify.find({ userId: user._id }).sort({ order: 1 });
 
   const tasksWithColors = tasks.map((task) => ({
     id: task._id.toString(),
@@ -69,10 +102,10 @@ export default async function ProfilePage() {
   return (
     <ProfileClient
       sidebar={{
-        id: dbUser?._id?.toString() ?? "",
-        name: dbUser?.name ?? "",
-        email: dbUser?.email ?? "",
-        image: dbUser?.image ?? "",
+        id: user._id.toString(),
+        name: user.name ?? "",
+        email: user.email ?? "",
+        image: user.image ?? "",
       }}
       tasksWithColors={tasksWithColors}
       statusCount={statusCount}
