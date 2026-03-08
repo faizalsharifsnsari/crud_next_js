@@ -8,6 +8,70 @@ import { getServerSession } from "next-auth";
 import User from "../../lib/model/User";
 
 
+export async function GET() {
+  try {
+
+    let userId = null;
+
+    // 🔐 NextAuth session
+    const session = await getServerSession(authOptions);
+
+    if (session) {
+      userId = session.user.id;
+    } 
+    else {
+
+      // 🔐 Truecaller session
+      const cookieStore = await cookies();
+      const sessionToken = cookieStore.get("taskify_session")?.value;
+
+      if (!sessionToken) {
+        return NextResponse.json(
+          { success: false, message: "Unauthorized" },
+          { status: 401 }
+        );
+      }
+
+      if (mongoose.connection.readyState === 0) {
+        await mongoose.connect(connectionStr);
+      }
+
+      const user = await User.findOne({ sessionToken });
+
+      if (!user) {
+        return NextResponse.json(
+          { success: false, message: "Invalid session" },
+          { status: 401 }
+        );
+      }
+
+      userId = user._id;
+    }
+
+    // 🔌 Ensure DB connection
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(connectionStr);
+    }
+
+    // 🔥 Fetch tasks for that user
+    const data = await Taskify.find({
+      userId: userId,
+    }).sort({ order: 1 });
+
+    return NextResponse.json({
+      success: true,
+      result: data,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 }
+    );
+  }
+}
 
 export async function POST(request) {
   try {
@@ -18,21 +82,20 @@ export async function POST(request) {
     // ✅ NextAuth user
     if (session) {
       userId = session.user.id;
-    } 
+    }
     // ✅ Truecaller user
     else {
-      const cookieStore =await cookies();
+      const cookieStore = await cookies();
       const sessionToken = cookieStore.get("taskify_session")?.value;
-      
-    if (mongoose.connection.readyState === 0) {
-      await mongoose.connect(connectionStr);
-    }
 
+      if (mongoose.connection.readyState === 0) {
+        await mongoose.connect(connectionStr);
+      }
 
       if (!sessionToken) {
         return NextResponse.json(
           { success: false, message: "Unauthorized" },
-          { status: 401 }
+          { status: 401 },
         );
       }
 
@@ -41,7 +104,7 @@ export async function POST(request) {
       if (!user) {
         return NextResponse.json(
           { success: false, message: "Invalid session" },
-          { status: 401 }
+          { status: 401 },
         );
       }
 
@@ -70,51 +133,8 @@ export async function POST(request) {
     console.error(error);
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 }
-    );
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-export async function GET() {
-  try {
-    // 🔐 Get logged-in user
-    const session = await getServerSession(authOptions);
-
-    if (!session) {
-      return NextResponse.json(
-        { success: false, message: "Unauthorized" },
-        { status: 401 },
-      );
-    }
-
-    // 🔌 Connect DB
-    if (mongoose.connection.readyState === 0) {
-      await mongoose.connect(connectionStr);
-    }
-
-    // 🔥 FETCH ONLY USER'S TASKS
-    
-    const data = await Taskify.find({
-      userId: session.user.id, // 🔐 user-specific
-    }).sort({ order: 1 }); 
-
-    return NextResponse.json({ success: true, result: data });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { success: false, error: error.message },
       { status: 500 },
     );
   }
 }
+
