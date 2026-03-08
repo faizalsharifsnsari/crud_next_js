@@ -7,7 +7,6 @@ export const authOptions = {
   adapter: MongoDBAdapter(clientPromise),
 
   providers: [
-    // ✅ Google login
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -16,10 +15,10 @@ export const authOptions = {
 
   secret: process.env.NEXTAUTH_SECRET,
 
-  debug: true, // helpful while debugging login issues
+  debug: true,
 
   session: {
-    strategy: "database", // ✅ recommended with MongoDB adapter
+    strategy: "database",
   },
 
   callbacks: {
@@ -30,16 +29,16 @@ export const authOptions = {
       return token;
     },
 
-    async session({ session, token }) {
+    async session({ session, user }) {
       if (session.user) {
-        session.user.id = token.id;
+        session.user.id = user.id;
       }
       return session;
     },
   },
 
   pages: {
-    signIn: "/auth/login", // custom login page
+    signIn: "/auth/login",
   },
 };
 
