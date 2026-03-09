@@ -12,7 +12,7 @@ export async function GET() {
       await mongoose.connect(connectionStr);
     }
 
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const sessionToken = cookieStore.get("taskify_session")?.value;
 
     console.log("Checking session:", sessionToken);
