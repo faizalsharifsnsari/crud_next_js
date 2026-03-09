@@ -17,9 +17,7 @@ export async function GET(req) {
       await mongoose.connect(connectionStr);
     }
 
-    const user = await User.findOne({
-      sessionToken: { $exists: true },
-    });
+    const user = await User.findOne({ requestId });
 
     if (user) {
       return NextResponse.json({
@@ -29,7 +27,6 @@ export async function GET(req) {
     }
 
     return NextResponse.json({ status: "pending" });
-
   } catch (error) {
     console.error("Status API error:", error);
     return NextResponse.json({ status: "error" });
@@ -49,7 +46,7 @@ export async function POST(request) {
     if (!sessionToken) {
       return NextResponse.json(
         { success: false, message: "Unauthorized - No session token" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -61,7 +58,7 @@ export async function POST(request) {
     if (!user) {
       return NextResponse.json(
         { success: false, message: "Invalid session" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -84,13 +81,12 @@ export async function POST(request) {
       success: true,
       result,
     });
-
   } catch (error) {
     console.error(error);
 
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

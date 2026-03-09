@@ -22,7 +22,7 @@ export async function POST(request) {
     if (!accessToken || !endpoint) {
       return NextResponse.json(
         { error: "Invalid Truecaller response" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -47,9 +47,10 @@ export async function POST(request) {
     if (!phone) {
       return NextResponse.json(
         { error: "Phone number missing from Truecaller" },
-        { status: 400 }
+        { status: 400 },
       );
     }
+    const requestId = body.requestId || body.requestNonce;
 
     let user = await User.findOne({ phone });
 
@@ -60,17 +61,15 @@ export async function POST(request) {
         email,
         image: null,
         providers: ["truecaller"],
+        requestId,
       });
-
-      console.log("✅ New Truecaller user created");
     } else {
-      console.log("ℹ️ Existing user found");
+      user.requestId = requestId;
     }
 
-    // ⭐ CREATE SESSION TOKEN
     const sessionToken = crypto.randomBytes(32).toString("hex");
-
     user.sessionToken = sessionToken;
+
     await user.save();
 
     console.log("✅ Session token stored in DB");
@@ -79,7 +78,6 @@ export async function POST(request) {
       success: true,
       phone,
     });
-
   } catch (error) {
     console.error("Callback error:", error);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
