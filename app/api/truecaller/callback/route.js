@@ -11,10 +11,10 @@ export async function POST(request) {
   try {
     const body = await request.json();
 
-    console.log("Truecaller initial body:", body);
+    console.log("Truecaller body:", body);
 
     if (body.status === "flow_invoked") {
-      return NextResponse.json({ message: "Flow started" }, { status: 200 });
+      return NextResponse.json({ message: "Flow started" });
     }
 
     const { accessToken, endpoint } = body;
@@ -22,7 +22,7 @@ export async function POST(request) {
     if (!accessToken || !endpoint) {
       return NextResponse.json(
         { error: "Invalid Truecaller response" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -33,24 +33,14 @@ export async function POST(request) {
     });
 
     const profile = await profileRes.json();
-    console.log("Truecaller profile:", profile);
 
     if (mongoose.connection.readyState === 0) {
       await mongoose.connect(connectionStr);
     }
 
-    const phone = profile.phoneNumbers?.[0]?.toString() || null;
-    const name =
-      `${profile.name?.first || ""} ${profile.name?.last || ""}`.trim();
+    const phone = profile.phoneNumbers?.[0]?.toString();
+    const name = `${profile.name?.first || ""} ${profile.name?.last || ""}`.trim();
     const email = profile.onlineIdentities?.email || null;
-
-    if (!phone) {
-      return NextResponse.json(
-        { error: "Phone number missing from Truecaller" },
-        { status: 400 },
-      );
-    }
-    const requestId = body.requestId || body.requestNonce;
 
     let user = await User.findOne({ phone });
 
@@ -59,27 +49,37 @@ export async function POST(request) {
         name,
         phone,
         email,
-        image: null,
         providers: ["truecaller"],
-        requestId,
       });
-    } else {
-      user.requestId = requestId;
     }
 
     const sessionToken = crypto.randomBytes(32).toString("hex");
+
     user.sessionToken = sessionToken;
 
     await user.save();
 
-    console.log("✅ Session token stored in DB");
+    console.log("✅ Session created");
 
-    return NextResponse.json({
-      success: true,
-      phone,
+    const response = NextResponse.redirect(
+      "https://crud-next-js-beta.vercel.app/user"
+    );
+
+    response.cookies.set("taskify_session", sessionToken, {
+      httpOnly: true,
+      secure: true,
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
     });
+
+    return response;
+
   } catch (error) {
-    console.error("Callback error:", error);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    console.error(error);
+
+    return NextResponse.json(
+      { error: "Internal error" },
+      { status: 500 }
+    );
   }
 }

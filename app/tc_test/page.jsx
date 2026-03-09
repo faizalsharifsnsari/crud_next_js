@@ -1,56 +1,24 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 
 export default function Test() {
-  const router = useRouter();
-  const requestId = "12345678";
 
   useEffect(() => {
-    console.log("✅ TC_TEST PAGE MOUNTED");
 
-    // Start polling backend every 2 seconds
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch(
-          `/api/truecaller/status?requestId=${requestId}`,
-        );
-        const data = await res.json();
+    console.log("🚀 Triggering Truecaller deep link...");
 
-        console.log("🔄 Polling backend status:", data);
-
-        if (data.status === "verified") {
-          console.log(
-            "✅ Truecaller verification complete. Setting session cookie...",
-          );
-
-          // ⭐ Set cookie in browser
-          document.cookie = `taskify_session=${data.sessionToken}; path=/; max-age=604800`;
-
-          clearInterval(interval);
-
-          console.log("➡️ Redirecting to /user");
-
-          router.push("/user");
-        }
-      } catch (err) {
-        console.log("Polling error:", err);
-      }
-    }, 2000);
-
-    console.log("🚀 Triggering Truecaller deep link now...");
+    const requestId = crypto.randomUUID();
 
     window.location.href =
       "truecallersdk://truesdk/web_verify?type=btmsheet" +
-      "&requestNonce=" +
-      requestId +
+      "&requestNonce=" + requestId +
       "&partnerKey=p6Zcx4868bc93774f4d97977dd3642db09e60" +
-      "&partnerName=Taskify%20otpless%20login" +
+      "&partnerName=Taskify%20login" +
       "&lang=en" +
       "&privacyUrl=https://crud-next-js-beta.vercel.app/privacy" +
       "&termsUrl=https://crud-next-js-beta.vercel.app/terms" +
-      "&redirectUrl=https://crud-next-js-beta.vercel.app/truecaller_response" +
+      "&redirectUrl=https://crud-next-js-beta.vercel.app/api/truecaller/callback" +
       "&loginPrefix=continue" +
       "&loginSuffix=verifymobile" +
       "&ctaPrefix=continuewith" +
@@ -60,6 +28,11 @@ export default function Test() {
       "&skipOption=manualdetails" +
       "&ttl=10000";
 
-    return () => clearInterval(interval);
-  }, [router]);
+  }, []);
+
+  return (
+    <div style={{textAlign:"center", marginTop:"100px"}}>
+      <h2>Redirecting to Truecaller...</h2>
+    </div>
+  );
 }
