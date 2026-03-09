@@ -1,97 +1,97 @@
-// import { NextResponse } from "next/server";
-// import mongoose from "mongoose";
-// import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import mongoose from "mongoose";
+import { cookies } from "next/headers";
 
-// import { connectionStr } from "../../../lib/mongodb";
-// import { Taskify } from "../../../lib/model/Product";
-// import User from "../../../lib/model/User";
+import { connectionStr } from "../../../lib/mongodb";
+import { Taskify } from "../../../lib/model/Product";
+import User from "../../../lib/model/User";
 
-// export async function GET(req) {
-//   try {
-//     const { searchParams } = new URL(req.url);
-//     const requestId = searchParams.get("requestId");
+export async function GET(req) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const requestId = searchParams.get("requestId");
 
-//     console.log("Checking status for:", requestId);
+    console.log("Checking status for:", requestId);
 
-//     if (mongoose.connection.readyState === 0) {
-//       await mongoose.connect(connectionStr);
-//     }
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(connectionStr);
+    }
 
-//     const user = await User.findOne({ requestId });
+    const user = await User.findOne({ requestId });
 
-//     if (user) {
-//       console.log("User found → VERIFIED", user.phone);
+    if (user) {
+      console.log("User found → VERIFIED", user.phone);
 
-//       return NextResponse.json({
-//         status: "verified",
-//         sessionToken: user.sessionToken,
-//       });
-//     }
+      return NextResponse.json({
+        status: "verified",
+        sessionToken: user.sessionToken,
+      });
+    }
 
-//     console.log("User not found → PENDING");
+    console.log("User not found → PENDING");
 
-//     return NextResponse.json({ status: "pending" });
+    return NextResponse.json({ status: "pending" });
 
-//   } catch (error) {
-//     console.error("Status API error:", error);
-//     return NextResponse.json({ status: "error" });
-//   }
-// }
+  } catch (error) {
+    console.error("Status API error:", error);
+    return NextResponse.json({ status: "error" });
+  }
+}
 
-// export async function POST(request) {
-//   try {
-//     if (mongoose.connection.readyState === 0) {
-//       await mongoose.connect(connectionStr);
-//     }
+export async function POST(request) {
+  try {
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(connectionStr);
+    }
 
-//     // ✅ Read cookie created after Truecaller login
-//     const cookieStore = cookies();
-//     const sessionToken = cookieStore.get("taskify_session")?.value;
+    // ✅ Read cookie created after Truecaller login
+    const cookieStore = cookies();
+    const sessionToken = cookieStore.get("taskify_session")?.value;
 
-//     if (!sessionToken) {
-//       return NextResponse.json(
-//         { success: false, message: "Unauthorized - No session token" },
-//         { status: 401 },
-//       );
-//     }
+    if (!sessionToken) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized - No session token" },
+        { status: 401 },
+      );
+    }
 
-//     console.log("Searching user with sessionToken:", sessionToken);
+    console.log("Searching user with sessionToken:", sessionToken);
 
-//     // ✅ Find user using the stored sessionToken
-//     const user = await User.findOne({ sessionToken });
+    // ✅ Find user using the stored sessionToken
+    const user = await User.findOne({ sessionToken });
 
-//     if (!user) {
-//       return NextResponse.json(
-//         { success: false, message: "Invalid session" },
-//         { status: 401 },
-//       );
-//     }
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: "Invalid session" },
+        { status: 401 },
+      );
+    }
 
-//     const payload = await request.json();
+    const payload = await request.json();
 
-//     // 🔥 Calculate task order
-//     const count = await Taskify.countDocuments({
-//       userId: user._id,
-//     });
+    // 🔥 Calculate task order
+    const count = await Taskify.countDocuments({
+      userId: user._id,
+    });
 
-//     const task = new Taskify({
-//       ...payload,
-//       userId: user._id,
-//       order: count,
-//     });
+    const task = new Taskify({
+      ...payload,
+      userId: user._id,
+      order: count,
+    });
 
-//     const result = await task.save();
+    const result = await task.save();
 
-//     return NextResponse.json({
-//       success: true,
-//       result,
-//     });
-//   } catch (error) {
-//     console.error(error);
+    return NextResponse.json({
+      success: true,
+      result,
+    });
+  } catch (error) {
+    console.error(error);
 
-//     return NextResponse.json(
-//       { success: false, error: error.message },
-//       { status: 500 },
-//     );
-//   }
-// }
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 },
+    );
+  }
+}
