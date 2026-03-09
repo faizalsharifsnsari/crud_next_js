@@ -5,69 +5,52 @@ import { useRouter } from "next/navigation";
 
 export default function Test() {
   const router = useRouter();
+  const requestId = "12345678";
 
   useEffect(() => {
+    console.log("✅ TC_TEST PAGE MOUNTED");
 
-    const requestId = crypto.randomUUID();
-
-    console.log("RequestId:", requestId);
-
+    // Start polling backend every 2 seconds
     const interval = setInterval(async () => {
       try {
-
         const res = await fetch(
-          `/api/truecaller/status?requestId=${requestId}`
+          `/api/truecaller/status?requestId=${requestId}`,
         );
-
         const data = await res.json();
 
-        console.log("Polling:", data);
+        console.log("🔄 Polling backend status:", data);
 
         if (data.status === "verified") {
+          console.log(
+            "✅ Truecaller verification complete. Setting session cookie...",
+          );
+
+          // ⭐ Set cookie in browser
+          document.cookie = `taskify_session=${data.sessionToken}; path=/; max-age=604800`;
 
           clearInterval(interval);
 
-          console.log("Phone verified:", data.phone);
+          console.log("➡️ Redirecting to /user");
 
-          // ⭐ call login API
-          const loginRes = await fetch("/api/truecaller/login", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              phone: data.phone,
-            }),
-          });
-
-          const loginData = await loginRes.json();
-
-          if (loginData.success) {
-
-            console.log("Login successful");
-
-            router.push("/user");
-
-          }
+          router.push("/user");
         }
-
-      } catch (error) {
-        console.log("Polling error:", error);
+      } catch (err) {
+        console.log("Polling error:", err);
       }
-
     }, 2000);
 
-    console.log("Launching Truecaller...");
+    console.log("🚀 Triggering Truecaller deep link now...");
 
     window.location.href =
       "truecallersdk://truesdk/web_verify?type=btmsheet" +
-      "&requestNonce=" + requestId +
-      "&partnerKey=YOUR_PARTNER_KEY" +
-      "&partnerName=Taskify%20Login" +
+      "&requestNonce=" +
+      requestId +
+      "&partnerKey=p6Zcx4868bc93774f4d97977dd3642db09e60" +
+      "&partnerName=Taskify%20otpless%20login" +
       "&lang=en" +
-      "&privacyUrl=https://yourdomain.com/privacy" +
-      "&termsUrl=https://yourdomain.com/terms" +
-      "&redirectUrl=https://yourdomain.com/truecaller_response" +
+      "&privacyUrl=https://crud-next-js-beta.vercel.app/privacy" +
+      "&termsUrl=https://crud-next-js-beta.vercel.app/terms" +
+      "&redirectUrl=https://crud-next-js-beta.vercel.app/truecaller_response" +
       "&loginPrefix=continue" +
       "&loginSuffix=verifymobile" +
       "&ctaPrefix=continuewith" +
@@ -78,8 +61,5 @@ export default function Test() {
       "&ttl=10000";
 
     return () => clearInterval(interval);
-
   }, [router]);
-
-  return <div>Opening Truecaller...</div>;
 }
