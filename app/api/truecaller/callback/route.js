@@ -68,17 +68,29 @@ export async function POST(request) {
     }
 
     // ⭐ CREATE SESSION TOKEN
-    const sessionToken = crypto.randomBytes(32).toString("hex");
+   // ⭐ CREATE SESSION TOKEN
+const sessionToken = crypto.randomBytes(32).toString("hex");
 
-    user.sessionToken = sessionToken;
-    await user.save();
+user.sessionToken = sessionToken;
+await user.save();
 
-    console.log("✅ Session token stored in DB");
+console.log("✅ Session token stored in DB");
 
-    return NextResponse.json({
-      success: true,
-      phone,
-    });
+// ⭐ RETURN RESPONSE WITH COOKIE
+const response = NextResponse.json({
+  success: true,
+  phone,
+});
+
+response.cookies.set("taskify_session", sessionToken, {
+  httpOnly: true,
+  secure: true,
+  sameSite: "lax",
+  path: "/",
+  maxAge: 60 * 60 * 24 * 7,
+});
+
+return response;
 
   } catch (error) {
     console.error("Callback error:", error);

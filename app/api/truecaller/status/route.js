@@ -6,48 +6,36 @@ import { connectionStr } from "../../../lib/mongodb";
 import { Taskify } from "../../../lib/model/Product";
 import User from "../../../lib/model/User";
 
-export async function GET(req) {
+export async function GET() {
   try {
     if (mongoose.connection.readyState === 0) {
       await mongoose.connect(connectionStr);
     }
 
-    const cookieStore =await cookies();
+    const cookieStore = cookies();
     const sessionToken = cookieStore.get("taskify_session")?.value;
 
-    if (!sessionToken) {
-      return NextResponse.json({ status: "unauthorized" }, { status: 401 });
-    }
-
     console.log("Checking session:", sessionToken);
+
+    if (!sessionToken) {
+      return NextResponse.json({ status: "pending" });
+    }
 
     const user = await User.findOne({ sessionToken });
 
     if (!user) {
-      return NextResponse.json({ status: "invalid-session" }, { status: 401 });
+      return NextResponse.json({ status: "pending" });
     }
 
     return NextResponse.json({
       status: "verified",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        image: user.image,
-      },
     });
 
   } catch (error) {
     console.error("Status API error:", error);
-
-    return NextResponse.json(
-      { status: "error", message: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ status: "error" });
   }
 }
-
 export async function POST(request) {
   try {
     if (mongoose.connection.readyState === 0) {
