@@ -7,6 +7,7 @@ import { Taskify } from "../../../lib/model/Product";
 import User from "../../../lib/model/User";
 
 export async function GET() {
+  console.log("sdfnsfjsladnfsanjfkladnfklasnmf");
   try {
     if (mongoose.connection.readyState === 0) {
       await mongoose.connect(connectionStr);
@@ -42,8 +43,7 @@ export async function POST(request) {
       await mongoose.connect(connectionStr);
     }
 
-    // ✅ Read cookie created after Truecaller login
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const sessionToken = cookieStore.get("taskify_session")?.value;
 
     if (!sessionToken) {
@@ -53,9 +53,6 @@ export async function POST(request) {
       );
     }
 
-    console.log("Searching user with sessionToken:", sessionToken);
-
-    // ✅ Find user using the stored sessionToken
     const user = await User.findOne({ sessionToken });
 
     if (!user) {
@@ -67,7 +64,6 @@ export async function POST(request) {
 
     const payload = await request.json();
 
-    // 🔥 Calculate task order
     const count = await Taskify.countDocuments({
       userId: user._id,
     });
