@@ -20,13 +20,18 @@ export async function GET(req) {
     const user = await User.findOne({ requestId });
 
     if (user) {
+      console.log("User found → VERIFIED", user.phone);
+
       return NextResponse.json({
         status: "verified",
         sessionToken: user.sessionToken,
       });
     }
 
+    console.log("User not found → PENDING");
+
     return NextResponse.json({ status: "pending" });
+
   } catch (error) {
     console.error("Status API error:", error);
     return NextResponse.json({ status: "error" });
