@@ -8,31 +8,43 @@ import User from "../../../lib/model/User";
 
 export async function GET(req) {
   try {
-    const { searchParams } = new URL(req.url);
-    const requestId = searchParams.get("requestId");
-
-    console.log("Checking status for:", requestId);
-
     if (mongoose.connection.readyState === 0) {
       await mongoose.connect(connectionStr);
     }
 
-    const user = await User.findOne({
-      sessionToken: { $exists: true },
-    });
+    const cookieStore = cookies();
+    const sessionToken = cookieStore.get("taskify_session")?.value;
 
-    if (user) {
-      return NextResponse.json({
-        status: "verified",
-        sessionToken: user.sessionToken,
-      });
+    if (!sessionToken) {
+      return NextResponse.json({ status: "unauthorized" }, { status: 401 });
     }
 
-    return NextResponse.json({ status: "pending" });
+    console.log("Checking session:", sessionToken);
+
+    const user = await User.findOne({ sessionToken });
+
+    if (!user) {
+      return NextResponse.json({ status: "invalid-session" }, { status: 401 });
+    }
+
+    return NextResponse.json({
+      status: "verified",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        image: user.image,
+      },
+    });
 
   } catch (error) {
     console.error("Status API error:", error);
-    return NextResponse.json({ status: "error" });
+
+    return NextResponse.json(
+      { status: "error", message: error.message },
+      { status: 500 }
+    );
   }
 }
 
