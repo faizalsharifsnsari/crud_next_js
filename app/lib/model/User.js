@@ -23,9 +23,16 @@ const UserSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+
+    // ⭐ ADD THIS
+    requestId: {
+      type: String,
+      index: true, // optional but faster for polling lookup
+    },
+
     sessionToken: {
-  type: String,
-}
+      type: String,
+    },
   },
   { timestamps: true },
 );

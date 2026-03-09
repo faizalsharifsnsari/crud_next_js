@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 export default function Test() {
   const router = useRouter();
-  const requestId = "12345678";
+  const requestId = crypto.randomUUID();
 
   useEffect(() => {
     console.log("✅ TC_TEST PAGE MOUNTED");

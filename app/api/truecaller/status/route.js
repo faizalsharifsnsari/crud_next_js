@@ -17,7 +17,10 @@ export async function GET(req) {
       await mongoose.connect(connectionStr);
     }
 
-    const user = await User.findOne({ requestId });
+    const user = await User.findOne({
+      requestId,
+      sessionToken: { $exists: true },
+    });
 
     if (user) {
       console.log("User found → VERIFIED", user.phone);
@@ -31,7 +34,6 @@ export async function GET(req) {
     console.log("User not found → PENDING");
 
     return NextResponse.json({ status: "pending" });
-
   } catch (error) {
     console.error("Status API error:", error);
     return NextResponse.json({ status: "error" });
@@ -45,7 +47,7 @@ export async function POST(request) {
     }
 
     // ✅ Read cookie created after Truecaller login
-    const cookieStore = cookies();
+    const cookieStore =await cookies();
     const sessionToken = cookieStore.get("taskify_session")?.value;
 
     if (!sessionToken) {

@@ -59,7 +59,7 @@ export async function POST(request) {
         name,
         phone,
         email,
-        image: null,
+        image: profile.avatarUrl || null,
         providers: ["truecaller"],
         requestId,
       });
