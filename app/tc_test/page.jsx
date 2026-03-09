@@ -10,27 +10,21 @@ export default function Test() {
   useEffect(() => {
     console.log("✅ TC_TEST PAGE MOUNTED");
 
-    // Start polling backend every 2 seconds
     const interval = setInterval(async () => {
       try {
         const res = await fetch(
           `/api/truecaller/status?requestId=${requestId}`,
+          { credentials: "include" }
         );
+
         const data = await res.json();
 
         console.log("🔄 Polling backend status:", data);
 
         if (data.status === "verified") {
-          console.log(
-            "✅ Truecaller verification complete. Setting session cookie...",
-          );
-
-          // ⭐ Set cookie in browser
-          document.cookie = `taskify_session=${data.sessionToken}; path=/; max-age=604800`;
+          console.log("✅ Truecaller verification complete");
 
           clearInterval(interval);
-
-          console.log("➡️ Redirecting to /user");
 
           router.push("/user");
         }
@@ -62,4 +56,6 @@ export default function Test() {
 
     return () => clearInterval(interval);
   }, [router]);
+
+  return <div>Verifying with Truecaller...</div>;
 }
