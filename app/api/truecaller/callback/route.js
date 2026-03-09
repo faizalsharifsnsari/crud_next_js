@@ -1,23 +1,25 @@
 import { NextResponse } from "next/server";
-export const runtime = "nodejs";
-
 import mongoose from "mongoose";
-import crypto from "crypto";
 
 import { connectionStr } from "../../../lib/mongodb";
-import User from "../../../lib/model/User";
+import TruecallerVerification from "../../../lib/model/TruecallerVerification";
 
 export async function POST(request) {
   try {
     const body = await request.json();
 
-    console.log("Truecaller initial body:", body);
+    console.log("Truecaller body:", body);
 
-    if (body.status === "flow_invoked") {
-      return NextResponse.json({ message: "Flow started" }, { status: 200 });
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(connectionStr);
     }
 
-    const { accessToken, endpoint } = body;
+    // Truecaller first call
+    if (body.status === "flow_invoked") {
+      return NextResponse.json({ message: "Flow started" });
+    }
+
+    const { requestId, accessToken, endpoint } = body;
 
     if (!accessToken || !endpoint) {
       return NextResponse.json(
@@ -26,6 +28,7 @@ export async function POST(request) {
       );
     }
 
+    // fetch profile
     const profileRes = await fetch(endpoint, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -33,78 +36,33 @@ export async function POST(request) {
     });
 
     const profile = await profileRes.json();
-    console.log("Truecaller profile:", profile);
 
-    if (mongoose.connection.readyState === 0) {
-      await mongoose.connect(connectionStr);
-    }
-
-    const phone = profile.phoneNumbers?.[0]?.toString() || null;
-    const name =
-      `${profile.name?.first || ""} ${profile.name?.last || ""}`.trim();
-    const email = profile.onlineIdentities?.email || null;
+    const phone = profile.phoneNumbers?.[0]?.toString();
 
     if (!phone) {
       return NextResponse.json(
-        { error: "Phone number missing from Truecaller" },
+        { error: "Phone missing" },
         { status: 400 }
       );
     }
 
-    let user = await User.findOne({ phone });
-
-    if (!user) {
-      user = await User.create({
-        name,
+    // store verification
+    await TruecallerVerification.findOneAndUpdate(
+      { requestId },
+      {
+        requestId,
         phone,
-        email,
-        image: null,
-        providers: ["truecaller"],
-      });
+        verified: true,
+      },
+      { upsert: true }
+    );
 
-      console.log("✅ New Truecaller user created");
-    } else {
-      console.log("ℹ️ Existing user found");
-    }
+    console.log("Verification stored for requestId:", requestId);
 
-    //
-   // ⭐ CREATE SESSION TOKEN
-const sessionToken = crypto.randomBytes(32).toString("hex");
-
-
-
-console.log("Generated sessionToken:", sessionToken);
-
-user.sessionToken = sessionToken;
-await user.save();
-
-console.log("✅ Session token stored in DB for user:", user._id);
-
-// ⭐ CREATE RESPONSE
-const response = NextResponse.json({
-  success: true,
-  phone,
-});
-
-// ⭐ SET COOKIE
-response.cookies.set("taskify_session", sessionToken, {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax",
-  path: "/",
-  maxAge: 60 * 60 * 24 * 7,
-});
-
-// ⭐ DEBUG COOKIE BEFORE RETURN
-console.log("Cookie prepared:", {
-  name: "taskify_session",
-  value: sessionToken,
-});
-
-return response;
+    return NextResponse.json({ success: true });
 
   } catch (error) {
     console.error("Callback error:", error);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal error" });
   }
 }
