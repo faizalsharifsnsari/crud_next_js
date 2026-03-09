@@ -15,10 +15,7 @@ export async function POST(request) {
 
     // Step 1: Flow started event
     if (body.status === "flow_invoked") {
-      return NextResponse.json(
-        { message: "Flow started" },
-        { status: 200 }
-      );
+      return NextResponse.json({ message: "Flow started" }, { status: 200 });
     }
 
     const { accessToken, endpoint } = body;
@@ -26,7 +23,7 @@ export async function POST(request) {
     if (!accessToken || !endpoint) {
       return NextResponse.json(
         { error: "Invalid Truecaller response" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -61,7 +58,7 @@ export async function POST(request) {
     if (!phone) {
       return NextResponse.json(
         { error: "Phone number missing from Truecaller" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -100,20 +97,19 @@ export async function POST(request) {
 
     response.cookies.set("taskify_session", sessionToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax", // change to "none" if popup blocks cookies
+      secure: true,
+      sameSite: "none",
       path: "/",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: 60 * 60 * 24 * 7,
     });
 
     return response;
-
   } catch (error) {
     console.error("Callback error:", error);
 
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
