@@ -67,27 +67,38 @@ export async function POST(request) {
       console.log("ℹ️ Existing user found");
     }
 
-    // ⭐ CREATE SESSION TOKEN
+    //
    // ⭐ CREATE SESSION TOKEN
 const sessionToken = crypto.randomBytes(32).toString("hex");
+
+
+
+console.log("Generated sessionToken:", sessionToken);
 
 user.sessionToken = sessionToken;
 await user.save();
 
-console.log("✅ Session token stored in DB");
+console.log("✅ Session token stored in DB for user:", user._id);
 
-// ⭐ RETURN RESPONSE WITH COOKIE
+// ⭐ CREATE RESPONSE
 const response = NextResponse.json({
   success: true,
   phone,
 });
 
+// ⭐ SET COOKIE
 response.cookies.set("taskify_session", sessionToken, {
   httpOnly: true,
-  secure: true,
+  secure: process.env.NODE_ENV === "production",
   sameSite: "lax",
   path: "/",
   maxAge: 60 * 60 * 24 * 7,
+});
+
+// ⭐ DEBUG COOKIE BEFORE RETURN
+console.log("Cookie prepared:", {
+  name: "taskify_session",
+  value: sessionToken,
 });
 
 return response;
