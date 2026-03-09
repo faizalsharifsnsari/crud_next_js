@@ -15,35 +15,47 @@ const STATUS = {
 };
 
 export default async function ProfilePage() {
-  const session = await getServerSession(authOptions);
+  console.log("=========== PROFILE PAGE LOADED ===========");
 
-  const cookieStore =await cookies();
+  const session = await getServerSession(authOptions);
+  console.log("NEXTAUTH SESSION:", session);
+
+  const cookieStore = await cookies();
   const sessionToken = cookieStore.get("taskify_session")?.value;
 
-  console.log("COOKIE TOKEN:", sessionToken);
+  console.log("COOKIE TOKEN (taskify_session):", sessionToken);
 
   if (mongoose.connection.readyState === 0) {
+    console.log("MongoDB not connected. Connecting now...");
     await mongoose.connect(connectionStr);
+    console.log("MongoDB connected.");
   }
 
   let user = null;
 
   // ⭐ GOOGLE LOGIN
   if (session?.user?.id) {
-    console.log("Google login detected:", session.user.id);
+    console.log("Google login detected. Session user ID:", session.user.id);
 
     user = await User.findById(session.user.id).select(
-      "name email image sessionToken"
+      "_id name email image sessionToken"
     );
+
+    console.log("User found via Google session:", user);
   }
 
   // ⭐ TRUECALLER LOGIN
   if (!user && sessionToken) {
-    console.log("Truecaller login detected. Searching with sessionToken:", sessionToken);
+    console.log(
+      "Truecaller login detected. Searching with sessionToken:",
+      sessionToken
+    );
 
     user = await User.findOne({ sessionToken }).select(
-      "name email image sessionToken"
+      "_id name email image sessionToken"
     );
+
+    console.log("User found via Truecaller sessionToken:", user);
   }
 
   // ⭐ NO AUTH FOUND
@@ -54,11 +66,20 @@ export default async function ProfilePage() {
 
   // ⭐ TOKEN EXISTS BUT USER NOT FOUND
   if (!user) {
-    console.log("User not found in database. Redirecting to login.");
+    console.log(
+      "Authentication token exists but no matching user in database."
+    );
+    console.log("Session:", session);
+    console.log("SessionToken:", sessionToken);
+
     redirect("/auth/login");
   }
 
+  console.log("FINAL USER OBJECT USED FOR DASHBOARD:", user);
+
   const tasks = await Taskify.find({ userId: user._id }).sort({ order: 1 });
+
+  console.log("Tasks fetched for user:", user._id, "Total:", tasks.length);
 
   const tasksWithColors = tasks.map((task) => ({
     id: task._id.toString(),
@@ -98,6 +119,9 @@ export default async function ProfilePage() {
     if (task.priority === "medium") priorityCount.medium++;
     if (task.priority === "low") priorityCount.low++;
   }
+
+  console.log("STATUS COUNT:", statusCount);
+  console.log("PRIORITY COUNT:", priorityCount);
 
   return (
     <ProfileClient
