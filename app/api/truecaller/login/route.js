@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import crypto from "crypto";
 
-import { connectionStr } from "@/lib/mongodb";
-import User from "@/lib/model/User";
+import { connectionStr } from "../../../lib/mongodb";
+import User from "../../../lib/model/User";
 
 export async function POST(request) {
   try {
