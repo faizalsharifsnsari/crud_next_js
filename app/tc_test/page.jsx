@@ -2,13 +2,15 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import crypto from "crypto";
 
 export default function TcTest() {
   const router = useRouter();
   const requestId = crypto.randomUUID();
 
   useEffect(() => {
-    // Poll backend every 2s for Truecaller verification
+    console.log("✅ TC_TEST PAGE MOUNTED");
+
     const interval = setInterval(async () => {
       try {
         const res = await fetch(`/api/truecaller/status?requestId=${requestId}`);
@@ -16,16 +18,14 @@ export default function TcTest() {
         console.log("🔄 Polling backend status:", data);
 
         if (data.status === "verified") {
-          console.log("✅ Truecaller verification complete.");
-
-          // Set cookie globally for demo
+          // ⭐ Set cookie for entire site (path=/)
           document.cookie = `truecaller_session=${data.sessionToken}; path=/; max-age=604800`;
 
           clearInterval(interval);
           router.push("/user");
         }
       } catch (err) {
-        console.log("Polling error:", err);
+        console.error("Polling error:", err);
       }
     }, 2000);
 

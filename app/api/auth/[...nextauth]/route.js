@@ -14,7 +14,6 @@ export const authOptions = {
   ],
 
   secret: process.env.NEXTAUTH_SECRET,
-
   debug: true,
 
   session: {
@@ -23,18 +22,14 @@ export const authOptions = {
 
   callbacks: {
     async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
+      if (user) token.id = user.id;
       return token;
     },
 
     async session({ session, token }) {
-  if (session.user) {
-    session.user.id = token.id; // ✅ use token.id
-  }
-  return session;
-}
+      if (session.user) session.user.id = token.id;
+      return session;
+    },
   },
 
   pages: {
@@ -43,5 +38,4 @@ export const authOptions = {
 };
 
 const handler = NextAuth(authOptions);
-
 export { handler as GET, handler as POST };
