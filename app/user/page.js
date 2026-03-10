@@ -29,13 +29,11 @@ export default async function ProfilePage() {
   let user = null;
 
   // ⭐ GOOGLE LOGIN
-  if (session?.user?.id) {
-    console.log("Google login detected:", session.user.id);
-
-    user = await User.findById(session.user.id).select(
-      "name email image sessionToken"
-    );
-  }
+ if (session?.user?.email) {
+  user = await User.findOne({ email: session.user.email }).select(
+    "name email image sessionToken"
+  );
+}
 
   // ⭐ TRUECALLER LOGIN
   if (!user && sessionToken) {
