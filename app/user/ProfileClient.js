@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import Link from "next/link";
 import UserSidebar from "../components/Usesidebar";
 import TaskList from "./Tasklist";
 
@@ -11,40 +10,70 @@ export default function ProfileClient({
   priorityCount,
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedPriority, setSelectedPriority] = useState("all");
-  const [selectedStatus,setSelectedStatus] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+
   let filteredTasks = tasksWithColors;
 
-  //filtered by priority
-  if(selectedPriority !== "all"){
-    filteredTasks = filteredTasks.filter(function (task){
-      return task.priority === selectedPriority;
-    })
-  }
-  // filtered by status
-  if(selectedStatus !== "all"){
-    filteredTasks = filteredTasks.filter(function (task){
-      return task.status === selectedStatus;
-    })
+  if (selectedPriority !== "all") {
+    filteredTasks = filteredTasks.filter((task) => task.priority === selectedPriority);
   }
 
-   
+  if (selectedStatus !== "all") {
+    filteredTasks = filteredTasks.filter((task) => task.status === selectedStatus);
+  }
 
   return (
-    <div className="flex h-screen">
-      <UserSidebar
-        user={sidebar}
-        statusCount={statusCount}
-        priorityCount={priorityCount}
-      />
+    <div className="flex h-screen overflow-hidden">
+      {/* Desktop sidebar */}
+      <div className="hidden md:flex md:flex-shrink-0">
+        <UserSidebar
+          user={sidebar}
+          statusCount={statusCount}
+          priorityCount={priorityCount}
+          className="w-64"
+        />
+      </div>
 
+      {/* Mobile sidebar drawer */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-50 flex md:hidden">
+          {/* Background overlay */}
+          <div
+            className="fixed inset-0 bg-black opacity-50"
+            onClick={() => setSidebarOpen(false)}
+          ></div>
+
+          {/* Drawer */}
+          <div className="relative w-64 bg-white shadow-md">
+            <UserSidebar
+              user={sidebar}
+              statusCount={statusCount}
+              priorityCount={priorityCount}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Main content */}
       <div className="flex-1 flex flex-col">
         {/* Top Bar */}
         <div className="flex items-center justify-between p-4 bg-white shadow">
-          {/* Left side can have logo or empty */}
+          {/* Mobile hamburger */}
+          <div className="md:hidden">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="px-3 py-2 border rounded hover:bg-gray-100"
+            >
+              ☰
+            </button>
+          </div>
+
+          {/* Empty left for spacing */}
           <div></div>
 
-          {/* Right side: Menu button */}
+          {/* Filter button */}
           <div className="relative mr-6">
             <button
               className="flex items-center gap-2 px-3 py-1 border rounded hover:bg-gray-100"
@@ -56,77 +85,49 @@ export default function ProfileClient({
 
             {menuOpen && (
               <ul className="absolute right-0 mt-2 w-56 bg-white border rounded-lg shadow-md z-50 p-2 space-y-2">
-                {/* PRIORITY SECTION */}
-                <li className="text-xs font-semibold text-gray-500 px-3 pt-1">
-                  PRIORITY
-                </li>
-                <button
-                  onClick={() => {
-                    setSelectedPriority("high");
-                    setMenuOpen(false);
-                  }}
-                  className="block w-full text-left px-3 py-2 hover:bg-gray-100 rounded"
-                >
-                  High
-                </button>
-
-                <li>
-                  <button className="block w-full text-left px-3 py-2 hover:bg-gray-100 rounded" onClick={()=>{
-                    setSelectedPriority("medium");
-                    setMenuOpen(false);
-                  }}>
-                    Medium
-                  </button>
-                </li>
-                <li>
-                  <button className="block w-full text-left px-3 py-2 hover:bg-gray-100 rounded" onClick={()=>{
-                    setSelectedPriority("low");
-                    setMenuOpen(false);
-                  }}>
-                    Low
-                  </button>
-                </li>
+                {/* PRIORITY */}
+                <li className="text-xs font-semibold text-gray-500 px-3 pt-1">PRIORITY</li>
+                {["high", "medium", "low"].map((p) => (
+                  <li key={p}>
+                    <button
+                      className="block w-full text-left px-3 py-2 hover:bg-gray-100 rounded"
+                      onClick={() => {
+                        setSelectedPriority(p);
+                        setMenuOpen(false);
+                      }}
+                    >
+                      {p.charAt(0).toUpperCase() + p.slice(1)}
+                    </button>
+                  </li>
+                ))}
 
                 <hr />
 
-                {/* STATUS SECTION */}
-                <li className="text-xs font-semibold text-gray-500 px-3 pt-1">
-                  STATUS
-                </li>
-                <li>
-                  <button className="block w-full text-left px-3 py-2 hover:bg-gray-100 rounded" onClick={()=>{
-                    setSelectedStatus("not started");
-                    setMenuOpen(false);
-                  }}>
-                    Not Started
-                  </button>
-                </li>
-                <li>
-                  <button className="block w-full text-left px-3 py-2 hover:bg-gray-100 rounded" onClick={()=>{
-                    setSelectedStatus("ongoing");
-                    setMenuOpen(false);
-                  }}>
-                    On Going
-                  </button>
-                </li>
-                <li>
-                  <button className="block w-full text-left px-3 py-2 hover:bg-gray-100 rounded" onClick={()=>{
-                    setSelectedStatus("completed");
-                    setMenuOpen(false);
-                  }}>
-                    Completed
-                  </button>
-                </li>
+                {/* STATUS */}
+                <li className="text-xs font-semibold text-gray-500 px-3 pt-1">STATUS</li>
+                {["not started", "ongoing", "completed"].map((s) => (
+                  <li key={s}>
+                    <button
+                      className="block w-full text-left px-3 py-2 hover:bg-gray-100 rounded"
+                      onClick={() => {
+                        setSelectedStatus(s);
+                        setMenuOpen(false);
+                      }}
+                    >
+                      {s.charAt(0).toUpperCase() + s.slice(1)}
+                    </button>
+                  </li>
+                ))}
               </ul>
             )}
           </div>
         </div>
 
         {/* Main Content */}
-        <section className="flex-1 p-6 overflow-auto">
+        <section className="flex-1 p-4 md:p-6 overflow-auto">
           <h1 className="text-xl font-semibold mb-4">Code Block</h1>
           <TaskList initialTasks={filteredTasks} />
-        </section>  
+        </section>
       </div>
     </div>
   );
