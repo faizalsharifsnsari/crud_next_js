@@ -29,12 +29,12 @@ export const authOptions = {
       return token;
     },
 
-    async session({ session, user }) {
-      if (session.user) {
-        session.user.id = user.id;
-      }
-      return session;
-    },
+    async session({ session, token }) {
+  if (session.user) {
+    session.user.id = token.id; // ✅ use token.id
+  }
+  return session;
+}
   },
 
   pages: {

@@ -26,7 +26,7 @@ export default function Test() {
           );
 
           // ⭐ Set cookie in browser
-          document.cookie = `taskify_session=${data.sessionToken}; path=/; max-age=604800`;
+         document.cookie = `taskify_session=${data.sessionToken}; path=/truecaller/; max-age=604800`;
 
           clearInterval(interval);
 
