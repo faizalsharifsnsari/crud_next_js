@@ -3,112 +3,48 @@ import { getServerSession } from "next-auth";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { connectionStr } from "../lib/mongodb";
-import { Taskify } from "../lib/model/Product";
-import { authOptions } from "../api/auth/[...nextauth]/route";
 import User from "../lib/model/User";
-import ProfileClient from "./ProfileClient";
+import { authOptions } from "../api/auth/[...nextauth]/route";
 
-const STATUS = {
-  NOT_STARTED: "not started",
-  ONGOING: "ongoing",
-  COMPLETED: "completed",
-};
+export default async function UserPage() {
+  // 1️⃣ Connect to MongoDB
+  if (mongoose.connection.readyState === 0) await mongoose.connect(connectionStr);
 
-export default async function ProfilePage() {
-  // 1️⃣ Get Google session
+  // 2️⃣ Get Google session
   const session = await getServerSession(authOptions);
-
-  // 2️⃣ Get Truecaller cookie
-  const cookieStore = await cookies();
-  const truecallerToken = cookieStore.get("truecaller_session")?.value;
-
-  // 3️⃣ Connect to MongoDB
-  if (mongoose.connection.readyState === 0) {
-    await mongoose.connect(connectionStr);
-  }
-
-  // 4️⃣ Initialize user
   let user = null;
 
-  // ⭐ GOOGLE LOGIN
   if (session?.user?.id) {
-    console.log("Google login detected:", session.user.id);
     user = await User.findById(session.user.id).select(
       "name email image sessionToken"
     );
+    console.log("✅ Google login detected:", user?.email);
   }
 
-  // ⭐ TRUECALLER LOGIN
-  if (!user && truecallerToken) {
-    console.log(
-      "Truecaller login detected. Searching with sessionToken:",
-      truecallerToken
-    );
-    user = await User.findOne({ sessionToken: truecallerToken }).select(
-      "name email image sessionToken"
-    );
-  }
-
-  // ⭐ NO AUTH FOUND
+  // 3️⃣ Truecaller fallback (only if Google session not found)
   if (!user) {
-    console.log("No authentication found or user not in database. Redirecting to login.");
+    const cookieStore = await cookies();
+    const truecallerToken = cookieStore.get("truecaller_session")?.value;
+
+    if (truecallerToken) {
+      user = await User.findOne({ sessionToken: truecallerToken }).select(
+        "name email image sessionToken"
+      );
+      console.log("✅ Truecaller login detected:", user?.phone);
+    }
+  }
+
+  // 4️⃣ If no auth found
+  if (!user) {
+    console.log("❌ No authentication found, redirecting...");
     redirect("/auth/login");
   }
 
-  // 5️⃣ Fetch tasks
-  const tasks = await Taskify.find({ userId: user._id }).sort({ order: 1 });
-
-  const tasksWithColors = tasks.map((task) => ({
-    id: task._id.toString(),
-    title: task.title,
-    description: task.description ?? "",
-    priority: task.priority,
-    status: task.status,
-    dueDate: task.dueDate ?? null,
-    createdAt: task.createdAt,
-    updatedAt: task.updatedAt,
-    priorityBorder:
-      task.priority === "high"
-        ? "border-l-rose-300"
-        : task.priority === "medium"
-        ? "border-l-amber-300"
-        : "border-l-emerald-300",
-  }));
-
-  const statusCount = {
-    notStarted: 0,
-    ongoing: 0,
-    completed: 0,
-  };
-
-  const priorityCount = {
-    high: 0,
-    medium: 0,
-    low: 0,
-  };
-
-  for (const task of tasksWithColors) {
-    if (task.status === STATUS.NOT_STARTED) statusCount.notStarted++;
-    if (task.status === STATUS.ONGOING) statusCount.ongoing++;
-    if (task.status === STATUS.COMPLETED) statusCount.completed++;
-
-    if (task.priority === "high") priorityCount.high++;
-    if (task.priority === "medium") priorityCount.medium++;
-    if (task.priority === "low") priorityCount.low++;
-  }
-
-  // 6️⃣ Render ProfileClient
+  // 5️⃣ Render user info (or your ProfileClient component)
   return (
-    <ProfileClient
-      sidebar={{
-        id: user._id.toString(),
-        name: user.name ?? "",
-        email: user.email ?? "",
-        image: user.image ?? "",
-      }}
-      tasksWithColors={tasksWithColors}
-      statusCount={statusCount}
-      priorityCount={priorityCount}
-    />
+    <div>
+      <h1>Welcome, {user.name}</h1>
+      <p>Email: {user.email}</p>
+    </div>
   );
 }

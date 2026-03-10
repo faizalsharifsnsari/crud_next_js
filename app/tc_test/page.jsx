@@ -3,36 +3,25 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export default function Test() {
+export default function TcTest() {
   const router = useRouter();
   const requestId = crypto.randomUUID();
 
   useEffect(() => {
-    console.log("✅ TC_TEST PAGE MOUNTED");
-
-    // Start polling backend every 2 seconds
+    // Poll backend every 2s for Truecaller verification
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(
-          `/api/truecaller/status?requestId=${requestId}`,
-        );
+        const res = await fetch(`/api/truecaller/status?requestId=${requestId}`);
         const data = await res.json();
-
         console.log("🔄 Polling backend status:", data);
 
         if (data.status === "verified") {
-          console.log(
-            "✅ Truecaller verification complete. Setting session cookie...",
-          );
+          console.log("✅ Truecaller verification complete.");
 
-          // ⭐ Set cookie in browser
-         // Frontend (polling script)
-document.cookie = `truecaller_session=${data.sessionToken}; path=/; max-age=604800`;
+          // Set cookie globally for demo
+          document.cookie = `truecaller_session=${data.sessionToken}; path=/; max-age=604800`;
 
           clearInterval(interval);
-
-          console.log("➡️ Redirecting to /user");
-
           router.push("/user");
         }
       } catch (err) {
@@ -40,8 +29,7 @@ document.cookie = `truecaller_session=${data.sessionToken}; path=/; max-age=6048
       }
     }, 2000);
 
-    console.log("🚀 Triggering Truecaller deep link now...");
-
+    // Trigger Truecaller deep link
     window.location.href =
       "truecallersdk://truesdk/web_verify?type=btmsheet" +
       "&requestNonce=" +
