@@ -15,49 +15,47 @@ const STATUS = {
 };
 
 export default async function ProfilePage() {
+  // 1️⃣ Get Google session
   const session = await getServerSession(authOptions);
 
-  const cookieStore =await cookies();
-  const sessionToken = cookieStore.get("taskify_session")?.value;
+  // 2️⃣ Get Truecaller cookie
+  const cookieStore = await cookies();
+  const truecallerToken = cookieStore.get("truecaller_session")?.value;
 
-  console.log("COOKIE TOKEN:", sessionToken);
-
+  // 3️⃣ Connect to MongoDB
   if (mongoose.connection.readyState === 0) {
     await mongoose.connect(connectionStr);
   }
 
+  // 4️⃣ Initialize user
   let user = null;
 
   // ⭐ GOOGLE LOGIN
   if (session?.user?.id) {
     console.log("Google login detected:", session.user.id);
-
     user = await User.findById(session.user.id).select(
       "name email image sessionToken"
     );
   }
 
   // ⭐ TRUECALLER LOGIN
-  if (!user && sessionToken) {
-    console.log("Truecaller login detected. Searching with sessionToken:", sessionToken);
-
-    user = await User.findOne({ sessionToken }).select(
+  if (!user && truecallerToken) {
+    console.log(
+      "Truecaller login detected. Searching with sessionToken:",
+      truecallerToken
+    );
+    user = await User.findOne({ sessionToken: truecallerToken }).select(
       "name email image sessionToken"
     );
   }
 
   // ⭐ NO AUTH FOUND
-  if (!session?.user?.id && !sessionToken) {
-    console.log("No authentication found. Redirecting to login.");
-    redirect("/auth/login");
-  }
-
-  // ⭐ TOKEN EXISTS BUT USER NOT FOUND
   if (!user) {
-    console.log("User not found in database. Redirecting to login.");
+    console.log("No authentication found or user not in database. Redirecting to login.");
     redirect("/auth/login");
   }
 
+  // 5️⃣ Fetch tasks
   const tasks = await Taskify.find({ userId: user._id }).sort({ order: 1 });
 
   const tasksWithColors = tasks.map((task) => ({
@@ -99,6 +97,7 @@ export default async function ProfilePage() {
     if (task.priority === "low") priorityCount.low++;
   }
 
+  // 6️⃣ Render ProfileClient
   return (
     <ProfileClient
       sidebar={{
