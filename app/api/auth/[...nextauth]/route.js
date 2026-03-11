@@ -22,15 +22,8 @@ export const authOptions = {
   },
 
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
-      return token;
-    },
-
     async session({ session, user }) {
-      if (session.user) {
+      if (session.user && user) {
         session.user.id = user.id;
       }
       return session;
