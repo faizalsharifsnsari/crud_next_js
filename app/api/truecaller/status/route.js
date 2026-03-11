@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 
 import { connectionStr } from "../../../lib/mongodb";
 import { Taskify } from "../../../lib/model/Product";
-import User from "../../../lib/model/User";
+import TruecallerUser from "../../../lib/model/User";
 
 export async function GET(req) {
   try {
@@ -17,7 +17,7 @@ export async function GET(req) {
       await mongoose.connect(connectionStr);
     }
 
-    const user = await User.findOne({
+    const user = await TruecallerUser.findOne({
       requestId,
       sessionToken: { $exists: true },
     });
@@ -47,7 +47,7 @@ export async function POST(request) {
     }
 
     // ✅ Read cookie created after Truecaller login
-    const cookieStore =await cookies();
+    const cookieStore = await cookies();
     const sessionToken = cookieStore.get("taskify_session")?.value;
 
     if (!sessionToken) {
@@ -60,7 +60,7 @@ export async function POST(request) {
     console.log("Searching user with sessionToken:", sessionToken);
 
     // ✅ Find user using the stored sessionToken
-    const user = await User.findOne({ sessionToken });
+    const user = await TruecallerUser.findOne({ sessionToken });
 
     if (!user) {
       return NextResponse.json(
