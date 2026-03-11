@@ -2,34 +2,45 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import crypto from "crypto";
 
-export default function TcTest() {
+export default function Test() {
   const router = useRouter();
   const requestId = crypto.randomUUID();
 
   useEffect(() => {
     console.log("✅ TC_TEST PAGE MOUNTED");
 
+    // Start polling backend every 2 seconds
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`/api/truecaller/status?requestId=${requestId}`);
+        const res = await fetch(
+          `/api/truecaller/status?requestId=${requestId}`,
+        );
         const data = await res.json();
+
         console.log("🔄 Polling backend status:", data);
 
         if (data.status === "verified") {
-          // ⭐ Set cookie for entire site (path=/)
-          document.cookie = `truecaller_session=${data.sessionToken}; path=/; max-age=604800`;
+          console.log(
+            "✅ Truecaller verification complete. Setting session cookie...",
+          );
+
+          // ⭐ Set cookie in browser
+          document.cookie = `taskify_session=${data.sessionToken}; path=/; max-age=604800`;
 
           clearInterval(interval);
+
+          console.log("➡️ Redirecting to /user");
+
           router.push("/user");
         }
       } catch (err) {
-        console.error("Polling error:", err);
+        console.log("Polling error:", err);
       }
     }, 2000);
 
-    // Trigger Truecaller deep link
+    console.log("🚀 Triggering Truecaller deep link now...");
+
     window.location.href =
       "truecallersdk://truesdk/web_verify?type=btmsheet" +
       "&requestNonce=" +
