@@ -29,7 +29,7 @@ export default function ProfileClient({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    
       <div className="flex h-screen overflow-hidden">
 
   {/* Desktop sidebar */}
@@ -42,22 +42,26 @@ export default function ProfileClient({
   </div>
 
   {/* Mobile sidebar drawer */}
-  {sidebarOpen && (
-    <div className="fixed inset-0 z-50 flex md:hidden">
-      <div
-        className="fixed inset-0 bg-black opacity-50"
-        onClick={() => setSidebarOpen(false)}
-      ></div>
+ {sidebarOpen && (
+  <div className="fixed inset-0 z-50 md:hidden">
+    
+    {/* Overlay */}
+    <div
+      className="absolute inset-0 bg-black opacity-50"
+      onClick={() => setSidebarOpen(false)}
+    />
 
-      <div className="relative w-64 h-full bg-white shadow-md overflow-y-auto">
-        <UserSidebar
-          user={sidebar}
-          statusCount={statusCount}
-          priorityCount={priorityCount}
-        />
-      </div>
+    {/* Sidebar Drawer */}
+    <div className="fixed top-0 left-0 w-64 h-screen bg-white shadow-md overflow-y-auto">
+      <UserSidebar
+        user={sidebar}
+        statusCount={statusCount}
+        priorityCount={priorityCount}
+      />
     </div>
-  )}
+
+  </div>
+)}
 
       {/* Main content */}
       <div className="flex-1 flex flex-col">
