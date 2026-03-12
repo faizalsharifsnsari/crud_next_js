@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 import clientPromise from "../../../lib/mongoClient";
+import { cookies } from "next/headers";
 
 export const authOptions = {
   adapter: MongoDBAdapter(clientPromise),
@@ -22,6 +23,18 @@ export const authOptions = {
   },
 
   callbacks: {
+
+    async signIn({ account }) {
+
+      // ✅ If user logs in with Google, remove Truecaller session
+      if (account?.provider === "google") {
+        const cookieStore = await cookies();
+        cookieStore.delete("taskify_session");
+      }
+
+      return true;
+    },
+
     async session({ session, user }) {
       if (session.user && user) {
         session.user.id = user.id;
