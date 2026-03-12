@@ -17,44 +17,47 @@ export default function ProfileClient({
   let filteredTasks = tasksWithColors;
 
   if (selectedPriority !== "all") {
-    filteredTasks = filteredTasks.filter((task) => task.priority === selectedPriority);
+    filteredTasks = filteredTasks.filter(
+      (task) => task.priority === selectedPriority,
+    );
   }
 
   if (selectedStatus !== "all") {
-    filteredTasks = filteredTasks.filter((task) => task.status === selectedStatus);
+    filteredTasks = filteredTasks.filter(
+      (task) => task.status === selectedStatus,
+    );
   }
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Desktop sidebar */}
-      <div className="hidden md:flex md:flex-shrink-0">
+      <div className="flex h-screen overflow-hidden">
+
+  {/* Desktop sidebar */}
+  <div className="hidden md:block w-64 h-full bg-white shadow-md overflow-y-auto">
+    <UserSidebar
+      user={sidebar}
+      statusCount={statusCount}
+      priorityCount={priorityCount}
+    />
+  </div>
+
+  {/* Mobile sidebar drawer */}
+  {sidebarOpen && (
+    <div className="fixed inset-0 z-50 flex md:hidden">
+      <div
+        className="fixed inset-0 bg-black opacity-50"
+        onClick={() => setSidebarOpen(false)}
+      ></div>
+
+      <div className="relative w-64 h-full bg-white shadow-md overflow-y-auto">
         <UserSidebar
           user={sidebar}
           statusCount={statusCount}
           priorityCount={priorityCount}
-          className="w-64"
         />
       </div>
-
-      {/* Mobile sidebar drawer */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-50 flex md:hidden">
-          {/* Background overlay */}
-          <div
-            className="fixed inset-0 bg-black opacity-50"
-            onClick={() => setSidebarOpen(false)}
-          ></div>
-
-          {/* Drawer */}
-          <div className="relative w-64 bg-white shadow-md">
-            <UserSidebar
-              user={sidebar}
-              statusCount={statusCount}
-              priorityCount={priorityCount}
-            />
-          </div>
-        </div>
-      )}
+    </div>
+  )}
 
       {/* Main content */}
       <div className="flex-1 flex flex-col">
@@ -86,7 +89,9 @@ export default function ProfileClient({
             {menuOpen && (
               <ul className="absolute right-0 mt-2 w-56 bg-white border rounded-lg shadow-md z-50 p-2 space-y-2">
                 {/* PRIORITY */}
-                <li className="text-xs font-semibold text-gray-500 px-3 pt-1">PRIORITY</li>
+                <li className="text-xs font-semibold text-gray-500 px-3 pt-1">
+                  PRIORITY
+                </li>
                 {["high", "medium", "low"].map((p) => (
                   <li key={p}>
                     <button
@@ -104,7 +109,9 @@ export default function ProfileClient({
                 <hr />
 
                 {/* STATUS */}
-                <li className="text-xs font-semibold text-gray-500 px-3 pt-1">STATUS</li>
+                <li className="text-xs font-semibold text-gray-500 px-3 pt-1">
+                  STATUS
+                </li>
                 {["not started", "ongoing", "completed"].map((s) => (
                   <li key={s}>
                     <button

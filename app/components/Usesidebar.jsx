@@ -45,7 +45,7 @@ export default function UserSidebar({ user, statusCount, priorityCount }) {
   
 
   return (
-    <aside className="w-72 bg-white border-r px-5 py-6 flex flex-col relative">
+   <aside className="w-full h-full bg-white border-r px-5 py-6 flex flex-col relative">
       {/* Hamburger Menu at Top-Left */}
       <div className="absolute top-4 left-4">
         <button
