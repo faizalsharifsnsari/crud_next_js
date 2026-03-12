@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { connectionStr } from "../lib/mongodb";
 import { Taskify } from "../lib/model/Product";
 import { authOptions } from "../api/auth/[...nextauth]/route";
-import User from "../lib/model/User";
+import NextAuthUser from "../lib/model/NextAuthUser";
+import TruecallerUser from "../lib/model/User";
 import ProfileClient from "./ProfileClient";
 
 const STATUS = {
@@ -17,7 +18,7 @@ const STATUS = {
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
 
-  const cookieStore =await cookies();
+  const cookieStore = await cookies();
   const sessionToken = cookieStore.get("taskify_session")?.value;
 
   console.log("COOKIE TOKEN:", sessionToken);
@@ -28,21 +29,25 @@ export default async function ProfilePage() {
 
   let user = null;
 
+ 
   // ⭐ GOOGLE LOGIN
   if (session?.user?.id) {
     console.log("Google login detected:", session.user.id);
 
-    user = await User.findById(session.user.id).select(
-      "name email image sessionToken"
+    user = await NextAuthUser.findById(session.user.id).select(
+      "name email image",
     );
   }
 
   // ⭐ TRUECALLER LOGIN
   if (!user && sessionToken) {
-    console.log("Truecaller login detected. Searching with sessionToken:", sessionToken);
+    console.log(
+      "Truecaller login detected. Searching with sessionToken:",
+      sessionToken,
+    );
 
-    user = await User.findOne({ sessionToken }).select(
-      "name email image sessionToken"
+    user = await TruecallerUser.findOne({ sessionToken }).select(
+      "name email image sessionToken",
     );
   }
 
@@ -73,8 +78,8 @@ export default async function ProfilePage() {
       task.priority === "high"
         ? "border-l-rose-300"
         : task.priority === "medium"
-        ? "border-l-amber-300"
-        : "border-l-emerald-300",
+          ? "border-l-amber-300"
+          : "border-l-emerald-300",
   }));
 
   const statusCount = {
