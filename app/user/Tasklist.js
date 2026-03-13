@@ -21,13 +21,17 @@ import styles from "./user.module.css";
 //priority colours
 
 //icon code
-function StatusIcon({ status }) {
+function StatusIcon({ status, onClick }) {
   const base =
-    "w-9 h-9 rounded-full flex items-center justify-center shadow-sm";
+    "w-9 h-9 rounded-full flex items-center justify-center shadow-sm cursor-pointer hover:scale-105 transition";
 
   if (status === "completed") {
     return (
-      <div className={`${base} bg-green-500 text-white`} title="Completed">
+      <div
+        onClick={onClick}
+        className={`${base} bg-green-500 text-white`}
+        title="Completed - click to view"
+      >
         <CheckIcon className="w-5 h-5" />
       </div>
     );
@@ -35,14 +39,22 @@ function StatusIcon({ status }) {
 
   if (status === "ongoing") {
     return (
-      <div className={`${base} bg-blue-500 text-white`} title="Ongoing">
+      <div
+        onClick={onClick}
+        className={`${base} bg-blue-500 text-white`}
+        title="Ongoing - click to view"
+      >
         <PlayIcon className="w-5 h-5 ml-[1px]" />
       </div>
     );
   }
 
   return (
-    <div className={`${base} bg-gray-400 text-white`} title="Not started">
+    <div
+      onClick={onClick}
+      className={`${base} bg-gray-400 text-white`}
+      title="Not started - click to view"
+    >
       <ClockIcon className="w-5 h-5" />
     </div>
   );
@@ -96,13 +108,13 @@ function SortableTask({ task, onDelete, onEdit, onView }) {
       flex items-center justify-between
       cursor-grab active:cursor-grabbing
       p-3 mb-3 rounded-lg
-      border-l-4 shadow-sm transition
+      border-l-4 shadow-sm
       ${
         task.priority === "high"
-          ? "border-red-500 bg-red-100 dark:bg-red-900/30"
+          ? "border-red-500 bg-red-200"
           : task.priority === "medium"
-          ? "border-yellow-500 bg-yellow-100 dark:bg-yellow-900/30"
-          : "border-green-500 bg-green-100 dark:bg-green-900/30"
+            ? "border-yellow-500 bg-yellow-200"
+            : "border-green-500 bg-green-200"
       }
       `}
       {...attributes}
@@ -110,38 +122,16 @@ function SortableTask({ task, onDelete, onEdit, onView }) {
     >
       {/* LEFT SIDE */}
       <div className="flex items-center gap-3 flex-1">
-        <StatusIcon status={task.status} />
+        {/* STATUS ICON (now clickable) */}
+        <StatusIcon status={task.status} onClick={() => onView(task)} />
 
-        <div className="flex items-center justify-between w-full">
-
-          <span className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">
-            {task.title}
-          </span>
-
-          <button
-            className="
-            flex items-center justify-center
-            w-8 h-8 rounded-full
-            text-gray-600 dark:text-gray-300
-            hover:text-black dark:hover:text-white
-            hover:bg-black/10 dark:hover:bg-gray-700
-            transition
-            "
-            onClick={(e) => {
-              e.stopPropagation();
-              onView(task);
-            }}
-            title="View details"
-          >
-            👁
-          </button>
-
-        </div>
+        <span className="text-sm font-semibold text-gray-800 truncate">
+          {task.title}
+        </span>
       </div>
 
       {/* ACTION BUTTONS */}
-      <div className="flex gap-2 ml-3">
-
+      <div className="flex gap-2">
         <button
           className="
           px-3 py-1 text-xs font-medium rounded-md
@@ -169,7 +159,6 @@ function SortableTask({ task, onDelete, onEdit, onView }) {
         >
           Delete
         </button>
-
       </div>
     </div>
   );
