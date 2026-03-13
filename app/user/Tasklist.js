@@ -95,20 +95,14 @@ function SortableTask({ task, onDelete, onEdit, onView }) {
       className={`
       flex items-center justify-between
       cursor-grab active:cursor-grabbing
-      p-3 mb-3
-      rounded-lg
-      bg-white dark:bg-gray-800
-      text-gray-800 dark:text-gray-100
-      border-l-4
-      shadow-sm
-      hover:shadow-md
-      transition
+      p-3 mb-3 rounded-lg
+      border-l-4 shadow-sm transition
       ${
         task.priority === "high"
-          ? "border-red-500"
+          ? "border-red-500 bg-red-100 dark:bg-red-900/30"
           : task.priority === "medium"
-          ? "border-yellow-400"
-          : "border-green-500"
+          ? "border-yellow-500 bg-yellow-100 dark:bg-yellow-900/30"
+          : "border-green-500 bg-green-100 dark:bg-green-900/30"
       }
       `}
       {...attributes}
@@ -116,25 +110,21 @@ function SortableTask({ task, onDelete, onEdit, onView }) {
     >
       {/* LEFT SIDE */}
       <div className="flex items-center gap-3 flex-1">
-
-        {/* Status icon */}
         <StatusIcon status={task.status} />
 
-        {/* Title + View */}
         <div className="flex items-center justify-between w-full">
 
-          <span className="text-sm font-semibold truncate">
+          <span className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">
             {task.title}
           </span>
 
           <button
             className="
             flex items-center justify-center
-            w-8 h-8
-            rounded-full
-            text-gray-500 dark:text-gray-400
-            hover:text-gray-900 dark:hover:text-white
-            hover:bg-gray-200 dark:hover:bg-gray-700
+            w-8 h-8 rounded-full
+            text-gray-600 dark:text-gray-300
+            hover:text-black dark:hover:text-white
+            hover:bg-black/10 dark:hover:bg-gray-700
             transition
             "
             onClick={(e) => {
@@ -154,15 +144,9 @@ function SortableTask({ task, onDelete, onEdit, onView }) {
 
         <button
           className="
-          px-3 py-1 text-xs font-medium
-          rounded-md
-          bg-gray-200
-          hover:bg-gray-300
-          text-gray-800
-          dark:bg-gray-700
-          dark:hover:bg-gray-600
-          dark:text-gray-200
-          transition
+          px-3 py-1 text-xs font-medium rounded-md
+          bg-green-500 hover:bg-green-600
+          text-white transition
           "
           onClick={(e) => {
             e.stopPropagation();
@@ -174,12 +158,9 @@ function SortableTask({ task, onDelete, onEdit, onView }) {
 
         <button
           className="
-          px-3 py-1 text-xs font-medium
-          rounded-md
-          bg-red-500
-          hover:bg-red-600
-          text-white
-          transition
+          px-3 py-1 text-xs font-medium rounded-md
+          bg-red-500 hover:bg-red-600
+          text-white transition
           "
           onClick={(e) => {
             e.stopPropagation();
