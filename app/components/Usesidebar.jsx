@@ -43,7 +43,7 @@ export default function UserSidebar({ user, statusCount, priorityCount }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <aside className="w-full h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 px-5 py-6 flex flex-col relative">
+    <aside className="w-full h-full bg-green-200 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 px-5 py-6 flex flex-col relative">
       {/* Hamburger Menu at Top-Left */}
       <div className="absolute top-4 left-4">
         <button

@@ -23,29 +23,35 @@ export default function LoginClient() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-emerald-100 via-emerald-50 to-amber-50">
-      <div className="relative z-10 w-full max-w-md rounded-2xl bg-white shadow-xl border p-6 space-y-4">
-        <h1 className="text-2xl font-bold text-center">Welcome back</h1>
+  <main className="min-h-screen flex items-center justify-center px-4 bg-green-200 dark:bg-gray-900">
 
-        {/* GOOGLE LOGIN */}
-        <button
-          disabled={loading || status === "loading"}
-          onClick={handleLogin}
-          className="w-full py-3 rounded-lg bg-emerald-500 text-white font-semibold"
-        >
-          {loading || status === "loading"
-            ? "Signing you in…"
-            : "Continue with Google"}
-        </button>
+    <div className="relative z-10 w-full max-w-md rounded-2xl bg-white dark:bg-gray-800 shadow-xl border dark:border-gray-700 p-6 space-y-4">
 
-        {/* TRUECALLER LOGIN */}
-        <button
-          onClick={() => router.push("/tc_test")}
-          className="w-full py-3 rounded-lg bg-blue-600 text-white font-semibold"
-        >
-          Continue with Truecaller
-        </button>
-      </div>
-    </main>
-  );
+      <h1 className="text-2xl font-bold text-center text-gray-900 dark:text-white">
+        Welcome back
+      </h1>
+
+      {/* GOOGLE LOGIN */}
+      <button
+        disabled={loading || status === "loading"}
+        onClick={handleLogin}
+        className="w-full py-3 rounded-lg bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white font-semibold transition"
+      >
+        {loading || status === "loading"
+          ? "Signing you in…"
+          : "Continue with Google"}
+      </button>
+
+      {/* TRUECALLER LOGIN */}
+      <button
+        onClick={() => router.push("/tc_test")}
+        className="w-full py-3 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white font-semibold transition"
+      >
+        Continue with Truecaller
+      </button>
+
+    </div>
+
+  </main>
+);
 }
