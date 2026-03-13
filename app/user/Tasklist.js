@@ -15,7 +15,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import styles from "./user.module.css";
 
 //priority colours
@@ -106,15 +106,13 @@ function SortableTask({ task, onDelete, onEdit, onView }) {
   };
 
   return (
-   <div
-  ref={setNodeRef}
-  style={style}
-  className={`${styles.task} cursor-grab active:cursor-grabbing`}
-  {...attributes}
-  {...listeners}
->
-
-
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`${styles.task} cursor-grab active:cursor-grabbing`}
+      {...attributes}
+      {...listeners}
+    >
       {/* Left side: status + title */}
       <div className={styles.taskInfo}>
         <StatusIcon status={task.status} />
@@ -122,10 +120,10 @@ function SortableTask({ task, onDelete, onEdit, onView }) {
         <div className="flex items-center justify-between flex-1 px-2">
           <span
             className="
-      text-sm font-semibold
-      text-gray-800
-      truncate
-    "
+text-sm font-semibold
+text-gray-800 dark:text-gray-100
+truncate
+"
           >
             {task.title}
           </span>
@@ -135,9 +133,9 @@ function SortableTask({ task, onDelete, onEdit, onView }) {
     flex items-center justify-center
     w-8 h-8
     rounded-full
-    text-gray-500
-    hover:text-gray-900
-    hover:bg-black/5
+    text-gray-500 dark:text-gray-400
+hover:text-gray-900 dark:hover:text-white
+hover:bg-black/5 dark:hover:bg-gray-700
     transition
   "
             onClick={(e) => {
@@ -153,8 +151,8 @@ function SortableTask({ task, onDelete, onEdit, onView }) {
 
       {/* Right side: actions */}
       <div className={styles.taskActions}>
-       {/* EDIT */}
-      <button
+        {/* EDIT */}
+        <button
           className="pointer-events-auto cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
@@ -186,7 +184,7 @@ export default function TaskList({ initialTasks }) {
   const [viewTask, setViewTask] = useState(null);
   const [loadingViewTask, setLoadingViewTask] = useState(false);
 
-  //dynamic update 
+  //dynamic update
   useEffect(() => {
     setTasks(initialTasks);
   }, [initialTasks]);
@@ -249,14 +247,14 @@ export default function TaskList({ initialTasks }) {
     <>
       {viewTask && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-[400px] max-w-[90%] p-6">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-[400px] max-w-[90%] p-6 border border-gray-200 dark:border-gray-700">
             {/* Header */}
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-800 truncate">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 truncate">
                 Task Details
               </h3>
               <button
-                className="text-gray-500 hover:text-gray-900"
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                 onClick={() => setViewTask(null)}
                 title="Close"
               >
@@ -266,8 +264,10 @@ export default function TaskList({ initialTasks }) {
 
             {/* Title */}
             <div className="mb-4">
-              <h4 className="text-sm font-medium text-gray-700">Title:</h4>
-              <p className="text-gray-800 font-bold text-base">
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Title
+              </h4>
+              <p className="text-gray-800 dark:text-gray-100 font-bold text-base">
                 {viewTask.title || "Untitled Task"}
               </p>
             </div>
@@ -277,7 +277,7 @@ export default function TaskList({ initialTasks }) {
               <h4 className="text-sm font-medium text-gray-700">
                 Description:
               </h4>
-              <p className="text-gray-600 text-sm whitespace-pre-line">
+              <p className="text-gray-600 dark:text-gray-400 text-sm whitespace-pre-line">
                 {viewTask.description && viewTask.description.trim() !== ""
                   ? viewTask.description
                   : "No description provided."}
@@ -314,7 +314,7 @@ export default function TaskList({ initialTasks }) {
             </div>
 
             {/* Dates */}
-            <div className="mb-4 grid grid-cols-3 gap-4 text-sm text-gray-600">
+            <div className="mb-4 grid grid-cols-3 gap-4 text-sm text-gray-600 dark:text-gray-400">
               <div>
                 <h4 className="font-medium">Due Date</h4>
                 <p>
@@ -344,7 +344,7 @@ export default function TaskList({ initialTasks }) {
             {/* Footer */}
             <div className="flex justify-end mt-4">
               <button
-                className="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 text-gray-800 font-medium"
+                className="px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 font-medium"
                 onClick={() => setViewTask(null)}
               >
                 Close
