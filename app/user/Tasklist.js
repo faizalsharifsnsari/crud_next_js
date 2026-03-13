@@ -5,6 +5,7 @@ import {
   DndContext,
   closestCenter,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -103,6 +104,7 @@ function SortableTask({ task, onDelete, onEdit, onView }) {
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
+        touchAction: "none",
       }}
       className={`
       flex items-center justify-between
@@ -188,11 +190,17 @@ export default function TaskList({ initialTasks }) {
     }
   };
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 5 },
-    }),
-  );
+const sensors = useSensors(
+  useSensor(PointerSensor, {
+    activationConstraint: { distance: 5 },
+  }),
+  useSensor(TouchSensor, {
+    activationConstraint: {
+      delay: 150,
+      tolerance: 5,
+    },
+  })
+);
 
   async function handleDragEnd(event) {
     const { active, over } = event;
