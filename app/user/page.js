@@ -40,16 +40,21 @@ export default async function ProfilePage() {
   }
 
   // ⭐ TRUECALLER LOGIN
-  if (!user && sessionToken) {
-    console.log(
-      "Truecaller login detected. Searching with sessionToken:",
-      sessionToken,
-    );
+ // ⭐ TRUECALLER LOGIN
+if (!user && sessionToken) {
+  console.log(
+    "Truecaller login detected. Searching with sessionToken:",
+    sessionToken,
+  );
 
-    user = await TruecallerUser.findOne({ sessionToken }).select(
-      "name email image sessionToken",
-    );
-  }
+  user = await TruecallerUser.findOne({ sessionToken }).select(
+    "name email image sessionToken",
+  );
+
+  // 🔎 DEBUG
+  console.log("TRUECALLER USER FOUND:", user);
+  console.log("TRUECALLER IMAGE:", user?.image);
+}
 
   // ⭐ NO AUTH FOUND
   if (!session?.user?.id && !sessionToken) {
