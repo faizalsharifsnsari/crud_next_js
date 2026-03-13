@@ -84,14 +84,6 @@ const saveEditedTask = async (task) => {
 function SortableTask({ task, onDelete, onEdit, onView }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: task.id });
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-
-    padding: "10px",
-    marginBottom: "10px",
-    borderRadius: "8px",
-  };
 
   return (
     <div
@@ -101,92 +93,106 @@ function SortableTask({ task, onDelete, onEdit, onView }) {
         transition,
       }}
       className={`
-${styles.task}
-cursor-grab active:cursor-grabbing
-p-3 mb-3 rounded-lg border-l-4
-
-${
-  task.priority === "high"
-    ? "border-red-500 bg-red-100 dark:bg-red-900/40"
-    : task.priority === "medium"
-      ? "border-yellow-500 bg-yellow-100 dark:bg-yellow-900/40"
-      : "border-green-500 bg-green-100 dark:bg-green-900/40"
-}
-`}
+      flex items-center justify-between
+      cursor-grab active:cursor-grabbing
+      p-3 mb-3
+      rounded-lg
+      bg-white dark:bg-gray-800
+      text-gray-800 dark:text-gray-100
+      border-l-4
+      shadow-sm
+      hover:shadow-md
+      transition
+      ${
+        task.priority === "high"
+          ? "border-red-500"
+          : task.priority === "medium"
+          ? "border-yellow-400"
+          : "border-green-500"
+      }
+      `}
       {...attributes}
       {...listeners}
     >
-      {/* Left side: status + title */}
-      <div className={styles.taskInfo}>
+      {/* LEFT SIDE */}
+      <div className="flex items-center gap-3 flex-1">
+
+        {/* Status icon */}
         <StatusIcon status={task.status} />
 
-        <div className="flex items-center justify-between flex-1 px-2">
-          <span
-            className="
-text-sm font-semibold
-text-gray-800 dark:text-gray-100
-truncate
-"
-          >
+        {/* Title + View */}
+        <div className="flex items-center justify-between w-full">
+
+          <span className="text-sm font-semibold truncate">
             {task.title}
           </span>
 
           <button
             className="
-    flex items-center justify-center
-    w-8 h-8
-    rounded-full
-    text-gray-500 dark:text-gray-400
-hover:text-gray-900 dark:hover:text-white
-hover:bg-black/5 dark:hover:bg-gray-700
-    transition
-  "
+            flex items-center justify-center
+            w-8 h-8
+            rounded-full
+            text-gray-500 dark:text-gray-400
+            hover:text-gray-900 dark:hover:text-white
+            hover:bg-gray-200 dark:hover:bg-gray-700
+            transition
+            "
             onClick={(e) => {
               e.stopPropagation();
-              onView(task); // ✅ open dialog
+              onView(task);
             }}
             title="View details"
           >
             👁
           </button>
+
         </div>
       </div>
 
-      <button
-  className="
-  px-2 py-1 text-xs font-medium rounded-md
-  bg-blue-100 text-blue-700
-  hover:bg-blue-200
-  dark:bg-blue-900/40 dark:text-blue-300
-  transition
-  "
-  onClick={(e) => {
-    e.stopPropagation();
-    onEdit(task);
-  }}
->
-  Edit
-</button>
+      {/* ACTION BUTTONS */}
+      <div className="flex gap-2 ml-3">
 
-<button
-  className="
-  px-2 py-1 text-xs font-medium rounded-md
-  bg-red-100 text-red-700
-  hover:bg-red-200
-  dark:bg-red-900/40 dark:text-red-300
-  transition
-  "
-  onClick={(e) => {
-    e.stopPropagation();
-    onDelete(task.id);
-  }}
->
-  Delete
-</button>
+        <button
+          className="
+          px-3 py-1 text-xs font-medium
+          rounded-md
+          bg-gray-200
+          hover:bg-gray-300
+          text-gray-800
+          dark:bg-gray-700
+          dark:hover:bg-gray-600
+          dark:text-gray-200
+          transition
+          "
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(task);
+          }}
+        >
+          Edit
+        </button>
+
+        <button
+          className="
+          px-3 py-1 text-xs font-medium
+          rounded-md
+          bg-red-500
+          hover:bg-red-600
+          text-white
+          transition
+          "
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(task.id);
+          }}
+        >
+          Delete
+        </button>
+
+      </div>
     </div>
   );
 }
-
 /* ---------------- TASK LIST ---------------- */
 export default function TaskList({ initialTasks }) {
   const [tasks, setTasks] = useState(initialTasks);
