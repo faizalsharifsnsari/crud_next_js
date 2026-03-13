@@ -107,10 +107,10 @@ p-3 mb-3 rounded-lg border-l-4
 
 ${
   task.priority === "high"
-    ? "border-red-500 bg-red-50 dark:bg-gray-800"
+    ? "border-red-500 bg-red-100 dark:bg-red-900/40"
     : task.priority === "medium"
-      ? "border-yellow-500 bg-yellow-50 dark:bg-gray-800"
-      : "border-green-500 bg-green-50 dark:bg-gray-800"
+    ? "border-yellow-500 bg-yellow-100 dark:bg-yellow-900/40"
+    : "border-green-500 bg-green-100 dark:bg-green-900/40"
 }
 `}
       {...attributes}
@@ -155,17 +155,13 @@ hover:bg-black/5 dark:hover:bg-gray-700
       {/* Right side: actions */}
       <div className={styles.taskActions}>
         {/* EDIT */}
-       <button
-className="text-blue-600 dark:text-blue-400 hover:underline"
->
-Edit
-</button>
+        <button className="text-blue-600 dark:text-blue-400 hover:underline">
+          Edit
+        </button>
 
-<button
-className="text-red-600 dark:text-red-400 hover:underline"
->
-Delete
-</button>
+        <button className="text-red-600 dark:text-red-400 hover:underline">
+          Delete
+        </button>
       </div>
     </div>
   );
