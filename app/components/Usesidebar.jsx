@@ -38,6 +38,9 @@ function StatusIcon({ status, size = "md" }) {
 }
 
 export default function UserSidebar({ user, statusCount, priorityCount }) {
+    console.log("User object:", user);
+  console.log("User image:", user?.image);
+
   const [open, setOpen] = useState(false);
 
   const [menuOpen, setMenuOpen] = useState(false);
