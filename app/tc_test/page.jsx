@@ -5,13 +5,20 @@ import { useRouter } from "next/navigation";
 
 export default function Test() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
 
+  const [verified, setVerified] = useState(false);
   const requestId = crypto.randomUUID();
 
   useEffect(() => {
     console.log("✅ TC_TEST PAGE MOUNTED");
 
+    // Redirect if user never opened Truecaller
+    const timeout = setTimeout(() => {
+      console.log("❌ Truecaller not opened. Redirecting home.");
+      router.push("/");
+    }, 8000);
+
+    // Poll backend
     const interval = setInterval(async () => {
       try {
         const res = await fetch(`/api/truecaller/status?requestId=${requestId}`);
@@ -20,13 +27,18 @@ export default function Test() {
         console.log("🔄 Polling backend status:", data);
 
         if (data.status === "verified") {
-          console.log("✅ Truecaller verification complete.");
+          console.log("✅ Truecaller verification complete");
+
+          clearTimeout(timeout);
+          clearInterval(interval);
 
           document.cookie = `taskify_session=${data.sessionToken}; path=/; max-age=604800`;
 
-          clearInterval(interval);
+          setVerified(true);
 
-          router.push("/user");
+          setTimeout(() => {
+            router.push("/user");
+          }, 2000);
         }
       } catch (err) {
         console.log("Polling error:", err);
@@ -54,34 +66,34 @@ export default function Test() {
       "&skipOption=manualdetails" +
       "&ttl=10000";
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
   }, [router, requestId]);
+
+  if (!verified) {
+    return (
+      <main className="min-h-screen bg-green-200 dark:bg-gray-900"></main>
+    );
+  }
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-green-200 dark:bg-gray-900 px-4">
-
       <div className="flex flex-col items-center space-y-6">
-
         {/* Spinner */}
         <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
 
-        {/* Text */}
         <div className="text-center">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
-            Verifying your Truecaller account
+            Verification successful
           </h2>
 
           <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">
-            Please confirm the verification in the Truecaller app.
-          </p>
-
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-            This usually takes a few seconds...
+            Redirecting to your dashboard...
           </p>
         </div>
-
       </div>
-
     </main>
   );
 }
