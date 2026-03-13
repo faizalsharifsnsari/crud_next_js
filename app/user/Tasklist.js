@@ -109,8 +109,8 @@ ${
   task.priority === "high"
     ? "border-red-500 bg-red-100 dark:bg-red-900/40"
     : task.priority === "medium"
-    ? "border-yellow-500 bg-yellow-100 dark:bg-yellow-900/40"
-    : "border-green-500 bg-green-100 dark:bg-green-900/40"
+      ? "border-yellow-500 bg-yellow-100 dark:bg-yellow-900/40"
+      : "border-green-500 bg-green-100 dark:bg-green-900/40"
 }
 `}
       {...attributes}
@@ -152,17 +152,37 @@ hover:bg-black/5 dark:hover:bg-gray-700
         </div>
       </div>
 
-      {/* Right side: actions */}
-      <div className={styles.taskActions}>
-        {/* EDIT */}
-        <button className="text-blue-600 dark:text-blue-400 hover:underline">
-          Edit
-        </button>
+      <button
+  className="
+  px-2 py-1 text-xs font-medium rounded-md
+  bg-blue-100 text-blue-700
+  hover:bg-blue-200
+  dark:bg-blue-900/40 dark:text-blue-300
+  transition
+  "
+  onClick={(e) => {
+    e.stopPropagation();
+    onEdit(task);
+  }}
+>
+  Edit
+</button>
 
-        <button className="text-red-600 dark:text-red-400 hover:underline">
-          Delete
-        </button>
-      </div>
+<button
+  className="
+  px-2 py-1 text-xs font-medium rounded-md
+  bg-red-100 text-red-700
+  hover:bg-red-200
+  dark:bg-red-900/40 dark:text-red-300
+  transition
+  "
+  onClick={(e) => {
+    e.stopPropagation();
+    onDelete(task.id);
+  }}
+>
+  Delete
+</button>
     </div>
   );
 }
