@@ -30,7 +30,7 @@ export default function ProfileClient({
 
   return (
     
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex h-screen overflow-hidden bg-green-50 dark:bg-gray-800">
 
   {/* Desktop sidebar */}
   <div className="hidden md:block w-64 h-full bg-white shadow-md overflow-y-auto">
@@ -63,7 +63,7 @@ export default function ProfileClient({
   </div>
 )}
 
-      {/* Main content */}
+      {/* Main content */}SS
       <div className="flex-1 flex flex-col">
         {/* Top Bar */}
         <div className="flex items-center justify-between p-4 bg-white shadow">
@@ -135,7 +135,7 @@ export default function ProfileClient({
         </div>
 
         {/* Main Content */}
-        <section className="flex-1 p-4 md:p-6 overflow-auto">
+        <section className="flex-1 p-4 md:p-6 overflow-auto bg-transparent">
           <h1 className="text-xl font-semibold mb-4">Code Block</h1>
           <TaskList initialTasks={filteredTasks} />
         </section>
