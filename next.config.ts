@@ -2,8 +2,9 @@
 const nextConfig = {
   images: {
     domains: [
-      "lh3.googleusercontent.com", // Google
-      "res.cloudinary.com",        // Cloudinary
+      "lh3.googleusercontent.com",      // Google
+      "res.cloudinary.com",             // Cloudinary
+      "images-noneu.truecallerstatic.com" // Truecaller
     ],
   },
 };
