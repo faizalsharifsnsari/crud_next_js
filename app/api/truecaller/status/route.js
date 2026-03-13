@@ -1,72 +1,99 @@
-import mongoose from "mongoose";
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import mongoose from "mongoose";
 import { cookies } from "next/headers";
 
-import { authOptions } from "../../auth/[...nextauth]/route";
 import { connectionStr } from "../../../lib/mongodb";
 import { Taskify } from "../../../lib/model/Product";
 import TruecallerUser from "../../../lib/model/User";
 
-export async function PATCH(req) {
+export async function GET(req) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const requestId = searchParams.get("requestId");
+
+    console.log("Checking status for:", requestId);
+
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(connectionStr);
+    }
+
+    const user = await TruecallerUser.findOne({
+      requestId,
+      sessionToken: { $exists: true },
+    });
+
+    if (user) {
+      console.log("User found → VERIFIED", user.phone);
+
+      return NextResponse.json({
+        status: "verified",
+        sessionToken: user.sessionToken,
+      });
+    }
+
+    console.log("User not found → PENDING");
+
+    return NextResponse.json({ status: "pending" });
+  } catch (error) {
+    console.error("Status API error:", error);
+    return NextResponse.json({ status: "error" });
+  }
+}
+
+export async function POST(request) {
   try {
     if (mongoose.connection.readyState === 0) {
       await mongoose.connect(connectionStr);
     }
 
-    let userId = null;
+    // ✅ Read cookie created after Truecaller login
+    const cookieStore = await cookies();
+    const sessionToken = cookieStore.get("taskify_session")?.value;
 
-    // ✅ Try NextAuth session first (Google login)
-    const session = await getServerSession(authOptions);
-
-    if (session?.user?.id) {
-      userId = session.user.id;
-    }
-
-    // ✅ If no NextAuth session → try Truecaller cookie
-    if (!userId) {
-      const cookieStore = await cookies();
-      const sessionToken = cookieStore.get("taskify_session")?.value;
-
-      if (sessionToken) {
-        const user = await TruecallerUser.findOne({ sessionToken });
-        if (user) {
-          userId = user._id;
-        }
-      }
-    }
-
-    if (!userId) {
+    if (!sessionToken) {
       return NextResponse.json(
-        { success: false, message: "Unauthorized" },
-        { status: 401 }
+        { success: false, message: "Unauthorized - No session token" },
+        { status: 401 },
       );
     }
 
-    const updates = await req.json();
+    console.log("Searching user with sessionToken:", sessionToken);
 
-    const bulkOps = updates.map((task) => ({
-      updateOne: {
-        filter: {
-          _id: task.id,
-          userId: userId,
-        },
-        update: {
-          order: task.order,
-        },
-      },
-    }));
+    // ✅ Find user using the stored sessionToken
+    const user = await TruecallerUser.findOne({ sessionToken });
 
-    await Taskify.bulkWrite(bulkOps);
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: "Invalid session" },
+        { status: 401 },
+      );
+    }
 
-    return NextResponse.json({ success: true });
+    const payload = await request.json();
 
+    // 🔥 Calculate task order
+    const count = await Taskify.countDocuments({
+      userId: user._id,
+    });
+
+    const task = new Taskify({
+      ...payload,
+      userId: user._id,
+      order: count,
+    });
+
+    const result = await task.save();
+
+    return NextResponse.json({
+      success: true,
+      result,
+    });
   } catch (error) {
     console.error(error);
 
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
