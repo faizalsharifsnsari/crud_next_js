@@ -19,17 +19,6 @@ import { useState, useEffect } from "react";
 import styles from "./user.module.css";
 
 //priority colours
-const priorityBg = {
-  high: "#FEE2E2", // stronger soft red
-  medium: "#FEF3C7", // warm amber
-  low: "#DCFCE7", // calm green
-};
-
-const priorityBorder = {
-  high: "#EF4444",
-  medium: "#F59E0B",
-  low: "#22C55E",
-};
 
 //icon code
 function StatusIcon({ status }) {
@@ -98,8 +87,7 @@ function SortableTask({ task, onDelete, onEdit, onView }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    backgroundColor: priorityBg[task.priority] || "#ffffff",
-    borderLeft: `6px solid ${priorityBorder[task.priority] || "#e5e7eb"}`,
+
     padding: "10px",
     marginBottom: "10px",
     borderRadius: "8px",
@@ -108,8 +96,23 @@ function SortableTask({ task, onDelete, onEdit, onView }) {
   return (
     <div
       ref={setNodeRef}
-      style={style}
-      className={`${styles.task} cursor-grab active:cursor-grabbing`}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+      }}
+      className={`
+${styles.task}
+cursor-grab active:cursor-grabbing
+p-3 mb-3 rounded-lg border-l-4
+
+${
+  task.priority === "high"
+    ? "border-red-500 bg-red-50 dark:bg-red-900/20"
+    : task.priority === "medium"
+      ? "border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20"
+      : "border-green-500 bg-green-50 dark:bg-green-900/20"
+}
+`}
       {...attributes}
       {...listeners}
     >
