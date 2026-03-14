@@ -1,4 +1,3 @@
-
 import mongoose from "mongoose";
 import { NextResponse } from "next/server";
 import { connectionStr } from "../../../lib/mongodb";
@@ -12,12 +11,11 @@ import { cookies } from "next/headers";
 /* -------------------- GET USER ID -------------------- */
 async function getUserId() {
   try {
-
     const debug = {
       loginType: null,
       userId: null,
       googleSession: null,
-      truecallerToken: null
+      truecallerToken: null,
     };
 
     // GOOGLE LOGIN
@@ -35,7 +33,7 @@ async function getUserId() {
     }
 
     // TRUECALLER LOGIN
-    const cookieStore = cookies();
+    const cookieStore =await cookies();
     const sessionToken = cookieStore.get("taskify_session")?.value;
 
     if (!sessionToken) {
@@ -59,7 +57,6 @@ async function getUserId() {
     console.log("TRUECALLER USER:", user);
 
     return { userId: user._id.toString(), debug };
-
   } catch (error) {
     console.error("getUserId error:", error);
     return { userId: null, debug: { error: error.message } };
@@ -69,7 +66,6 @@ async function getUserId() {
 /* -------------------- DELETE TASK -------------------- */
 export async function DELETE(req, { params }) {
   try {
-
     if (mongoose.connection.readyState === 0) {
       await mongoose.connect(connectionStr);
       console.log("MongoDB connected");
@@ -82,9 +78,9 @@ export async function DELETE(req, { params }) {
         {
           success: false,
           message: "Unauthorized",
-          debug
+          debug,
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -93,7 +89,7 @@ export async function DELETE(req, { params }) {
     if (!id) {
       return NextResponse.json(
         { success: false, message: "Task ID missing" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -108,9 +104,9 @@ export async function DELETE(req, { params }) {
         {
           success: false,
           message: "Task does not exist in DB",
-          debug
+          debug,
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -124,9 +120,9 @@ export async function DELETE(req, { params }) {
           message: "Task does not belong to this user",
           taskUserId: task.userId,
           requestUserId: userId,
-          debug
+          debug,
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -137,17 +133,16 @@ export async function DELETE(req, { params }) {
     await Taskify.updateMany(
       {
         userId: task.userId,
-        order: { $gt: deletedOrder }
+        order: { $gt: deletedOrder },
       },
-      { $inc: { order: -1 } }
+      { $inc: { order: -1 } },
     );
 
     return NextResponse.json({
       success: true,
       message: "Task deleted successfully",
-      debug
+      debug,
     });
-
   } catch (error) {
     console.error("DELETE error:", error);
 
@@ -155,9 +150,9 @@ export async function DELETE(req, { params }) {
       {
         success: false,
         message: "Delete failed",
-        error: error.message
+        error: error.message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -165,7 +160,6 @@ export async function DELETE(req, { params }) {
 /* -------------------- UPDATE TASK -------------------- */
 export async function PUT(req, { params }) {
   try {
-
     if (mongoose.connection.readyState === 0) {
       await mongoose.connect(connectionStr);
       console.log("MongoDB connected");
@@ -178,9 +172,9 @@ export async function PUT(req, { params }) {
         {
           success: false,
           message: "Unauthorized",
-          debug
+          debug,
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -189,7 +183,7 @@ export async function PUT(req, { params }) {
     if (!id) {
       return NextResponse.json(
         { success: false, message: "Task ID missing" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -200,7 +194,7 @@ export async function PUT(req, { params }) {
     if (!title) {
       return NextResponse.json(
         { success: false, message: "Title is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -211,9 +205,9 @@ export async function PUT(req, { params }) {
         {
           success: false,
           message: "Task not found in DB",
-          debug
+          debug,
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -224,9 +218,9 @@ export async function PUT(req, { params }) {
           message: "Task does not belong to this user",
           taskUserId: task.userId,
           requestUserId: userId,
-          debug
+          debug,
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -237,30 +231,27 @@ export async function PUT(req, { params }) {
         description,
         priority,
         status,
-        dueDate
+        dueDate,
       },
-      { new: true }
+      { new: true },
     );
 
     return NextResponse.json({
       success: true,
       message: "Task updated successfully",
       task: updatedTask,
-      debug
+      debug,
     });
-
   } catch (error) {
-
     console.error("UPDATE error:", error);
 
     return NextResponse.json(
       {
         success: false,
         message: "Update failed",
-        error: error.message
+        error: error.message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-
