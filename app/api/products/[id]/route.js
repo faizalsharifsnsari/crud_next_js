@@ -9,20 +9,26 @@ import { getServerSession } from "next-auth";
 import { cookies } from "next/headers";
 
 async function getUserId() {
-  // 1️⃣ Try Google login (NextAuth)
+
+  console.log("---- CHECKING USER LOGIN ----");
+
   const session = await getServerSession(authOptions);
 
   if (session?.user?.id) {
+    console.log("Google userId:", session.user.id);
     return String(session.user.id);
   }
 
-  // 2️⃣ Try Truecaller cookie login
   const cookieStore = cookies();
   const sessionToken = cookieStore.get("taskify_session")?.value;
+
+  console.log("Truecaller sessionToken:", sessionToken);
 
   if (!sessionToken) return null;
 
   const user = await TruecallerUser.findOne({ sessionToken });
+
+  console.log("Truecaller user found:", user);
 
   if (!user) return null;
 
@@ -38,6 +44,8 @@ export async function DELETE(req, context) {
 
     const userId = await getUserId();
 
+    console.log("Resolved userId:", userId);
+
     if (!userId) {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
@@ -47,14 +55,30 @@ export async function DELETE(req, context) {
 
     const { id } = context.params;
 
+    console.log("Task id from URL:", id);
+
     const task = await Taskify.findOne({
       _id: id,
       userId: userId,
     });
 
+    console.log("Task found:", task);
+
     if (!task) {
+
+      const allTasks = await Taskify.find({});
+
+      console.log("All tasks in DB:", allTasks);
+
       return NextResponse.json(
-        { success: false, message: "Task not found" },
+        {
+          success: false,
+          message: "Task not found",
+          debug: {
+            userId,
+            id
+          }
+        },
         { status: 404 }
       );
     }
@@ -79,78 +103,6 @@ export async function DELETE(req, context) {
   } catch (error) {
 
     console.error("DELETE error:", error);
-
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 }
-    );
-  }
-}
-
-export async function PUT(req, context) {
-  try {
-
-    if (mongoose.connection.readyState === 0) {
-      await mongoose.connect(connectionStr);
-    }
-
-    const userId = await getUserId();
-
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, message: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
-    const { id } = context.params;
-
-    const body = await req.json();
-
-    const {
-      title,
-      description,
-      priority,
-      status,
-      dueDate,
-    } = body;
-
-    const updatedTask = await Taskify.findOneAndUpdate(
-      {
-        _id: id,
-        userId: userId,
-      },
-      {
-        $set: {
-          title,
-          description,
-          priority,
-          status,
-          dueDate,
-        },
-      },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
-
-    if (!updatedTask) {
-      return NextResponse.json(
-        { success: false, message: "Task not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: "Task updated successfully",
-      task: updatedTask,
-    });
-
-  } catch (error) {
-
-    console.error("UPDATE error:", error);
 
     return NextResponse.json(
       { success: false, error: error.message },
