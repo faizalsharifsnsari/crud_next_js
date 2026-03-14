@@ -27,7 +27,7 @@ async function getUserId() {
 
   console.log("STEP 2: Checking Truecaller cookie");
 
-  const cookieStore = cookies();
+  const cookieStore =await cookies();
   const sessionToken = cookieStore.get("taskify_session")?.value;
 
   console.log("TRUECALLER COOKIE:", sessionToken);
