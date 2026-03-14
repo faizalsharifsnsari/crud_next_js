@@ -95,7 +95,7 @@ export async function POST(request) {
     else {
       console.log("Checking Truecaller session");
 
-      const cookieStore = cookies();
+      const cookieStore =await cookies();
       const sessionToken = cookieStore.get("taskify_session")?.value;
 
       console.log("TRUECALLER TOKEN:", sessionToken);
