@@ -2,30 +2,54 @@ import mongoose from "mongoose";
 import { NextResponse } from "next/server";
 import { connectionStr } from "../../../lib/mongodb";
 import { Taskify } from "../../../lib/model/Product";
+import TruecallerUser from "../../../lib/model/User";
+
 import { authOptions } from "../../auth/[...nextauth]/route";
 import { getServerSession } from "next-auth";
+import { cookies } from "next/headers";
 
-export async function DELETE(req, context) {
+// ✅ Get userId from Google login OR Truecaller login
+async function getUserId() {
+  // 1️⃣ Check NextAuth session (Google login)
+  const session = await getServerSession(authOptions);
+
+  if (session?.user?.id) {
+    return session.user.id.toString();
+  }
+
+  // 2️⃣ Check Truecaller session cookie
+  const cookieStore = cookies();
+  const sessionToken = cookieStore.get("taskify_session")?.value;
+
+  if (!sessionToken) return null;
+
+  const user = await TruecallerUser.findOne({ sessionToken });
+
+  if (!user) return null;
+
+  return user._id.toString(); // ⭐ ensure string
+}
+
+export async function DELETE(req, { params }) {
   try {
-    const session = await getServerSession(authOptions);
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(connectionStr);
+    }
 
-    if (!session) {
+    const userId = await getUserId();
+
+    if (!userId) {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    if (mongoose.connection.readyState === 0) {
-      await mongoose.connect(connectionStr);
-    }
-
-    // ✅ IMPORTANT FIX
-    const { id } = await context.params;
+    const { id } = params;
 
     const task = await Taskify.findOne({
       _id: id,
-      userId: session.user.id,
+      userId: userId,
     });
 
     if (!task) {
@@ -41,7 +65,7 @@ export async function DELETE(req, context) {
 
     await Taskify.updateMany(
       {
-        userId: session.user.id,
+        userId: userId,
         order: { $gt: deletedOrder },
       },
       { $inc: { order: -1 } }
@@ -62,22 +86,22 @@ export async function DELETE(req, context) {
   }
 }
 
-export async function PUT(req, context) {
+export async function PUT(req, { params }) {
   try {
-    const session = await getServerSession(authOptions);
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(connectionStr);
+    }
 
-    if (!session) {
+    const userId = await getUserId();
+
+    if (!userId) {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    if (mongoose.connection.readyState === 0) {
-      await mongoose.connect(connectionStr);
-    }
-
-    const { id } = await context.params;
+    const { id } = params;
 
     const body = await req.json();
 
@@ -90,7 +114,10 @@ export async function PUT(req, context) {
     } = body;
 
     const updatedTask = await Taskify.findOneAndUpdate(
-      { _id: id, userId: session.user.id },
+      {
+        _id: id,
+        userId: userId,
+      },
       {
         $set: {
           title,
