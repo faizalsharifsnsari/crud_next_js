@@ -20,8 +20,8 @@ export async function DELETE(req, context) {
       await mongoose.connect(connectionStr);
     }
 
-    // ✅ FIXED
-    const { id } = context.params;
+    // ✅ IMPORTANT FIX
+    const { id } = await context.params;
 
     const task = await Taskify.findOne({
       _id: id,
@@ -77,8 +77,7 @@ export async function PUT(req, context) {
       await mongoose.connect(connectionStr);
     }
 
-    // ✅ FIXED
-    const { id } = context.params;
+    const { id } = await context.params;
 
     const body = await req.json();
 
