@@ -8,16 +8,15 @@ import { authOptions } from "../../auth/[...nextauth]/route";
 import { getServerSession } from "next-auth";
 import { cookies } from "next/headers";
 
-// ✅ Get userId from Google login OR Truecaller login
 async function getUserId() {
-  // 1️⃣ Check NextAuth session (Google login)
+  // Google login
   const session = await getServerSession(authOptions);
 
   if (session?.user?.id) {
-    return session.user.id.toString();
+    return session.user.id;
   }
 
-  // 2️⃣ Check Truecaller session cookie
+  // Truecaller login
   const cookieStore = cookies();
   const sessionToken = cookieStore.get("taskify_session")?.value;
 
@@ -27,7 +26,7 @@ async function getUserId() {
 
   if (!user) return null;
 
-  return user._id.toString(); // ⭐ ensure string
+  return user._id.toString();
 }
 
 export async function DELETE(req, { params }) {
@@ -49,7 +48,7 @@ export async function DELETE(req, { params }) {
 
     const task = await Taskify.findOne({
       _id: id,
-      userId: userId,
+      userId: new mongoose.Types.ObjectId(userId),
     });
 
     if (!task) {
@@ -65,7 +64,7 @@ export async function DELETE(req, { params }) {
 
     await Taskify.updateMany(
       {
-        userId: userId,
+        userId: new mongoose.Types.ObjectId(userId),
         order: { $gt: deletedOrder },
       },
       { $inc: { order: -1 } }
@@ -116,7 +115,7 @@ export async function PUT(req, { params }) {
     const updatedTask = await Taskify.findOneAndUpdate(
       {
         _id: id,
-        userId: userId,
+        userId: new mongoose.Types.ObjectId(userId),
       },
       {
         $set: {
