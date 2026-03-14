@@ -8,250 +8,256 @@ import { authOptions } from "../../auth/[...nextauth]/route";
 import { getServerSession } from "next-auth";
 import { cookies } from "next/headers";
 
-/* -------------------- GET USER ID -------------------- */
+/* -------- GET USER ID FROM GOOGLE OR TRUECALLER -------- */
+
 async function getUserId() {
-  try {
-    const debug = {
-      loginType: null,
-      userId: null,
-      googleSession: null,
-      truecallerToken: null,
-    };
 
-    // GOOGLE LOGIN
-    const session = await getServerSession(authOptions);
+  console.log("STEP 1: Checking login session");
 
-    if (session?.user?.id) {
-      debug.loginType = "google";
-      debug.userId = session.user.id;
-      debug.googleSession = session.user;
+  const session = await getServerSession(authOptions);
 
-      console.log("LOGIN TYPE: GOOGLE");
-      console.log("GOOGLE USER:", session.user);
+  console.log("SESSION DATA:", session);
 
-      return { userId: session.user.id, debug };
-    }
-
-    // TRUECALLER LOGIN
-    const cookieStore =await cookies();
-    const sessionToken = cookieStore.get("taskify_session")?.value;
-
-    if (!sessionToken) {
-      console.log("No Truecaller cookie found");
-      return { userId: null, debug };
-    }
-
-    debug.truecallerToken = sessionToken;
-
-    const user = await TruecallerUser.findOne({ sessionToken });
-
-    if (!user) {
-      console.log("Truecaller user not found in DB");
-      return { userId: null, debug };
-    }
-
-    debug.loginType = "truecaller";
-    debug.userId = user._id.toString();
-
-    console.log("LOGIN TYPE: TRUECALLER");
-    console.log("TRUECALLER USER:", user);
-
-    return { userId: user._id.toString(), debug };
-  } catch (error) {
-    console.error("getUserId error:", error);
-    return { userId: null, debug: { error: error.message } };
+  // GOOGLE LOGIN
+  if (session?.user?.id) {
+    console.log("LOGIN TYPE: GOOGLE");
+    console.log("GOOGLE USER ID:", session.user.id);
+    return session.user.id;
   }
+
+  console.log("STEP 2: Checking Truecaller cookie");
+
+  const cookieStore = cookies();
+  const sessionToken = cookieStore.get("taskify_session")?.value;
+
+  console.log("TRUECALLER COOKIE:", sessionToken);
+
+  if (!sessionToken) {
+    console.log("ERROR: No Truecaller cookie found");
+    return null;
+  }
+
+  console.log("STEP 3: Finding Truecaller user in DB");
+
+  const user = await TruecallerUser.findOne({ sessionToken });
+
+  console.log("TRUECALLER USER FROM DB:", user);
+
+  if (!user) {
+    console.log("ERROR: Truecaller user not found in DB");
+    return null;
+  }
+
+  console.log("LOGIN TYPE: TRUECALLER");
+  console.log("TRUECALLER USER ID:", user._id.toString());
+
+  return user._id.toString();
 }
 
-/* -------------------- DELETE TASK -------------------- */
-export async function DELETE(req, { params }) {
+/* ---------------- DELETE TASK ---------------- */
+
+export async function DELETE(req, context) {
+
   try {
+
+    console.log("===== DELETE API CALLED =====");
+
+    const userId = await getUserId();
+
+    console.log("USER ID RECEIVED:", userId);
+
+    if (!userId) {
+      console.log("ERROR: Unauthorized user");
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    console.log("STEP 4: Checking MongoDB connection");
+
     if (mongoose.connection.readyState === 0) {
       await mongoose.connect(connectionStr);
       console.log("MongoDB connected");
     }
 
-    const { userId, debug } = await getUserId();
-
-    if (!userId) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Unauthorized",
-          debug,
-        },
-        { status: 401 },
-      );
-    }
-
-    const { id } = params;
-
-    if (!id) {
-      return NextResponse.json(
-        { success: false, message: "Task ID missing" },
-        { status: 400 },
-      );
-    }
+    const { id } = await context.params;
 
     console.log("TASK ID RECEIVED:", id);
-    console.log("USER ID RECEIVED:", userId);
 
-    // Check if task exists
-    const task = await Taskify.findById(id);
-
-    if (!task) {
+    if (!id) {
+      console.log("ERROR: Task ID missing");
       return NextResponse.json(
-        {
-          success: false,
-          message: "Task does not exist in DB",
-          debug,
-        },
-        { status: 404 },
+        { success: false, message: "Task ID missing" },
+        { status: 400 }
       );
     }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      console.log("ERROR: Invalid Mongo ID");
+      return NextResponse.json(
+        { success: false, message: "Invalid Task ID" },
+        { status: 400 }
+      );
+    }
+
+    console.log("STEP 5: Searching task in DB");
+
+    const task = await Taskify.findOne({
+      _id: id,
+      userId: userId,
+    });
 
     console.log("TASK FOUND:", task);
 
-    // Check if task belongs to user
-    if (task.userId.toString() !== userId.toString()) {
+    if (!task) {
+      console.log("ERROR: Task not found for this user");
       return NextResponse.json(
-        {
-          success: false,
-          message: "Task does not belong to this user",
-          taskUserId: task.userId,
-          requestUserId: userId,
-          debug,
-        },
-        { status: 403 },
+        { success: false, message: "Task not found" },
+        { status: 404 }
       );
     }
 
     const deletedOrder = task.order;
 
+    console.log("STEP 6: Deleting task");
+
     await Taskify.deleteOne({ _id: id });
+
+    console.log("STEP 7: Reordering remaining tasks");
 
     await Taskify.updateMany(
       {
-        userId: task.userId,
+        userId: userId,
         order: { $gt: deletedOrder },
       },
-      { $inc: { order: -1 } },
+      { $inc: { order: -1 } }
     );
+
+    console.log("DELETE SUCCESS");
 
     return NextResponse.json({
       success: true,
       message: "Task deleted successfully",
-      debug,
     });
+
   } catch (error) {
-    console.error("DELETE error:", error);
+
+    console.error("DELETE ERROR:", error);
 
     return NextResponse.json(
-      {
-        success: false,
-        message: "Delete failed",
-        error: error.message,
-      },
-      { status: 500 },
+      { success: false, error: error.message },
+      { status: 500 }
     );
   }
 }
 
-/* -------------------- UPDATE TASK -------------------- */
-export async function PUT(req, { params }) {
+/* ---------------- UPDATE TASK ---------------- */
+
+export async function PUT(req, context) {
+
   try {
+
+    console.log("===== UPDATE API CALLED =====");
+
+    const userId = await getUserId();
+
+    console.log("USER ID RECEIVED:", userId);
+
+    if (!userId) {
+      console.log("ERROR: Unauthorized user");
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    console.log("STEP 4: Checking MongoDB connection");
+
     if (mongoose.connection.readyState === 0) {
       await mongoose.connect(connectionStr);
       console.log("MongoDB connected");
     }
 
-    const { userId, debug } = await getUserId();
+    const { id } = await context.params;
 
-    if (!userId) {
+    console.log("TASK ID RECEIVED:", id);
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      console.log("ERROR: Invalid Mongo ID");
       return NextResponse.json(
-        {
-          success: false,
-          message: "Unauthorized",
-          debug,
-        },
-        { status: 401 },
-      );
-    }
-
-    const { id } = params;
-
-    if (!id) {
-      return NextResponse.json(
-        { success: false, message: "Task ID missing" },
-        { status: 400 },
+        { success: false, message: "Invalid Task ID" },
+        { status: 400 }
       );
     }
 
     const body = await req.json();
 
-    const { title, description, priority, status, dueDate } = body;
+    console.log("REQUEST BODY:", body);
+
+    const {
+      title,
+      description,
+      priority,
+      status,
+      dueDate,
+    } = body;
 
     if (!title) {
+      console.log("ERROR: Title missing");
       return NextResponse.json(
-        { success: false, message: "Title is required" },
-        { status: 400 },
+        { success: false, message: "Title required" },
+        { status: 400 }
       );
     }
 
-    const task = await Taskify.findById(id);
+    console.log("STEP 5: Updating task");
 
-    if (!task) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Task not found in DB",
-          debug,
-        },
-        { status: 404 },
-      );
-    }
-
-    if (task.userId.toString() !== userId.toString()) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Task does not belong to this user",
-          taskUserId: task.userId,
-          requestUserId: userId,
-          debug,
-        },
-        { status: 403 },
-      );
-    }
-
-    const updatedTask = await Taskify.findByIdAndUpdate(
-      id,
+    const updatedTask = await Taskify.findOneAndUpdate(
       {
-        title,
-        description,
-        priority,
-        status,
-        dueDate,
+        _id: id,
+        userId: userId,
       },
-      { new: true },
+      {
+        $set: {
+          title,
+          description,
+          priority,
+          status,
+          dueDate,
+        },
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
     );
+
+    console.log("UPDATED TASK:", updatedTask);
+
+    if (!updatedTask) {
+      console.log("ERROR: Task not found or not owned by user");
+      return NextResponse.json(
+        { success: false, message: "Task not found" },
+        { status: 404 }
+      );
+    }
+
+    console.log("UPDATE SUCCESS");
 
     return NextResponse.json({
       success: true,
       message: "Task updated successfully",
       task: updatedTask,
-      debug,
     });
+
   } catch (error) {
-    console.error("UPDATE error:", error);
+
+    console.error("UPDATE ERROR:", error);
 
     return NextResponse.json(
-      {
-        success: false,
-        message: "Update failed",
-        error: error.message,
-      },
-      { status: 500 },
+      { success: false, error: error.message },
+      { status: 500 }
     );
   }
 }
