@@ -268,113 +268,121 @@ export default function TaskList({ initialTasks }) {
   return (
     <>
       {viewTask && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-[400px] max-w-[90%] p-6 border border-gray-200 dark:border-gray-700">
-            {/* Header */}
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 truncate">
-                Task Details
-              </h3>
-              <button
-                className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                onClick={() => setViewTask(null)}
-                title="Close"
-              >
-                ✕
-              </button>
-            </div>
+  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+    
+    <div className="w-[400px] max-w-[90%] p-6 rounded-xl shadow-xl
+      bg-green-100 dark:bg-gray-900
+      border border-green-300 dark:border-gray-700">
 
-            {/* Title */}
-            <div className="mb-4">
-              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Title
-              </h4>
-              <p className="text-gray-800 dark:text-gray-100 font-bold text-base">
-                {viewTask.title || "Untitled Task"}
-              </p>
-            </div>
+      {/* Header */}
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white truncate">
+          Task Details
+        </h3>
+        <button
+          className="text-gray-500 dark:text-gray-400 hover:text-red-500"
+          onClick={() => setViewTask(null)}
+          title="Close"
+        >
+          ✕
+        </button>
+      </div>
 
-            {/* Description */}
-            <div className="mb-4">
-              <h4 className="text-sm font-medium text-gray-700">
-                Description:
-              </h4>
-              <p className="text-gray-600 dark:text-gray-400 text-sm whitespace-pre-line">
-                {viewTask.description && viewTask.description.trim() !== ""
-                  ? viewTask.description
-                  : "No description provided."}
-              </p>
-            </div>
+      {/* Title */}
+      <div className="mb-4">
+        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          Title
+        </h4>
+        <p className="text-gray-900 dark:text-white font-bold text-base">
+          {viewTask.title || "Untitled Task"}
+        </p>
+      </div>
 
-            {/* Priority & Status */}
-            <div className="flex items-center gap-3 mb-4">
-              {/* Priority badge */}
-              <span
-                className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  viewTask.priority === "high"
-                    ? "bg-red-100 text-red-800"
-                    : viewTask.priority === "medium"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-green-100 text-green-800"
-                }`}
-              >
-                Priority: {(viewTask.priority || "low").toUpperCase()}
-              </span>
+      {/* Description */}
+      <div className="mb-4">
+        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          Description
+        </h4>
+        <p className="text-gray-700 dark:text-gray-400 text-sm whitespace-pre-line">
+          {viewTask.description && viewTask.description.trim() !== ""
+            ? viewTask.description
+            : "No description provided."}
+        </p>
+      </div>
 
-              {/* Status badge */}
-              <span
-                className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  viewTask.status === "completed"
-                    ? "bg-green-100 text-green-800"
-                    : viewTask.status === "ongoing"
-                      ? "bg-blue-100 text-blue-800"
-                      : "bg-gray-200 text-gray-800"
-                }`}
-              >
-                Status: {(viewTask.status || "not started").toUpperCase()}
-              </span>
-            </div>
+      {/* Priority & Status */}
+      <div className="flex items-center gap-3 mb-4 flex-wrap">
 
-            {/* Dates */}
-            <div className="mb-4 grid grid-cols-3 gap-4 text-sm text-gray-600 dark:text-gray-400">
-              <div>
-                <h4 className="font-medium">Due Date</h4>
-                <p>
-                  {viewTask.dueDate
-                    ? new Date(viewTask.dueDate).toLocaleString()
-                    : "-"}
-                </p>
-              </div>
-              <div>
-                <h4 className="font-medium">Created At</h4>
-                <p>
-                  {viewTask.createdAt
-                    ? new Date(viewTask.createdAt).toLocaleString()
-                    : "-"}
-                </p>
-              </div>
-              <div>
-                <h4 className="font-medium">Updated At</h4>
-                <p>
-                  {viewTask.updatedAt
-                    ? new Date(viewTask.updatedAt).toLocaleString()
-                    : "-"}
-                </p>
-              </div>
-            </div>
+        {/* Priority */}
+        <span
+          className={`px-3 py-1 rounded-full text-sm font-medium ${
+            viewTask.priority === "high"
+              ? "bg-red-500/20 text-red-600 dark:text-red-400"
+              : viewTask.priority === "medium"
+              ? "bg-yellow-500/20 text-yellow-700 dark:text-yellow-400"
+              : "bg-green-500/20 text-green-700 dark:text-green-400"
+          }`}
+        >
+          Priority: {(viewTask.priority || "low").toUpperCase()}
+        </span>
 
-            {/* Footer */}
-            <div className="flex justify-end mt-4">
-              <button
-                className="px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 font-medium"
-                onClick={() => setViewTask(null)}
-              >
-                Close
-              </button>
-            </div>
-          </div>
+        {/* Status */}
+        <span
+          className={`px-3 py-1 rounded-full text-sm font-medium ${
+            viewTask.status === "completed"
+              ? "bg-green-500/20 text-green-700 dark:text-green-400"
+              : viewTask.status === "ongoing"
+              ? "bg-blue-500/20 text-blue-700 dark:text-blue-400"
+              : "bg-gray-400/20 text-gray-700 dark:text-gray-300"
+          }`}
+        >
+          Status: {(viewTask.status || "not started").toUpperCase()}
+        </span>
+
+      </div>
+
+      {/* Dates */}
+      <div className="mb-4 grid grid-cols-3 gap-4 text-sm text-gray-700 dark:text-gray-400">
+        <div>
+          <h4 className="font-medium">Due</h4>
+          <p>
+            {viewTask.dueDate
+              ? new Date(viewTask.dueDate).toLocaleString()
+              : "-"}
+          </p>
         </div>
-      )}
+        <div>
+          <h4 className="font-medium">Created</h4>
+          <p>
+            {viewTask.createdAt
+              ? new Date(viewTask.createdAt).toLocaleString()
+              : "-"}
+          </p>
+        </div>
+        <div>
+          <h4 className="font-medium">Updated</h4>
+          <p>
+            {viewTask.updatedAt
+              ? new Date(viewTask.updatedAt).toLocaleString()
+              : "-"}
+          </p>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="flex justify-end mt-4">
+        <button
+          className="px-4 py-2 rounded-md text-white
+          bg-red-500 hover:bg-red-600"
+          onClick={() => setViewTask(null)}
+        >
+          Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
 
       {editingTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
