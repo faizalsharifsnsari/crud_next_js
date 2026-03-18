@@ -61,8 +61,6 @@ function StatusIcon({ status, onClick }) {
   );
 }
 
-
-
 /* ---------------- SORTABLE TASK ---------------- */
 function SortableTask({ task, onDelete, onEdit, onView }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
@@ -141,6 +139,11 @@ export default function TaskList({ initialTasks }) {
   const [editingTask, setEditingTask] = useState(null);
   const [viewTask, setViewTask] = useState(null);
   const [loadingViewTask, setLoadingViewTask] = useState(false);
+  const [dialog, setDialog] = useState({
+    type: "", // "error" | "success"
+    message: "",
+    open: false,
+  });
 
   //dynamic update
   useEffect(() => {
@@ -148,36 +151,85 @@ export default function TaskList({ initialTasks }) {
   }, [initialTasks]);
 
   //update api
-const saveEditedTask = async (task) => {
-  try {
-    const res = await fetch(`/api/products/${task.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title: task.title,
-        description: task.description,
-        priority: task.priority,
-        status: task.status,
-        dueDate: task.dueDate,
-      }),
-    });
+  const saveEditedTask = async (task) => {
+    try {
+      // 🔴 VALIDATION
+      if (!task.title || task.title.trim() === "") {
+        setDialog({
+          type: "error",
+          message: "Title is required",
+          open: true,
+        });
+        return;
+      }
 
-    if (!res.ok) throw new Error("Update failed");
+      if (!task.priority) {
+        setDialog({
+          type: "error",
+          message: "Please select priority",
+          open: true,
+        });
+        return;
+      }
 
-    const data = await res.json();
+      if (!task.status) {
+        setDialog({
+          type: "error",
+          message: "Please select status",
+          open: true,
+        });
+        return;
+      }
 
-    // 🔁 Update UI immediately
-    setTasks((prev) =>
-      prev.map((t) => (t.id === task.id ? { ...t, ...data.task } : t)),
-    );
+      const res = await fetch(`/api/products/${task.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: task.title,
+          description: task.description,
+          priority: task.priority,
+          status: task.status,
+          dueDate: task.dueDate,
+        }),
+      });
 
-    setEditingTask(null); // close dialog
-  } catch (err) {
-    console.error("Update error:", err);
-  }
-};
+      const data = await res.json();
+
+      if (!res.ok) {
+        setDialog({
+          type: "error",
+          message: data.message || "Update failed",
+          open: true,
+        });
+        return;
+      }
+
+      // ✅ Update UI
+      setTasks((prev) =>
+        prev.map((t) => (t.id === task.id ? { ...t, ...data.task } : t)),
+      );
+
+      // ✅ SUCCESS DIALOG
+      setDialog({
+        type: "success",
+        message: "Task updated successfully ✅",
+        open: true,
+      });
+
+      // auto close edit modal
+      setTimeout(() => {
+        setEditingTask(null);
+      }, 800);
+    } catch (err) {
+      setDialog({
+        type: "error",
+        message: "Something went wrong",
+        open: true,
+      });
+    }
+  };
 
   // 🗑️ DELETE
   const deleteTask = async (id) => {
@@ -192,17 +244,17 @@ const saveEditedTask = async (task) => {
     }
   };
 
-const sensors = useSensors(
-  useSensor(PointerSensor, {
-    activationConstraint: { distance: 5 },
-  }),
-  useSensor(TouchSensor, {
-    activationConstraint: {
-      delay: 150,
-      tolerance: 5,
-    },
-  })
-);
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 150,
+        tolerance: 5,
+      },
+    }),
+  );
 
   async function handleDragEnd(event) {
     const { active, over } = event;
@@ -241,6 +293,34 @@ const sensors = useSensors(
 
   return (
     <>
+      {dialog.open && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-[320px] p-5 text-center border">
+            <h3
+              className={`text-lg font-semibold mb-2 ${
+                dialog.type === "error" ? "text-red-500" : "text-green-500"
+              }`}
+            >
+              {dialog.type === "error" ? "Error" : "Success"}
+            </h3>
+
+            <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
+              {dialog.message}
+            </p>
+
+            <button
+              className={`px-4 py-2 rounded-md text-white ${
+                dialog.type === "error"
+                  ? "bg-red-500 hover:bg-red-600"
+                  : "bg-green-500 hover:bg-green-600"
+              }`}
+              onClick={() => setDialog({ ...dialog, open: false })}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
       {viewTask && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-[400px] max-w-[90%] p-6 border border-gray-200 dark:border-gray-700">
@@ -436,8 +516,9 @@ const sensors = useSensors(
               <button
                 className={styles.save}
                 onClick={() => saveEditedTask(editingTask)}
+                disabled={saving}
               >
-                Save
+                {saving ? "Saving..." : "Save"}
               </button>
               <button
                 className={styles.cancel}
