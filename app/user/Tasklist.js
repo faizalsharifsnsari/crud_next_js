@@ -64,6 +64,25 @@ function StatusIcon({ status, onClick }) {
 //update api
 const saveEditedTask = async (task) => {
   try {
+    setFormError("");
+    setFormMessage("");
+
+    // ✅ VALIDATION
+    if (!task.title || task.title.trim() === "") {
+      setFormError("Title is required");
+      return;
+    }
+
+    if (!task.priority) {
+      setFormError("Please select priority");
+      return;
+    }
+
+    if (!task.status) {
+      setFormError("Please select status");
+      return;
+    }
+
     const res = await fetch(`/api/products/${task.id}`, {
       method: "PUT",
       headers: {
@@ -78,18 +97,28 @@ const saveEditedTask = async (task) => {
       }),
     });
 
-    if (!res.ok) throw new Error("Update failed");
-
     const data = await res.json();
 
-    // 🔁 Update UI immediately
+    if (!res.ok) {
+      setFormError(data.message || "Update failed");
+      return;
+    }
+
+    // ✅ Update UI
     setTasks((prev) =>
       prev.map((t) => (t.id === task.id ? { ...t, ...data.task } : t)),
     );
 
-    setEditingTask(null); // close dialog
+    // ✅ SUCCESS MESSAGE
+    setFormMessage("Task updated successfully ✅");
+
+    // ✅ Close after delay
+    setTimeout(() => {
+      setEditingTask(null);
+      setFormMessage("");
+    }, 1000);
   } catch (err) {
-    console.error("Update error:", err);
+    setFormError("Something went wrong");
   }
 };
 
@@ -190,17 +219,17 @@ export default function TaskList({ initialTasks }) {
     }
   };
 
-const sensors = useSensors(
-  useSensor(PointerSensor, {
-    activationConstraint: { distance: 5 },
-  }),
-  useSensor(TouchSensor, {
-    activationConstraint: {
-      delay: 150,
-      tolerance: 5,
-    },
-  })
-);
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 150,
+        tolerance: 5,
+      },
+    }),
+  );
 
   async function handleDragEnd(event) {
     const { active, over } = event;
