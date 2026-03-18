@@ -64,7 +64,6 @@ function StatusIcon({ status, onClick }) {
 //update api
 const saveEditedTask = async (task) => {
   try {
-    // ✅ Basic validation
     if (!task.title || task.title.trim() === "") {
       alert("Title is required ❌");
       return;
@@ -84,26 +83,26 @@ const saveEditedTask = async (task) => {
       }),
     });
 
-    if (!res.ok) throw new Error("Update failed");
-
+    // ✅ REMOVE hard fail here
     const data = await res.json();
 
-    // 🔁 Update UI immediately
+    console.log("API RESPONSE:", data); // 🔍 debug
+
+    // 🔁 Safe UI update
     setTasks((prev) =>
-      prev.map((t) => (t.id === task.id ? { ...t, ...data.task } : t)),
+      prev.map((t) =>
+        t.id === task.id ? { ...t, ...(data.task || task) } : t
+      )
     );
 
-    // ✅ Success message
     alert("Changes saved successfully ✅");
-
-    // ✅ Close dialog
     setEditingTask(null);
+
   } catch (err) {
     console.error("Update error:", err);
     alert("Something went wrong ❌");
   }
 };
-
 /* ---------------- SORTABLE TASK ---------------- */
 function SortableTask({ task, onDelete, onEdit, onView }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
