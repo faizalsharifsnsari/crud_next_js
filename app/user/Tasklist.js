@@ -268,121 +268,122 @@ export default function TaskList({ initialTasks }) {
   return (
     <>
       {viewTask && (
-  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-    
-    <div className="w-[400px] max-w-[90%] p-6 rounded-xl shadow-xl
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div
+            className="w-[420px] max-w-[92%] rounded-xl shadow-2xl overflow-hidden
       bg-green-100 dark:bg-gray-900
-      border border-green-300 dark:border-gray-700">
+      border border-green-300 dark:border-gray-700"
+          >
+            {/* 🔴 HEADER (NEW - visible change) */}
+            <div
+              className="flex justify-between items-center px-5 py-3
+        bg-red-500 text-white"
+            >
+              <h3 className="text-lg font-semibold truncate">Task Details</h3>
+              <button
+                className="hover:text-gray-200"
+                onClick={() => setViewTask(null)}
+              >
+                ✕
+              </button>
+            </div>
 
-      {/* Header */}
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white truncate">
-          Task Details
-        </h3>
-        <button
-          className="text-gray-500 dark:text-gray-400 hover:text-red-500"
-          onClick={() => setViewTask(null)}
-          title="Close"
-        >
-          ✕
-        </button>
-      </div>
+            {/* BODY */}
+            <div className="p-5 space-y-4">
+              {/* Title */}
+              <div className="p-3 rounded-lg bg-white/60 dark:bg-gray-800">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                  TITLE
+                </p>
+                <p className="text-gray-900 dark:text-white font-semibold">
+                  {viewTask.title || "Untitled Task"}
+                </p>
+              </div>
 
-      {/* Title */}
-      <div className="mb-4">
-        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          Title
-        </h4>
-        <p className="text-gray-900 dark:text-white font-bold text-base">
-          {viewTask.title || "Untitled Task"}
-        </p>
-      </div>
+              {/* Description */}
+              <div className="p-3 rounded-lg bg-white/60 dark:bg-gray-800">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                  DESCRIPTION
+                </p>
+                <p className="text-gray-700 dark:text-gray-300 text-sm whitespace-pre-line">
+                  {viewTask.description?.trim()
+                    ? viewTask.description
+                    : "No description provided."}
+                </p>
+              </div>
 
-      {/* Description */}
-      <div className="mb-4">
-        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          Description
-        </h4>
-        <p className="text-gray-700 dark:text-gray-400 text-sm whitespace-pre-line">
-          {viewTask.description && viewTask.description.trim() !== ""
-            ? viewTask.description
-            : "No description provided."}
-        </p>
-      </div>
+              {/* Badges */}
+              <div className="flex gap-2 flex-wrap">
+                {/* Priority */}
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${
+                    viewTask.priority === "high"
+                      ? "bg-red-500 text-white"
+                      : viewTask.priority === "medium"
+                        ? "bg-yellow-400 text-black"
+                        : "bg-green-500 text-white"
+                  }`}
+                >
+                  {viewTask.priority?.toUpperCase() || "LOW"}
+                </span>
 
-      {/* Priority & Status */}
-      <div className="flex items-center gap-3 mb-4 flex-wrap">
+                {/* Status */}
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${
+                    viewTask.status === "completed"
+                      ? "bg-green-600 text-white"
+                      : viewTask.status === "ongoing"
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-500 text-white"
+                  }`}
+                >
+                  {viewTask.status?.toUpperCase() || "NOT STARTED"}
+                </span>
+              </div>
 
-        {/* Priority */}
-        <span
-          className={`px-3 py-1 rounded-full text-sm font-medium ${
-            viewTask.priority === "high"
-              ? "bg-red-500/20 text-red-600 dark:text-red-400"
-              : viewTask.priority === "medium"
-              ? "bg-yellow-500/20 text-yellow-700 dark:text-yellow-400"
-              : "bg-green-500/20 text-green-700 dark:text-green-400"
-          }`}
-        >
-          Priority: {(viewTask.priority || "low").toUpperCase()}
-        </span>
+              {/* Dates (NEW layout) */}
+              <div className="grid grid-cols-3 gap-3 text-xs">
+                <div className="p-2 rounded-md bg-white/60 dark:bg-gray-800 text-center">
+                  <p className="text-gray-500">Due</p>
+                  <p className="text-gray-800 dark:text-gray-200 font-medium">
+                    {viewTask.dueDate
+                      ? new Date(viewTask.dueDate).toLocaleDateString()
+                      : "-"}
+                  </p>
+                </div>
 
-        {/* Status */}
-        <span
-          className={`px-3 py-1 rounded-full text-sm font-medium ${
-            viewTask.status === "completed"
-              ? "bg-green-500/20 text-green-700 dark:text-green-400"
-              : viewTask.status === "ongoing"
-              ? "bg-blue-500/20 text-blue-700 dark:text-blue-400"
-              : "bg-gray-400/20 text-gray-700 dark:text-gray-300"
-          }`}
-        >
-          Status: {(viewTask.status || "not started").toUpperCase()}
-        </span>
+                <div className="p-2 rounded-md bg-white/60 dark:bg-gray-800 text-center">
+                  <p className="text-gray-500">Created</p>
+                  <p className="text-gray-800 dark:text-gray-200 font-medium">
+                    {viewTask.createdAt
+                      ? new Date(viewTask.createdAt).toLocaleDateString()
+                      : "-"}
+                  </p>
+                </div>
 
-      </div>
+                <div className="p-2 rounded-md bg-white/60 dark:bg-gray-800 text-center">
+                  <p className="text-gray-500">Updated</p>
+                  <p className="text-gray-800 dark:text-gray-200 font-medium">
+                    {viewTask.updatedAt
+                      ? new Date(viewTask.updatedAt).toLocaleDateString()
+                      : "-"}
+                  </p>
+                </div>
+              </div>
 
-      {/* Dates */}
-      <div className="mb-4 grid grid-cols-3 gap-4 text-sm text-gray-700 dark:text-gray-400">
-        <div>
-          <h4 className="font-medium">Due</h4>
-          <p>
-            {viewTask.dueDate
-              ? new Date(viewTask.dueDate).toLocaleString()
-              : "-"}
-          </p>
+              {/* Footer */}
+              <div className="flex justify-end pt-2">
+                <button
+                  className="px-4 py-2 rounded-md text-white bg-red-500 hover:bg-red-600"
+                  onClick={() => setViewTask(null)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-        <div>
-          <h4 className="font-medium">Created</h4>
-          <p>
-            {viewTask.createdAt
-              ? new Date(viewTask.createdAt).toLocaleString()
-              : "-"}
-          </p>
-        </div>
-        <div>
-          <h4 className="font-medium">Updated</h4>
-          <p>
-            {viewTask.updatedAt
-              ? new Date(viewTask.updatedAt).toLocaleString()
-              : "-"}
-          </p>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="flex justify-end mt-4">
-        <button
-          className="px-4 py-2 rounded-md text-white
-          bg-red-500 hover:bg-red-600"
-          onClick={() => setViewTask(null)}
-        >
-          Close
-        </button>
-      </div>
-
-    </div>
-  </div>
-)}
+      )}
 
       {editingTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
