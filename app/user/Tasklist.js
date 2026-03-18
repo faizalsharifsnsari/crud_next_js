@@ -139,11 +139,7 @@ export default function TaskList({ initialTasks }) {
   const [editingTask, setEditingTask] = useState(null);
   const [viewTask, setViewTask] = useState(null);
   const [loadingViewTask, setLoadingViewTask] = useState(false);
-  const [dialog, setDialog] = useState({
-    type: "", // "error" | "success"
-    message: "",
-    open: false,
-  });
+  const [saving, setSaving] = useState(false);
 
   //dynamic update
   useEffect(() => {
@@ -153,31 +149,23 @@ export default function TaskList({ initialTasks }) {
   //update api
   const saveEditedTask = async (task) => {
     try {
-      // 🔴 VALIDATION
+      setSaving(true); // ✅ START LOADING
+
       if (!task.title || task.title.trim() === "") {
-        setDialog({
-          type: "error",
-          message: "Title is required",
-          open: true,
-        });
+        alert("Title is required");
+        setSaving(false);
         return;
       }
 
       if (!task.priority) {
-        setDialog({
-          type: "error",
-          message: "Please select priority",
-          open: true,
-        });
+        alert("Please select priority");
+        setSaving(false);
         return;
       }
 
       if (!task.status) {
-        setDialog({
-          type: "error",
-          message: "Please select status",
-          open: true,
-        });
+        alert("Please select status");
+        setSaving(false);
         return;
       }
 
@@ -198,39 +186,25 @@ export default function TaskList({ initialTasks }) {
       const data = await res.json();
 
       if (!res.ok) {
-        setDialog({
-          type: "error",
-          message: data.message || "Update failed",
-          open: true,
-        });
+        alert(data.message || "Update failed");
+        setSaving(false);
         return;
       }
 
-      // ✅ Update UI
       setTasks((prev) =>
         prev.map((t) => (t.id === task.id ? { ...t, ...data.task } : t)),
       );
 
-      // ✅ SUCCESS DIALOG
-      setDialog({
-        type: "success",
-        message: "Task updated successfully ✅",
-        open: true,
-      });
+      alert("Task updated successfully ✅");
 
-      // auto close edit modal
-      setTimeout(() => {
-        setEditingTask(null);
-      }, 800);
+      setEditingTask(null);
     } catch (err) {
-      setDialog({
-        type: "error",
-        message: "Something went wrong",
-        open: true,
-      });
+      console.error(err);
+      alert("Something went wrong");
+    } finally {
+      setSaving(false); // ✅ STOP LOADING
     }
   };
-
   // 🗑️ DELETE
   const deleteTask = async (id) => {
     try {
@@ -293,34 +267,6 @@ export default function TaskList({ initialTasks }) {
 
   return (
     <>
-      {dialog.open && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-[320px] p-5 text-center border">
-            <h3
-              className={`text-lg font-semibold mb-2 ${
-                dialog.type === "error" ? "text-red-500" : "text-green-500"
-              }`}
-            >
-              {dialog.type === "error" ? "Error" : "Success"}
-            </h3>
-
-            <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
-              {dialog.message}
-            </p>
-
-            <button
-              className={`px-4 py-2 rounded-md text-white ${
-                dialog.type === "error"
-                  ? "bg-red-500 hover:bg-red-600"
-                  : "bg-green-500 hover:bg-green-600"
-              }`}
-              onClick={() => setDialog({ ...dialog, open: false })}
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
       {viewTask && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-[400px] max-w-[90%] p-6 border border-gray-200 dark:border-gray-700">
