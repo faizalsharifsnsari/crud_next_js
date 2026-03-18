@@ -61,66 +61,7 @@ function StatusIcon({ status, onClick }) {
   );
 }
 
-//update api
-const saveEditedTask = async (task) => {
-  try {
-    setFormError("");
-    setFormMessage("");
 
-    // ✅ VALIDATION
-    if (!task.title || task.title.trim() === "") {
-      setFormError("Title is required");
-      return;
-    }
-
-    if (!task.priority) {
-      setFormError("Please select priority");
-      return;
-    }
-
-    if (!task.status) {
-      setFormError("Please select status");
-      return;
-    }
-
-    const res = await fetch(`/api/products/${task.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title: task.title,
-        description: task.description,
-        priority: task.priority,
-        status: task.status,
-        dueDate: task.dueDate,
-      }),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      setFormError(data.message || "Update failed");
-      return;
-    }
-
-    // ✅ Update UI
-    setTasks((prev) =>
-      prev.map((t) => (t.id === task.id ? { ...t, ...data.task } : t)),
-    );
-
-    // ✅ SUCCESS MESSAGE
-    setFormMessage("Task updated successfully ✅");
-
-    // ✅ Close after delay
-    setTimeout(() => {
-      setEditingTask(null);
-      setFormMessage("");
-    }, 1000);
-  } catch (err) {
-    setFormError("Something went wrong");
-  }
-};
 
 /* ---------------- SORTABLE TASK ---------------- */
 function SortableTask({ task, onDelete, onEdit, onView }) {
@@ -206,6 +147,38 @@ export default function TaskList({ initialTasks }) {
     setTasks(initialTasks);
   }, [initialTasks]);
 
+  //update api
+const saveEditedTask = async (task) => {
+  try {
+    const res = await fetch(`/api/products/${task.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: task.title,
+        description: task.description,
+        priority: task.priority,
+        status: task.status,
+        dueDate: task.dueDate,
+      }),
+    });
+
+    if (!res.ok) throw new Error("Update failed");
+
+    const data = await res.json();
+
+    // 🔁 Update UI immediately
+    setTasks((prev) =>
+      prev.map((t) => (t.id === task.id ? { ...t, ...data.task } : t)),
+    );
+
+    setEditingTask(null); // close dialog
+  } catch (err) {
+    console.error("Update error:", err);
+  }
+};
+
   // 🗑️ DELETE
   const deleteTask = async (id) => {
     try {
@@ -219,17 +192,17 @@ export default function TaskList({ initialTasks }) {
     }
   };
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 5 },
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 150,
-        tolerance: 5,
-      },
-    }),
-  );
+const sensors = useSensors(
+  useSensor(PointerSensor, {
+    activationConstraint: { distance: 5 },
+  }),
+  useSensor(TouchSensor, {
+    activationConstraint: {
+      delay: 150,
+      tolerance: 5,
+    },
+  })
+);
 
   async function handleDragEnd(event) {
     const { active, over } = event;
