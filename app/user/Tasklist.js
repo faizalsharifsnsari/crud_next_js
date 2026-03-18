@@ -64,7 +64,7 @@ function StatusIcon({ status, onClick }) {
 //update api
 const saveEditedTask = async (task) => {
   try {
-    const res = await fetch(`/api/products/${task.id}`, {
+    const res = await fetch(`/api/products/${task._id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -82,14 +82,19 @@ const saveEditedTask = async (task) => {
 
     const data = await res.json();
 
-    // 🔁 Update UI immediately
+    // ✅ Fix: use _id everywhere
     setTasks((prev) =>
-      prev.map((t) => (t.id === task.id ? { ...t, ...data.task } : t)),
+      prev.map((t) => (t._id === task._id ? { ...t, ...data.task } : t)),
     );
 
-    setEditingTask(null); // close dialog
+    // ✅ Close modal
+    setEditingTask(null);
+
+    // ✅ Feedback (basic)
+    alert("Task updated successfully ✅");
   } catch (err) {
     console.error("Update error:", err);
+    alert("Something went wrong ❌");
   }
 };
 
@@ -190,17 +195,17 @@ export default function TaskList({ initialTasks }) {
     }
   };
 
-const sensors = useSensors(
-  useSensor(PointerSensor, {
-    activationConstraint: { distance: 5 },
-  }),
-  useSensor(TouchSensor, {
-    activationConstraint: {
-      delay: 150,
-      tolerance: 5,
-    },
-  })
-);
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 150,
+        tolerance: 5,
+      },
+    }),
+  );
 
   async function handleDragEnd(event) {
     const { active, over } = event;
@@ -349,29 +354,33 @@ const sensors = useSensors(
       )}
 
       {editingTask && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
-            <h3>Edit Task</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 p-6 shadow-xl border border-gray-200 dark:border-gray-700">
+            <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
+              Edit Task
+            </h3>
 
-            {/* Title Field */}
-            <div className={styles.field}>
-              <label htmlFor="title">Title</label>
+            {/* Title */}
+            <div className="mb-3">
+              <label className="text-sm text-gray-600 dark:text-gray-300">
+                Title
+              </label>
               <input
-                id="title"
                 type="text"
                 value={editingTask.title}
                 onChange={(e) =>
                   setEditingTask({ ...editingTask, title: e.target.value })
                 }
-                placeholder="Enter task title"
+                className="w-full mt-1 px-3 py-2 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
 
-            {/* Description Field */}
-            <div className={styles.field}>
-              <label htmlFor="description">Description</label>
+            {/* Description */}
+            <div className="mb-3">
+              <label className="text-sm text-gray-600 dark:text-gray-300">
+                Description
+              </label>
               <textarea
-                id="description"
                 value={editingTask.description || ""}
                 onChange={(e) =>
                   setEditingTask({
@@ -379,36 +388,31 @@ const sensors = useSensors(
                     description: e.target.value,
                   })
                 }
-                placeholder="Enter task description"
-                rows={4}
+                rows={3}
+                className="w-full mt-1 px-3 py-2 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
 
-            {/* Priority Field */}
-            <div className={styles.field}>
-              <label htmlFor="priority">Priority</label>
+            {/* Row */}
+            <div className="flex gap-3 mb-3">
               <select
-                id="priority"
                 value={editingTask.priority || "medium"}
                 onChange={(e) =>
                   setEditingTask({ ...editingTask, priority: e.target.value })
                 }
+                className="flex-1 px-3 py-2 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white"
               >
                 <option value="high">High</option>
                 <option value="medium">Medium</option>
                 <option value="low">Low</option>
               </select>
-            </div>
 
-            {/* Status Field */}
-            <div className={styles.field}>
-              <label htmlFor="status">Status</label>
               <select
-                id="status"
                 value={editingTask.status || "not started"}
                 onChange={(e) =>
                   setEditingTask({ ...editingTask, status: e.target.value })
                 }
+                className="flex-1 px-3 py-2 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white"
               >
                 <option value="not started">Pending</option>
                 <option value="ongoing">On Going</option>
@@ -416,30 +420,30 @@ const sensors = useSensors(
               </select>
             </div>
 
-            {/* Due Date Field */}
-            <div className={styles.field}>
-              <label htmlFor="dueDate">Due Date</label>
+            {/* Date */}
+            <div className="mb-4">
               <input
-                id="dueDate"
                 type="date"
                 value={editingTask.dueDate || ""}
                 onChange={(e) =>
                   setEditingTask({ ...editingTask, dueDate: e.target.value })
                 }
+                className="w-full px-3 py-2 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white"
               />
             </div>
 
-            {/* Action Buttons */}
-            <div className={styles.modalActions}>
+            {/* Buttons */}
+            <div className="flex gap-3">
               <button
-                className={styles.save}
                 onClick={() => saveEditedTask(editingTask)}
+                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg transition"
               >
                 Save
               </button>
+
               <button
-                className={styles.cancel}
                 onClick={() => setEditingTask(null)}
+                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
               >
                 Cancel
               </button>
