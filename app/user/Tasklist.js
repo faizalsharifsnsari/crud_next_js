@@ -64,7 +64,7 @@ function StatusIcon({ status, onClick }) {
 //update api
 const saveEditedTask = async (task) => {
   try {
-    const res = await fetch(`/api/products/${task._id}`, {
+    const res = await fetch(`/api/products/${task.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -82,19 +82,14 @@ const saveEditedTask = async (task) => {
 
     const data = await res.json();
 
-    // ✅ Fix: use _id everywhere
+    // 🔁 Update UI immediately
     setTasks((prev) =>
-      prev.map((t) => (t._id === task._id ? { ...t, ...data.task } : t)),
+      prev.map((t) => (t.id === task.id ? { ...t, ...data.task } : t)),
     );
 
-    // ✅ Close modal
-    setEditingTask(null);
-
-    // ✅ Feedback (basic)
-    alert("Task updated successfully ✅");
+    setEditingTask(null); // close dialog
   } catch (err) {
     console.error("Update error:", err);
-    alert("Something went wrong ❌");
   }
 };
 
@@ -195,17 +190,17 @@ export default function TaskList({ initialTasks }) {
     }
   };
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 5 },
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 150,
-        tolerance: 5,
-      },
-    }),
-  );
+const sensors = useSensors(
+  useSensor(PointerSensor, {
+    activationConstraint: { distance: 5 },
+  }),
+  useSensor(TouchSensor, {
+    activationConstraint: {
+      delay: 150,
+      tolerance: 5,
+    },
+  })
+);
 
   async function handleDragEnd(event) {
     const { active, over } = event;
@@ -353,104 +348,102 @@ export default function TaskList({ initialTasks }) {
         </div>
       )}
 
-      {editingTask && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 p-6 shadow-xl border border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
-              Edit Task
-            </h3>
+     {editingTask && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    
+    <div className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 p-6 shadow-xl border border-gray-200 dark:border-gray-700">
+      
+      <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
+        Edit Task
+      </h3>
 
-            {/* Title */}
-            <div className="mb-3">
-              <label className="text-sm text-gray-600 dark:text-gray-300">
-                Title
-              </label>
-              <input
-                type="text"
-                value={editingTask.title}
-                onChange={(e) =>
-                  setEditingTask({ ...editingTask, title: e.target.value })
-                }
-                className="w-full mt-1 px-3 py-2 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
+      {/* Title */}
+      <div className="mb-3">
+        <label className="text-sm text-gray-600 dark:text-gray-300">Title</label>
+        <input
+          type="text"
+          value={editingTask.title}
+          onChange={(e) =>
+            setEditingTask({ ...editingTask, title: e.target.value })
+          }
+          className="w-full mt-1 px-3 py-2 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+      </div>
 
-            {/* Description */}
-            <div className="mb-3">
-              <label className="text-sm text-gray-600 dark:text-gray-300">
-                Description
-              </label>
-              <textarea
-                value={editingTask.description || ""}
-                onChange={(e) =>
-                  setEditingTask({
-                    ...editingTask,
-                    description: e.target.value,
-                  })
-                }
-                rows={3}
-                className="w-full mt-1 px-3 py-2 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
+      {/* Description */}
+      <div className="mb-3">
+        <label className="text-sm text-gray-600 dark:text-gray-300">Description</label>
+        <textarea
+          value={editingTask.description || ""}
+          onChange={(e) =>
+            setEditingTask({
+              ...editingTask,
+              description: e.target.value,
+            })
+          }
+          rows={3}
+          className="w-full mt-1 px-3 py-2 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+      </div>
 
-            {/* Row */}
-            <div className="flex gap-3 mb-3">
-              <select
-                value={editingTask.priority || "medium"}
-                onChange={(e) =>
-                  setEditingTask({ ...editingTask, priority: e.target.value })
-                }
-                className="flex-1 px-3 py-2 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white"
-              >
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
-              </select>
+      {/* Row */}
+      <div className="flex gap-3 mb-3">
+        <select
+          value={editingTask.priority || "medium"}
+          onChange={(e) =>
+            setEditingTask({ ...editingTask, priority: e.target.value })
+          }
+          className="flex-1 px-3 py-2 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white"
+        >
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
 
-              <select
-                value={editingTask.status || "not started"}
-                onChange={(e) =>
-                  setEditingTask({ ...editingTask, status: e.target.value })
-                }
-                className="flex-1 px-3 py-2 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white"
-              >
-                <option value="not started">Pending</option>
-                <option value="ongoing">On Going</option>
-                <option value="completed">Completed</option>
-              </select>
-            </div>
+        <select
+          value={editingTask.status || "not started"}
+          onChange={(e) =>
+            setEditingTask({ ...editingTask, status: e.target.value })
+          }
+          className="flex-1 px-3 py-2 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white"
+        >
+          <option value="not started">Pending</option>
+          <option value="ongoing">On Going</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
 
-            {/* Date */}
-            <div className="mb-4">
-              <input
-                type="date"
-                value={editingTask.dueDate || ""}
-                onChange={(e) =>
-                  setEditingTask({ ...editingTask, dueDate: e.target.value })
-                }
-                className="w-full px-3 py-2 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white"
-              />
-            </div>
+      {/* Date */}
+      <div className="mb-4">
+        <input
+          type="date"
+          value={editingTask.dueDate || ""}
+          onChange={(e) =>
+            setEditingTask({ ...editingTask, dueDate: e.target.value })
+          }
+          className="w-full px-3 py-2 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white"
+        />
+      </div>
 
-            {/* Buttons */}
-            <div className="flex gap-3">
-              <button
-                onClick={() => saveEditedTask(editingTask)}
-                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg transition"
-              >
-                Save
-              </button>
+      {/* Buttons */}
+      <div className="flex gap-3">
+        <button
+          onClick={() => saveEditedTask(editingTask)}
+          className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg transition"
+        >
+          Save
+        </button>
 
-              <button
-                onClick={() => setEditingTask(null)}
-                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        <button
+          onClick={() => setEditingTask(null)}
+          className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       <DndContext
         sensors={sensors}
