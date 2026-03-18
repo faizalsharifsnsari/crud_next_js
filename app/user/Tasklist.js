@@ -61,52 +61,35 @@ function StatusIcon({ status, onClick }) {
   );
 }
 
-const saveEditedTask = async () => {
+//update api
+const saveEditedTask = async (task) => {
   try {
-    // ✅ VALIDATION
-    if (!editingTask.title || editingTask.title.trim() === "") {
-      alert("Title is required!");
-      return;
-    }
-
-    if (!editingTask.priority) {
-      alert("Please select priority!");
-      return;
-    }
-
-    if (!editingTask.status) {
-      alert("Please select status!");
-      return;
-    }
-
-    // ✅ API CALL
-    const res = await fetch(`/api/products/${editingTask.id}`, {
+    const res = await fetch(`/api/products/${task.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(editingTask),
+      body: JSON.stringify({
+        title: task.title,
+        description: task.description,
+        priority: task.priority,
+        status: task.status,
+        dueDate: task.dueDate,
+      }),
     });
+
+    if (!res.ok) throw new Error("Update failed");
 
     const data = await res.json();
 
-    if (!res.ok) {
-      throw new Error(data.message || "Update failed");
-    }
-
-    // ✅ UPDATE UI
+    // 🔁 Update UI immediately
     setTasks((prev) =>
-      prev.map((t) => (t.id === editingTask.id ? { ...t, ...data.task } : t)),
+      prev.map((t) => (t.id === task.id ? { ...t, ...data.task } : t)),
     );
 
-    // ✅ SUCCESS FEEDBACK
-    alert("Task updated successfully ✅");
-
-    // ✅ CLOSE MODAL ONLY AFTER SUCCESS
-    setEditingTask(null);
+    setEditingTask(null); // close dialog
   } catch (err) {
     console.error("Update error:", err);
-    alert("Failed to update task ❌");
   }
 };
 
@@ -207,17 +190,17 @@ export default function TaskList({ initialTasks }) {
     }
   };
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 5 },
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 150,
-        tolerance: 5,
-      },
-    }),
-  );
+const sensors = useSensors(
+  useSensor(PointerSensor, {
+    activationConstraint: { distance: 5 },
+  }),
+  useSensor(TouchSensor, {
+    activationConstraint: {
+      delay: 150,
+      tolerance: 5,
+    },
+  })
+);
 
   async function handleDragEnd(event) {
     const { active, over } = event;
@@ -448,7 +431,10 @@ export default function TaskList({ initialTasks }) {
 
             {/* Action Buttons */}
             <div className={styles.modalActions}>
-              <button className={styles.save} onClick={saveEditedTask}>
+              <button
+                className={styles.save}
+                onClick={() => saveEditedTask(editingTask)}
+              >
                 Save
               </button>
               <button
