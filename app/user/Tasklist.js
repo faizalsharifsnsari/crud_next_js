@@ -448,10 +448,7 @@ export default function TaskList({ initialTasks }) {
 
             {/* Action Buttons */}
             <div className={styles.modalActions}>
-              <button
-                className={styles.save}
-                onClick={saveEditedTask}
-              >
+              <button className={styles.save} onClick={saveEditedTask}>
                 Save
               </button>
               <button
