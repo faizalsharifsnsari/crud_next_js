@@ -377,29 +377,42 @@ export default function TaskList({ initialTasks }) {
       )}
 
       {editingTask && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
-            <h3>Edit Task</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div
+            className="w-full max-w-lg mx-4 rounded-xl shadow-xl p-6
+      bg-green-100 dark:bg-gray-900
+      border border-green-300 dark:border-gray-700"
+          >
+            <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
+              Edit Task
+            </h3>
 
-            {/* Title Field */}
-            <div className={styles.field}>
-              <label htmlFor="title">Title</label>
+            {/* Title */}
+            <div className="mb-3">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Title
+              </label>
               <input
-                id="title"
                 type="text"
                 value={editingTask.title}
                 onChange={(e) =>
                   setEditingTask({ ...editingTask, title: e.target.value })
                 }
                 placeholder="Enter task title"
+                className="w-full px-3 py-2 rounded-md border
+          bg-white dark:bg-gray-800
+          border-gray-300 dark:border-gray-600
+          text-gray-800 dark:text-white
+          focus:outline-none focus:ring-2 focus:ring-green-400"
               />
             </div>
 
-            {/* Description Field */}
-            <div className={styles.field}>
-              <label htmlFor="description">Description</label>
+            {/* Description */}
+            <div className="mb-3">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Description
+              </label>
               <textarea
-                id="description"
                 value={editingTask.description || ""}
                 onChange={(e) =>
                   setEditingTask({
@@ -407,20 +420,30 @@ export default function TaskList({ initialTasks }) {
                     description: e.target.value,
                   })
                 }
-                placeholder="Enter task description"
                 rows={4}
+                className="w-full px-3 py-2 rounded-md border
+          bg-white dark:bg-gray-800
+          border-gray-300 dark:border-gray-600
+          text-gray-800 dark:text-white
+          focus:outline-none focus:ring-2 focus:ring-green-400"
               />
             </div>
 
-            {/* Priority Field */}
-            <div className={styles.field}>
-              <label htmlFor="priority">Priority</label>
+            {/* Priority */}
+            <div className="mb-3">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Priority
+              </label>
               <select
-                id="priority"
                 value={editingTask.priority || "medium"}
                 onChange={(e) =>
                   setEditingTask({ ...editingTask, priority: e.target.value })
                 }
+                className="w-full px-3 py-2 rounded-md border
+          bg-white dark:bg-gray-800
+          border-gray-300 dark:border-gray-600
+          text-gray-800 dark:text-white
+          focus:outline-none focus:ring-2 focus:ring-green-400"
               >
                 <option value="high">High</option>
                 <option value="medium">Medium</option>
@@ -428,15 +451,21 @@ export default function TaskList({ initialTasks }) {
               </select>
             </div>
 
-            {/* Status Field */}
-            <div className={styles.field}>
-              <label htmlFor="status">Status</label>
+            {/* Status */}
+            <div className="mb-3">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Status
+              </label>
               <select
-                id="status"
                 value={editingTask.status || "not started"}
                 onChange={(e) =>
                   setEditingTask({ ...editingTask, status: e.target.value })
                 }
+                className="w-full px-3 py-2 rounded-md border
+          bg-white dark:bg-gray-800
+          border-gray-300 dark:border-gray-600
+          text-gray-800 dark:text-white
+          focus:outline-none focus:ring-2 focus:ring-green-400"
               >
                 <option value="not started">Pending</option>
                 <option value="ongoing">On Going</option>
@@ -444,39 +473,50 @@ export default function TaskList({ initialTasks }) {
               </select>
             </div>
 
-            {/* Due Date Field */}
-            <div className={styles.field}>
-              <label htmlFor="dueDate">Due Date</label>
+            {/* Due Date */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Due Date
+              </label>
               <input
-                id="dueDate"
                 type="date"
                 value={editingTask.dueDate || ""}
                 onChange={(e) =>
                   setEditingTask({ ...editingTask, dueDate: e.target.value })
                 }
+                className="w-full px-3 py-2 rounded-md border
+          bg-white dark:bg-gray-800
+          border-gray-300 dark:border-gray-600
+          text-gray-800 dark:text-white
+          focus:outline-none focus:ring-2 focus:ring-green-400"
               />
             </div>
 
-            {/* Action Buttons */}
-            <div className={styles.modalActions}>
+            {/* Buttons */}
+            <div className="flex justify-end gap-3">
               <button
-                className={styles.save}
-                onClick={() => saveEditedTask(editingTask)}
-                disabled={saving}
-              >
-                {saving ? "Saving..." : "Save"}
-              </button>
-              <button
-                className={styles.cancel}
                 onClick={() => setEditingTask(null)}
+                className="px-4 py-2 rounded-md border
+          border-gray-400 dark:border-gray-600
+          text-gray-700 dark:text-gray-300
+          hover:bg-gray-200 dark:hover:bg-gray-700"
               >
                 Cancel
+              </button>
+
+              <button
+                onClick={() => saveEditedTask(editingTask)}
+                disabled={saving}
+                className="px-4 py-2 rounded-md text-white
+          bg-red-500 hover:bg-red-600
+          disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {saving ? "Saving..." : "Save"}
               </button>
             </div>
           </div>
         </div>
       )}
-
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
