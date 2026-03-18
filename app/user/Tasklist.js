@@ -61,48 +61,8 @@ function StatusIcon({ status, onClick }) {
   );
 }
 
-//update api
-const saveEditedTask = async (task) => {
-  try {
-    if (!task.title || task.title.trim() === "") {
-      alert("Title is required ❌");
-      return;
-    }
 
-    const res = await fetch(`/api/products/${task.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title: task.title,
-        description: task.description,
-        priority: task.priority,
-        status: task.status,
-        dueDate: task.dueDate,
-      }),
-    });
 
-    // ✅ REMOVE hard fail here
-    const data = await res.json();
-
-    console.log("API RESPONSE:", data); // 🔍 debug
-
-    // 🔁 Safe UI update
-    setTasks((prev) =>
-      prev.map((t) =>
-        t.id === task.id ? { ...t, ...(data.task || task) } : t
-      )
-    );
-
-    alert("Changes saved successfully ✅");
-    setEditingTask(null);
-
-  } catch (err) {
-    console.error("Update error:", err);
-    alert("Something went wrong ❌");
-  }
-};
 /* ---------------- SORTABLE TASK ---------------- */
 function SortableTask({ task, onDelete, onEdit, onView }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
@@ -181,11 +141,46 @@ export default function TaskList({ initialTasks }) {
   const [editingTask, setEditingTask] = useState(null);
   const [viewTask, setViewTask] = useState(null);
   const [loadingViewTask, setLoadingViewTask] = useState(false);
+  //update api
+const saveEditedTask = async (task) => {
+  try {
+    const res = await fetch(`/api/products/${task.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: task.title,
+        description: task.description,
+        priority: task.priority,
+        status: task.status,
+        dueDate: task.dueDate,
+      }),
+    });
 
-  //dynamic update
-  useEffect(() => {
-    setTasks(initialTasks);
-  }, [initialTasks]);
+    if (!res.ok) throw new Error("Update failed");
+
+    const data = await res.json();
+
+    // 🔁 Update UI immediately
+    setTasks((prev) =>
+      prev.map((t) => (t.id === task.id ? { ...t, ...data.task } : t)),
+    );
+
+    setEditingTask(null); // close dialog
+  } catch (err) {
+    console.error("Update error:", err);
+  }
+};
+
+useEffect(() => {
+  const normalizedTasks = initialTasks.map((t) => ({
+    ...t,
+    id: t._id, // ✅ map MongoDB _id → id
+  }));
+
+  setTasks(normalizedTasks);
+}, [initialTasks]);
 
   // 🗑️ DELETE
   const deleteTask = async (id) => {
@@ -200,17 +195,17 @@ export default function TaskList({ initialTasks }) {
     }
   };
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 5 },
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 150,
-        tolerance: 5,
-      },
-    }),
-  );
+const sensors = useSensors(
+  useSensor(PointerSensor, {
+    activationConstraint: { distance: 5 },
+  }),
+  useSensor(TouchSensor, {
+    activationConstraint: {
+      delay: 150,
+      tolerance: 5,
+    },
+  })
+);
 
   async function handleDragEnd(event) {
     const { active, over } = event;
@@ -359,33 +354,29 @@ export default function TaskList({ initialTasks }) {
       )}
 
       {editingTask && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 p-6 shadow-xl border border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
-              Edit Task
-            </h3>
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <h3>Edit Task</h3>
 
-            {/* Title */}
-            <div className="mb-3">
-              <label className="text-sm text-gray-600 dark:text-gray-300">
-                Title
-              </label>
+            {/* Title Field */}
+            <div className={styles.field}>
+              <label htmlFor="title">Title</label>
               <input
+                id="title"
                 type="text"
                 value={editingTask.title}
                 onChange={(e) =>
                   setEditingTask({ ...editingTask, title: e.target.value })
                 }
-                className="w-full mt-1 px-3 py-2 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Enter task title"
               />
             </div>
 
-            {/* Description */}
-            <div className="mb-3">
-              <label className="text-sm text-gray-600 dark:text-gray-300">
-                Description
-              </label>
+            {/* Description Field */}
+            <div className={styles.field}>
+              <label htmlFor="description">Description</label>
               <textarea
+                id="description"
                 value={editingTask.description || ""}
                 onChange={(e) =>
                   setEditingTask({
@@ -393,31 +384,36 @@ export default function TaskList({ initialTasks }) {
                     description: e.target.value,
                   })
                 }
-                rows={3}
-                className="w-full mt-1 px-3 py-2 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Enter task description"
+                rows={4}
               />
             </div>
 
-            {/* Row */}
-            <div className="flex gap-3 mb-3">
+            {/* Priority Field */}
+            <div className={styles.field}>
+              <label htmlFor="priority">Priority</label>
               <select
+                id="priority"
                 value={editingTask.priority || "medium"}
                 onChange={(e) =>
                   setEditingTask({ ...editingTask, priority: e.target.value })
                 }
-                className="flex-1 px-3 py-2 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white"
               >
                 <option value="high">High</option>
                 <option value="medium">Medium</option>
                 <option value="low">Low</option>
               </select>
+            </div>
 
+            {/* Status Field */}
+            <div className={styles.field}>
+              <label htmlFor="status">Status</label>
               <select
+                id="status"
                 value={editingTask.status || "not started"}
                 onChange={(e) =>
                   setEditingTask({ ...editingTask, status: e.target.value })
                 }
-                className="flex-1 px-3 py-2 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white"
               >
                 <option value="not started">Pending</option>
                 <option value="ongoing">On Going</option>
@@ -425,30 +421,30 @@ export default function TaskList({ initialTasks }) {
               </select>
             </div>
 
-            {/* Date */}
-            <div className="mb-4">
+            {/* Due Date Field */}
+            <div className={styles.field}>
+              <label htmlFor="dueDate">Due Date</label>
               <input
+                id="dueDate"
                 type="date"
                 value={editingTask.dueDate || ""}
                 onChange={(e) =>
                   setEditingTask({ ...editingTask, dueDate: e.target.value })
                 }
-                className="w-full px-3 py-2 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white"
               />
             </div>
 
-            {/* Buttons */}
-            <div className="flex gap-3">
+            {/* Action Buttons */}
+            <div className={styles.modalActions}>
               <button
+                className={styles.save}
                 onClick={() => saveEditedTask(editingTask)}
-                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg transition"
               >
                 Save
               </button>
-
               <button
+                className={styles.cancel}
                 onClick={() => setEditingTask(null)}
-                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
               >
                 Cancel
               </button>
