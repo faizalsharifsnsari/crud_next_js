@@ -61,35 +61,52 @@ function StatusIcon({ status, onClick }) {
   );
 }
 
-//update api
-const saveEditedTask = async (task) => {
+const saveEditedTask = async () => {
   try {
-    const res = await fetch(`/api/products/${task.id}`, {
+    // ✅ VALIDATION
+    if (!editingTask.title || editingTask.title.trim() === "") {
+      alert("Title is required!");
+      return;
+    }
+
+    if (!editingTask.priority) {
+      alert("Please select priority!");
+      return;
+    }
+
+    if (!editingTask.status) {
+      alert("Please select status!");
+      return;
+    }
+
+    // ✅ API CALL
+    const res = await fetch(`/api/products/${editingTask.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        title: task.title,
-        description: task.description,
-        priority: task.priority,
-        status: task.status,
-        dueDate: task.dueDate,
-      }),
+      body: JSON.stringify(editingTask),
     });
-
-    if (!res.ok) throw new Error("Update failed");
 
     const data = await res.json();
 
-    // 🔁 Update UI immediately
+    if (!res.ok) {
+      throw new Error(data.message || "Update failed");
+    }
+
+    // ✅ UPDATE UI
     setTasks((prev) =>
-      prev.map((t) => (t.id === task.id ? { ...t, ...data.task } : t)),
+      prev.map((t) => (t.id === editingTask.id ? { ...t, ...data.task } : t)),
     );
 
-    setEditingTask(null); // close dialog
+    // ✅ SUCCESS FEEDBACK
+    alert("Task updated successfully ✅");
+
+    // ✅ CLOSE MODAL ONLY AFTER SUCCESS
+    setEditingTask(null);
   } catch (err) {
     console.error("Update error:", err);
+    alert("Failed to update task ❌");
   }
 };
 
@@ -174,13 +191,8 @@ export default function TaskList({ initialTasks }) {
 
   //dynamic update
   useEffect(() => {
-  const normalized = initialTasks.map((t) => ({
-    ...t,
-    id: t._id,
-  }));
-
-  setTasks(normalized);
-}, [initialTasks]);
+    setTasks(initialTasks);
+  }, [initialTasks]);
 
   // 🗑️ DELETE
   const deleteTask = async (id) => {
@@ -195,17 +207,17 @@ export default function TaskList({ initialTasks }) {
     }
   };
 
-const sensors = useSensors(
-  useSensor(PointerSensor, {
-    activationConstraint: { distance: 5 },
-  }),
-  useSensor(TouchSensor, {
-    activationConstraint: {
-      delay: 150,
-      tolerance: 5,
-    },
-  })
-);
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 150,
+        tolerance: 5,
+      },
+    }),
+  );
 
   async function handleDragEnd(event) {
     const { active, over } = event;
@@ -438,7 +450,7 @@ const sensors = useSensors(
             <div className={styles.modalActions}>
               <button
                 className={styles.save}
-                onClick={() => saveEditedTask(editingTask)}
+                onClick={saveEditedTask}
               >
                 Save
               </button>
@@ -468,12 +480,7 @@ const sensors = useSensors(
                 key={task.id}
                 task={task}
                 onDelete={deleteTask}
-               onEdit={(task) =>
-  setEditingTask({
-    ...task,
-    id: task.id || task._id,
-  })
-}
+                onEdit={(task) => setEditingTask(task)}
                 onView={(task) => setViewTask(task)}
               />
             ))}
