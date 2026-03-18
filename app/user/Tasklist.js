@@ -61,7 +61,37 @@ function StatusIcon({ status, onClick }) {
   );
 }
 
+//update api
+const saveEditedTask = async (task) => {
+  try {
+    const res = await fetch(`/api/products/${task.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: task.title,
+        description: task.description,
+        priority: task.priority,
+        status: task.status,
+        dueDate: task.dueDate,
+      }),
+    });
 
+    if (!res.ok) throw new Error("Update failed");
+
+    const data = await res.json();
+
+    // 🔁 Update UI immediately
+    setTasks((prev) =>
+      prev.map((t) => (t.id === task.id ? { ...t, ...data.task } : t)),
+    );
+
+    setEditingTask(null); // close dialog
+  } catch (err) {
+    console.error("Update error:", err);
+  }
+};
 
 /* ---------------- SORTABLE TASK ---------------- */
 function SortableTask({ task, onDelete, onEdit, onView }) {
@@ -141,45 +171,15 @@ export default function TaskList({ initialTasks }) {
   const [editingTask, setEditingTask] = useState(null);
   const [viewTask, setViewTask] = useState(null);
   const [loadingViewTask, setLoadingViewTask] = useState(false);
-  //update api
-const saveEditedTask = async (task) => {
-  try {
-    const res = await fetch(`/api/products/${task.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title: task.title,
-        description: task.description,
-        priority: task.priority,
-        status: task.status,
-        dueDate: task.dueDate,
-      }),
-    });
 
-    if (!res.ok) throw new Error("Update failed");
-
-    const data = await res.json();
-
-    // 🔁 Update UI immediately
-    setTasks((prev) =>
-      prev.map((t) => (t.id === task.id ? { ...t, ...data.task } : t)),
-    );
-
-    setEditingTask(null); // close dialog
-  } catch (err) {
-    console.error("Update error:", err);
-  }
-};
-
-useEffect(() => {
-  const normalizedTasks = initialTasks.map((t) => ({
+  //dynamic update
+  useEffect(() => {
+  const normalized = initialTasks.map((t) => ({
     ...t,
-    id: t._id, // ✅ map MongoDB _id → id
+    id: t._id,
   }));
 
-  setTasks(normalizedTasks);
+  setTasks(normalized);
 }, [initialTasks]);
 
   // 🗑️ DELETE
@@ -468,7 +468,12 @@ const sensors = useSensors(
                 key={task.id}
                 task={task}
                 onDelete={deleteTask}
-                onEdit={(task) => setEditingTask(task)}
+               onEdit={(task) =>
+  setEditingTask({
+    ...task,
+    id: task.id || task._id,
+  })
+}
                 onView={(task) => setViewTask(task)}
               />
             ))}
