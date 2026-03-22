@@ -616,21 +616,7 @@ export default function TaskList({ initialTasks }) {
           </div>
         </SortableContext>
       </DndContext>
-      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
-        <button
-          onClick={() => setEditingTask({})} // or open your add task modal
-          className="
-      px-6 py-3 rounded-full
-      bg-blue-500 hover:bg-blue-600
-      text-white font-semibold text-sm
-      shadow-lg hover:shadow-xl
-      transition-all duration-200
-      active:scale-95
-    "
-        >
-          + Add Task
-        </button>
-      </div>
+      
     </>
   );
 }
