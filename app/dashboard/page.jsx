@@ -253,6 +253,12 @@ export default function ProfilePreview() {
           </div>
         </div>
       </div>
+      <button
+        onClick={() => signOut({ callbackUrl: "/auth/login" })}
+        className="w-full py-2 bg-red-600 text-white rounded mt-4"
+      >
+        Logout
+      </button>
     </main>
   );
 }
