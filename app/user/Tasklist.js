@@ -130,35 +130,29 @@ function SortableTask({ task, onDelete, onEdit, onView }) {
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
+        touchAction: "none",
       }}
       className={`
-        flex items-center justify-between
-        p-3 mb-3 rounded-lg
-        border-l-4 shadow-sm
-        ${
-          task.priority === "high"
-            ? "border-red-500 bg-red-200"
-            : task.priority === "medium"
-              ? "border-yellow-500 bg-yellow-200"
-              : "border-green-500 bg-green-200"
-        }
+      flex items-center justify-between
+      cursor-grab active:cursor-grabbing
+      p-3 mb-3 rounded-lg
+      border-l-4 shadow-sm
+      ${
+        task.priority === "high"
+          ? "border-red-500 bg-red-200"
+          : task.priority === "medium"
+            ? "border-yellow-500 bg-yellow-200"
+            : "border-green-500 bg-green-200"
+      }
       `}
+      {...attributes}
+      {...listeners}
     >
       {/* LEFT SIDE */}
       <div className="flex items-center gap-3 flex-1">
-        {/* 🔥 DRAG HANDLE */}
-        <div
-          {...attributes}
-          {...listeners}
-          className="cursor-grab active:cursor-grabbing px-2 text-gray-600"
-        >
-          ☰
-        </div>
-
-        {/* STATUS ICON */}
+        {/* STATUS ICON (now clickable) */}
         <StatusIcon status={task.status} onClick={() => onView(task)} />
 
-        {/* TITLE */}
         <span className="text-sm font-semibold text-gray-800 truncate">
           {task.title}
         </span>
@@ -182,13 +176,13 @@ function SortableTask({ task, onDelete, onEdit, onView }) {
 
         <button
           className="
-          px-3 py-1 text-xs font-medium rounded-md
-          bg-red-500 hover:bg-red-600
-          text-white transition
-          "
+  px-3 py-1 text-xs font-medium rounded-md
+  bg-red-500 hover:bg-red-600
+  text-white transition
+  "
           onClick={(e) => {
             e.stopPropagation();
-            onDelete(task.id);
+            onDelete(task.id); // 🔥 only trigger dialog
           }}
         >
           Delete
@@ -202,6 +196,7 @@ export default function TaskList({ initialTasks }) {
   const [tasks, setTasks] = useState(initialTasks);
   const [editingTask, setEditingTask] = useState(null);
   const [viewTask, setViewTask] = useState(null);
+  const [loadingViewTask, setLoadingViewTask] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [showDialog, setShowDialog] = useState(false);
@@ -605,7 +600,7 @@ export default function TaskList({ initialTasks }) {
           items={tasks.map((t) => t.id)}
           strategy={verticalListSortingStrategy}
         >
-          <div className="space-y-3 pb-32">
+          <div className={`${styles.taskList} pb-24`}>
             {tasks.map((task) => (
               <SortableTask
                 key={task.id}
@@ -621,21 +616,19 @@ export default function TaskList({ initialTasks }) {
           </div>
         </SortableContext>
       </DndContext>
-      <div className="fixed bottom-5 right-5 z-50">
+      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
         <button
-          onClick={() => setEditingTask({})}
+          onClick={() => setEditingTask({})} // or open your add task modal
           className="
-      w-14 h-14
-      rounded-full
-      bg-blue-600 hover:bg-blue-700
-      text-white text-2xl
-      flex items-center justify-center
-      shadow-xl
+      px-6 py-3 rounded-full
+      bg-blue-500 hover:bg-blue-600
+      text-white font-semibold text-sm
+      shadow-lg hover:shadow-xl
       transition-all duration-200
       active:scale-95
     "
         >
-          +
+          + Add Task
         </button>
       </div>
     </>
