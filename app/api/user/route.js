@@ -15,7 +15,7 @@ export async function GET() {
 
     const session = await getServerSession(authOptions);
 
-    const cookieStore = cookies();
+    const cookieStore =await cookies();
     const sessionToken = cookieStore.get("taskify_session")?.value;
 
     console.log("🟡 SESSION:", session);
