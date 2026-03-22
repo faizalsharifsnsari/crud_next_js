@@ -605,7 +605,8 @@ export default function TaskList({ initialTasks }) {
           items={tasks.map((t) => t.id)}
           strategy={verticalListSortingStrategy}
         >
-          <div className={`${styles.taskList} pb-42`}>
+          <div className="max-w-2xl mx-auto px-3">
+  <div className={`${styles.taskList} pb-36`}>
             {tasks.map((task) => (
               <SortableTask
                 key={task.id}
@@ -618,6 +619,7 @@ export default function TaskList({ initialTasks }) {
                 onView={(task) => setViewTask(task)}
               />
             ))}
+          </div>
           </div>
         </SortableContext>
       </DndContext>
