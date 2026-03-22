@@ -6,6 +6,7 @@ import { CheckIcon, PlayIcon, ClockIcon } from "@heroicons/react/24/solid";
 import Link from "next/link";
 import AddTaskDialog from "./AddTaskdialuge";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 /* 🔹 Status Icon (reused everywhere) */
 function StatusIcon({ status, size = "md" }) {
   const sizeClasses = size === "sm" ? "w-6 h-6" : "w-9 h-9";
@@ -44,6 +45,7 @@ export default function UserSidebar({ user, statusCount, priorityCount }) {
   const [open, setOpen] = useState(false);
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const router = useRouter();
 
   return (
     <aside className="w-full h-full bg-green-200 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 px-5 py-6 flex flex-col relative">
