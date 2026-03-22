@@ -118,13 +118,20 @@ function SortableTask({ task, onDelete, onEdit, onView }) {
 
         <button
           className="
-          px-3 py-1 text-xs font-medium rounded-md
-          bg-red-500 hover:bg-red-600
-          text-white transition
-          "
+  px-3 py-1 text-xs font-medium rounded-md
+  bg-red-500 hover:bg-red-600
+  text-white transition
+  "
           onClick={(e) => {
             e.stopPropagation();
-            onDelete(task.id);
+
+            const confirmDelete = window.confirm(
+              "Are you sure you want to delete this task?",
+            );
+
+            if (confirmDelete) {
+              onDelete(task.id);
+            }
           }}
         >
           Delete

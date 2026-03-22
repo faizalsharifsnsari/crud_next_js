@@ -16,12 +16,14 @@ export default function Test() {
     const timeout = setTimeout(() => {
       console.log("❌ Truecaller not opened. Redirecting home.");
       router.push("/");
-    }, 8000);
+    }, 12000);
 
     // Poll backend
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`/api/truecaller/status?requestId=${requestId}`);
+        const res = await fetch(
+          `/api/truecaller/status?requestId=${requestId}`,
+        );
         const data = await res.json();
 
         console.log("🔄 Polling backend status:", data);
@@ -73,9 +75,7 @@ export default function Test() {
   }, [router, requestId]);
 
   if (!verified) {
-    return (
-      <main className="min-h-screen bg-green-200 dark:bg-gray-900"></main>
-    );
+    return <main className="min-h-screen bg-green-200 dark:bg-gray-900"></main>;
   }
 
   return (
