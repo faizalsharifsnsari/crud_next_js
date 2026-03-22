@@ -2,7 +2,7 @@
 
 import { signOut } from "next-auth/react";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import EditProfileModal from "../components/profile/Editprofiledialuge";
 import ChangeAvatarModal from "../components/profile/ChangeAvatarModal";
 import Link from "next/link";
@@ -24,42 +24,78 @@ function CircleStat({ label, percent, count, color }) {
   );
 }
 
-export default function ProfilePreview({
-  sidebar,
-  tasksWithColors = [],
-}) {
-  // ✅ use server data directly
-  const [tasks, setTasks] = useState(tasksWithColors);
-  const [user, setUser] = useState(sidebar);
+export default function ProfilePreview() {
+  const [tasks, setTasks] = useState([]);
+  const [user, setUser] = useState(null);
 
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // ✅ update name
-  const handleNameSave = async (newName) => {
-    try {
-      const res = await fetch("/api/user", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newName }),
-      });
+  // 🔥 DEBUG STATE
+  const [debug, setDebug] = useState({
+    step: "init",
+    user: null,
+    tasks: null,
+    error: null,
+  });
 
-      const data = await res.json();
+  // 🔥 DEBUG FETCH
+  useEffect(() => {
+    console.log("🔥 DEBUG START");
 
-      if (data.success) {
-        setUser(data.user);
-        setIsEditModalOpen(false);
-      } else {
-        alert(data.message);
+    const runDebug = async () => {
+      try {
+        // USER FETCH
+        setDebug((d) => ({ ...d, step: "fetching /api/user" }));
+
+        const userRes = await fetch("/api/user", {
+          credentials: "include",
+        });
+
+        const userData = await userRes.json();
+        console.log("USER API:", userData);
+
+        setDebug((d) => ({ ...d, user: userData }));
+
+        if (userData.success) {
+          setUser(userData.user);
+        }
+
+        // TASK FETCH
+        setDebug((d) => ({ ...d, step: "fetching /api/products" }));
+
+        const taskRes = await fetch("/api/products", {
+          credentials: "include",
+        });
+
+        const taskData = await taskRes.json();
+        console.log("TASK API:", taskData);
+
+        setDebug((d) => ({
+          ...d,
+          tasks: taskData,
+          step: "done",
+        }));
+
+        if (taskData.success) {
+          setTasks(taskData.result);
+        }
+      } catch (err) {
+        console.error("DEBUG ERROR:", err);
+
+        setDebug((d) => ({
+          ...d,
+          error: err.message,
+          step: "error",
+        }));
       }
-    } catch (error) {
-      console.error(error);
-      alert("Something went wrong");
-    }
-  };
+    };
 
-  // ✅ counts
+    runDebug();
+  }, []);
+
+  // ✅ COUNTS
   const statusCount = { notStarted: 0, ongoing: 0, completed: 0 };
   const priorityCount = { high: 0, medium: 0, low: 0 };
 
@@ -73,11 +109,10 @@ export default function ProfilePreview({
     if (task.priority === "low") priorityCount.low++;
   });
 
-  // ✅ safe percent
   const getPercent = (value) =>
     tasks.length ? Math.round((value / tasks.length) * 100) : 0;
 
-  // ✅ recent activity
+  // ✅ RECENT ACTIVITY
   const sortedTasks = [...tasks].sort(
     (a, b) =>
       new Date(b.updatedAt || b.createdAt) -
@@ -109,15 +144,19 @@ export default function ProfilePreview({
   };
 
   return (
-    <main className="min-h-screen bg-green-200 dark:bg-gray-900 relative pt-20 px-4 md:px-6 lg:px-8">
+    <main className="min-h-screen bg-green-200 dark:bg-gray-900 pt-20 px-4">
+      {/* 🔥 DEBUG PANEL */}
+      <div className="bg-black text-green-400 text-xs p-3 mb-4 rounded overflow-auto">
+        <p>STEP: {debug.step}</p>
+        <p>USER: {JSON.stringify(debug.user)}</p>
+        <p>TASKS: {JSON.stringify(debug.tasks)}</p>
+        <p>ERROR: {debug.error}</p>
+      </div>
 
       {/* MENU */}
       <div className="fixed top-4 left-4 z-50">
-        <div className="bg-red-500 rounded-lg p-1 border border-red-600">
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="p-2 rounded hover:bg-red-600"
-          >
+        <div className="bg-red-500 rounded-lg p-1">
+          <button onClick={() => setMenuOpen(!menuOpen)} className="p-2">
             <div className="w-6 h-0.5 bg-white mb-1"></div>
             <div className="w-6 h-0.5 bg-white mb-1"></div>
             <div className="w-6 h-0.5 bg-white"></div>
@@ -125,14 +164,17 @@ export default function ProfilePreview({
         </div>
 
         {menuOpen && (
-          <ul className="absolute left-0 mt-3 w-40 bg-white dark:bg-gray-800 rounded shadow-md">
+          <ul className="absolute left-0 mt-3 w-40 bg-white rounded shadow-md">
             <li>
               <Link href="/" className="block px-4 py-2 hover:bg-red-100">
                 Home
               </Link>
             </li>
             <li>
-              <Link href="/dashboard" className="block px-4 py-2 hover:bg-red-100">
+              <Link
+                href="/dashboard"
+                className="block px-4 py-2 hover:bg-red-100"
+              >
                 Profile
               </Link>
             </li>
@@ -141,118 +183,74 @@ export default function ProfilePreview({
       </div>
 
       {/* PROFILE */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        {/* USER CARD */}
-        <div className="lg:col-span-4 bg-white dark:bg-gray-800 rounded-2xl p-6">
-          <div className="flex flex-col items-center text-center">
-            {user?.image ? (
-              <Image
-                src={user.image}
-                alt="Profile"
-                width={80}
-                height={80}
-                className="rounded-full"
-              />
-            ) : (
-              <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center">
-                No Image
-              </div>
-            )}
-
-            <h2 className="text-xl font-bold mt-2">{user?.name}</h2>
-            <p className="text-sm text-gray-500">{user?.email}</p>
-          </div>
-        </div>
-
-        {/* STATS */}
-        <div className="lg:col-span-8 grid sm:grid-cols-2 gap-6">
-
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6">
-            <h3 className="mb-4">Task Priority</h3>
-
-            <div className="flex justify-between">
-              <CircleStat label="High" percent={getPercent(priorityCount.high)} count={priorityCount.high} color="#FEE2E2" />
-              <CircleStat label="Medium" percent={getPercent(priorityCount.medium)} count={priorityCount.medium} color="#FEF3C7" />
-              <CircleStat label="Low" percent={getPercent(priorityCount.low)} count={priorityCount.low} color="#DCFCE7" />
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6">
-            <h3 className="mb-4">Task Status</h3>
-
-            <div className="flex justify-between">
-              <CircleStat label="Completed" percent={getPercent(statusCount.completed)} count={statusCount.completed} color="#DCFCE7" />
-              <CircleStat label="Ongoing" percent={getPercent(statusCount.ongoing)} count={statusCount.ongoing} color="#DBEAFE" />
-              <CircleStat label="Not Started" percent={getPercent(statusCount.notStarted)} count={statusCount.notStarted} color="#E5E7EB" />
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      {/* ACTIVITY + SETTINGS */}
-      <div className="grid lg:grid-cols-12 gap-6 mt-6">
-
-        {/* ACTIVITY */}
-        <div className="lg:col-span-8 bg-white dark:bg-gray-800 rounded-2xl p-6">
-          <h3 className="mb-4">Recent Activity</h3>
-
-          {recentActivities.length === 0 ? (
-            <p>No activity</p>
+      <div className="grid lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-4 bg-white rounded-2xl p-6 text-center">
+          {user?.image ? (
+            <Image
+              src={user.image}
+              alt="Profile"
+              width={80}
+              height={80}
+              className="rounded-full mx-auto"
+            />
           ) : (
-            recentActivities.map((a, i) => (
-              <div key={i} className="flex justify-between">
-                <span>{a.text}</span>
-                <span className="text-gray-400">{timeAgo(a.time)}</span>
-              </div>
-            ))
+            <div className="w-20 h-20 bg-gray-200 rounded-full mx-auto flex items-center justify-center">
+              No Image
+            </div>
           )}
+
+          <h2 className="mt-2 font-bold">{user?.name || "No Name"}</h2>
+          <p className="text-sm text-gray-500">{user?.email || "No Email"}</p>
         </div>
 
-        {/* SETTINGS */}
-        <div className="lg:col-span-4 bg-white dark:bg-gray-800 rounded-2xl p-6 space-y-3">
+        <div className="lg:col-span-8 grid sm:grid-cols-2 gap-6">
+          <div className="bg-white rounded-2xl p-6">
+            <h3 className="mb-4">Task Priority</h3>
+            <div className="flex justify-between">
+              <CircleStat
+                label="High"
+                percent={getPercent(priorityCount.high)}
+                count={priorityCount.high}
+                color="#FEE2E2"
+              />
+              <CircleStat
+                label="Medium"
+                percent={getPercent(priorityCount.medium)}
+                count={priorityCount.medium}
+                color="#FEF3C7"
+              />
+              <CircleStat
+                label="Low"
+                percent={getPercent(priorityCount.low)}
+                count={priorityCount.low}
+                color="#DCFCE7"
+              />
+            </div>
+          </div>
 
-          <button onClick={() => setIsEditModalOpen(true)} className="w-full py-2 border rounded">
-            Edit Profile
-          </button>
-
-          <button onClick={() => setIsAvatarOpen(true)} className="w-full py-2 border rounded">
-            Change Avatar
-          </button>
-
-          <button
-            onClick={() => signOut({ callbackUrl: "/" })}
-            className="w-full py-2 bg-red-600 text-white rounded"
-          >
-            Logout
-          </button>
-
-          <EditProfileModal
-            isOpen={isEditModalOpen}
-            onClose={() => setIsEditModalOpen(false)}
-            user={user}
-            onSave={handleNameSave}
-          />
-
-          <ChangeAvatarModal
-            isOpen={isAvatarOpen}
-            onClose={() => setIsAvatarOpen(false)}
-            user={user}
-            onSave={async (newImageUrl) => {
-              const res = await fetch("/api/user", {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ image: newImageUrl }),
-              });
-
-              const data = await res.json();
-              if (data.success) setUser(data.user);
-
-              setIsAvatarOpen(false);
-            }}
-          />
-
+          <div className="bg-white rounded-2xl p-6">
+            <h3 className="mb-4">Task Status</h3>
+            <div className="flex justify-between">
+              <CircleStat
+                label="Completed"
+                percent={getPercent(statusCount.completed)}
+                count={statusCount.completed}
+                color="#DCFCE7"
+              />
+              <CircleStat
+                label="Ongoing"
+                percent={getPercent(statusCount.ongoing)}
+                count={statusCount.ongoing}
+                color="#DBEAFE"
+              />
+              <CircleStat
+                label="Not Started"
+                percent={getPercent(statusCount.notStarted)}
+                count={statusCount.notStarted}
+                color="#E5E7EB"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </main>
