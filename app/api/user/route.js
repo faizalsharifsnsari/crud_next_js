@@ -35,7 +35,7 @@ export async function GET() {
       console.log("🔵 Trying TRUECALLER LOGIN");
 
       user = await TruecallerUser.findOne({ sessionToken }).select(
-        "name email image phone"
+        "name email image phone",
       );
 
       console.log("🔵 TRUECALLER USER:", user);
@@ -56,7 +56,7 @@ export async function GET() {
       console.log("🟢 Trying GOOGLE LOGIN:", session.user.id);
 
       user = await NextAuthUser.findById(session.user.id).select(
-        "name email image"
+        "name email image",
       );
 
       console.log("🟢 GOOGLE USER:", user);
@@ -77,14 +77,14 @@ export async function GET() {
 
     return NextResponse.json(
       { success: false, message: "User not found" },
-      { status: 404 }
+      { status: 404 },
     );
   } catch (error) {
     console.log("🔥 ERROR:", error);
 
     return NextResponse.json(
       { success: false, message: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
