@@ -38,7 +38,7 @@ function StatusIcon({ status, size = "md" }) {
 }
 
 export default function UserSidebar({ user, statusCount, priorityCount }) {
-  console.log("User object:", user);
+    console.log("User object:", user);
   console.log("User image:", user?.image);
 
   const [open, setOpen] = useState(false);
@@ -171,6 +171,16 @@ export default function UserSidebar({ user, statusCount, priorityCount }) {
                 <span>Low</span>
               </div>
               <span className="font-semibold">{priorityCount.low}</span>
+            </div>
+
+            {/* Add Task Button */}
+            <div className="mt-6">
+              <button
+                onClick={() => router.push("/dashboard")}
+                className="w-full py-2.5 rounded-md text-sm font-medium text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-black/5 dark:hover:bg-gray-700 transition"
+              >
+                Profile
+              </button>
             </div>
           </div>
         </div>
