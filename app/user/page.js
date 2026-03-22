@@ -16,60 +16,79 @@ const STATUS = {
 };
 
 export default async function ProfilePage() {
+  console.log("🔥 PROFILE PAGE START");
+
+  // 🔹 SESSION + COOKIE
   const session = await getServerSession(authOptions);
+  console.log("🟡 SESSION:", session);
 
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get("taskify_session")?.value;
+  console.log("🟡 TRUECALLER COOKIE TOKEN:", sessionToken);
 
-  console.log("COOKIE TOKEN:", sessionToken);
-
+  // 🔹 DB CONNECTION
   if (mongoose.connection.readyState === 0) {
+    console.log("🟡 Connecting to DB...");
     await mongoose.connect(connectionStr);
+    console.log("🟢 DB Connected");
   }
 
   let user = null;
 
- 
-  // ⭐ GOOGLE LOGIN
-  if (session?.user?.id) {
-    console.log("Google login detected:", session.user.id);
+  // =========================================
+  // 🔥 TRUECALLER LOGIN (PRIORITY)
+  // =========================================
+  if (sessionToken) {
+    console.log("🟢 TRUECALLER LOGIN DETECTED");
+
+    user = await TruecallerUser.findOne({ sessionToken }).select(
+      "name email image sessionToken",
+    );
+
+    console.log("🟢 TRUECALLER USER FOUND:", user);
+  } else {
+    console.log("🔴 No Truecaller sessionToken found");
+  }
+
+  // =========================================
+  // 🔥 GOOGLE LOGIN (FALLBACK)
+  // =========================================
+  if (!user && session?.user?.id) {
+    console.log("🟢 GOOGLE LOGIN DETECTED:", session.user.id);
 
     user = await NextAuthUser.findById(session.user.id).select(
       "name email image",
     );
+
+    console.log("🟢 GOOGLE USER FOUND:", user);
+  } else if (!session?.user?.id) {
+    console.log("🔴 No Google session found");
   }
 
-  // ⭐ TRUECALLER LOGIN
- // ⭐ TRUECALLER LOGIN
-if (!user && sessionToken) {
-  console.log(
-    "Truecaller login detected. Searching with sessionToken:",
-    sessionToken,
-  );
-
-  user = await TruecallerUser.findOne({ sessionToken }).select(
-    "name email image sessionToken",
-  );
-
-  // 🔎 DEBUG
-  console.log("TRUECALLER USER FOUND:", user);
-  console.log("TRUECALLER IMAGE:", user?.image);
-}
-
-  // ⭐ NO AUTH FOUND
-  if (!session?.user?.id && !sessionToken) {
-    console.log("No authentication found. Redirecting to login.");
-    redirect("/auth/login");
-  }
-
-  // ⭐ TOKEN EXISTS BUT USER NOT FOUND
+  // =========================================
+  // ❌ NO USER FOUND
+  // =========================================
   if (!user) {
-    console.log("User not found in database. Redirecting to login.");
+    console.log("❌ NO VALID USER FOUND → REDIRECT");
     redirect("/auth/login");
   }
+
+  console.log("🔥 FINAL USER SELECTED:", user);
+  console.log("🔥 FINAL USER ID:", user._id);
+
+  // =========================================
+  // 🔥 FETCH TASKS
+  // =========================================
+  console.log("🟡 Fetching tasks for userId:", user._id);
 
   const tasks = await Taskify.find({ userId: user._id }).sort({ order: 1 });
 
+  console.log("🟢 TASKS FETCHED:", tasks.length);
+  console.log("🟢 TASKS DATA:", tasks);
+
+  // =========================================
+  // 🔄 FORMAT TASKS
+  // =========================================
   const tasksWithColors = tasks.map((task) => ({
     id: task._id.toString(),
     title: task.title,
@@ -87,6 +106,11 @@ if (!user && sessionToken) {
           : "border-l-emerald-300",
   }));
 
+  console.log("🟢 FORMATTED TASKS:", tasksWithColors);
+
+  // =========================================
+  // 📊 COUNTS
+  // =========================================
   const statusCount = {
     notStarted: 0,
     ongoing: 0,
@@ -108,6 +132,14 @@ if (!user && sessionToken) {
     if (task.priority === "medium") priorityCount.medium++;
     if (task.priority === "low") priorityCount.low++;
   }
+
+  console.log("📊 STATUS COUNT:", statusCount);
+  console.log("📊 PRIORITY COUNT:", priorityCount);
+
+  // =========================================
+  // 🚀 FINAL RETURN
+  // =========================================
+  console.log("🚀 SENDING DATA TO CLIENT");
 
   return (
     <ProfileClient
