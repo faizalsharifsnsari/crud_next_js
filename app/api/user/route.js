@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
 import mongoose from "mongoose";
 import { connectionStr } from "../../lib/mongodb";
+import TruecallerUser from "../../lib/model/User";
 
 import User from "../../lib/model/User"; // Truecaller
 import NextAuthUser from "../../lib/model/NextAuthUser"; // Google
@@ -15,7 +16,7 @@ export async function GET() {
 
     const session = await getServerSession(authOptions);
 
-    const cookieStore =await cookies();
+    const cookieStore = await cookies();
     const sessionToken = cookieStore.get("taskify_session")?.value;
 
     console.log("🟡 SESSION:", session);
