@@ -61,6 +61,64 @@ function StatusIcon({ status, onClick }) {
   );
 }
 
+function ConfirmDialog({ open, onClose, onConfirm }) {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* BACKDROP */}
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      {/* MODAL */}
+      <div
+        className="
+        relative z-10 w-[90%] max-w-sm
+        rounded-xl shadow-2xl p-6 text-center
+        bg-white dark:bg-gray-900
+        border border-gray-200 dark:border-gray-700
+      "
+      >
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-5">
+          Are you sure you want to delete this task?
+        </h2>
+
+        <div className="flex justify-center gap-3">
+          {/* Cancel */}
+          <button
+            onClick={onClose}
+            className="
+              px-4 py-2 rounded-md text-sm font-medium
+              bg-gray-200 hover:bg-gray-300
+              dark:bg-gray-700 dark:hover:bg-gray-600
+              text-gray-800 dark:text-white
+            "
+          >
+            Cancel
+          </button>
+
+          {/* Delete */}
+          <button
+            onClick={() => {
+              onConfirm();
+              onClose();
+            }}
+            className="
+              px-4 py-2 rounded-md text-sm font-medium
+              bg-red-500 hover:bg-red-600
+              text-white
+            "
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ---------------- SORTABLE TASK ---------------- */
 function SortableTask({ task, onDelete, onEdit, onView }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
@@ -124,14 +182,7 @@ function SortableTask({ task, onDelete, onEdit, onView }) {
   "
           onClick={(e) => {
             e.stopPropagation();
-
-            const confirmDelete = window.confirm(
-              "Are you sure you want to delete this task?",
-            );
-
-            if (confirmDelete) {
-              onDelete(task.id);
-            }
+            onDelete(task.id); // 🔥 only trigger dialog
           }}
         >
           Delete
@@ -147,6 +198,8 @@ export default function TaskList({ initialTasks }) {
   const [viewTask, setViewTask] = useState(null);
   const [loadingViewTask, setLoadingViewTask] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
+  const [showDialog, setShowDialog] = useState(false);
 
   //dynamic update
   useEffect(() => {
@@ -274,6 +327,11 @@ export default function TaskList({ initialTasks }) {
 
   return (
     <>
+      <ConfirmDialog
+        open={showDialog}
+        onClose={() => setShowDialog(false)}
+        onConfirm={() => deleteTask(deleteId)}
+      />
       {viewTask && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div
@@ -547,7 +605,10 @@ export default function TaskList({ initialTasks }) {
               <SortableTask
                 key={task.id}
                 task={task}
-                onDelete={deleteTask}
+                onDelete={(id) => {
+                  setDeleteId(id);
+                  setShowDialog(true);
+                }}
                 onEdit={(task) => setEditingTask(task)}
                 onView={(task) => setViewTask(task)}
               />
@@ -555,6 +616,21 @@ export default function TaskList({ initialTasks }) {
           </div>
         </SortableContext>
       </DndContext>
+      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+  <button
+    onClick={() => setEditingTask({})} // or open your add task modal
+    className="
+      px-6 py-3 rounded-full
+      bg-blue-500 hover:bg-blue-600
+      text-white font-semibold text-sm
+      shadow-lg hover:shadow-xl
+      transition-all duration-200
+      active:scale-95
+    "
+  >
+    + Add Task
+  </button>
+</div>
     </>
   );
 }
