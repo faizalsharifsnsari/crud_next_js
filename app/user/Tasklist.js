@@ -606,20 +606,20 @@ export default function TaskList({ initialTasks }) {
           strategy={verticalListSortingStrategy}
         >
           <div className="max-w-2xl mx-auto px-3">
-  <div className={`${styles.taskList} pb-36`}>
-            {tasks.map((task) => (
-              <SortableTask
-                key={task.id}
-                task={task}
-                onDelete={(id) => {
-                  setDeleteId(id);
-                  setShowDialog(true);
-                }}
-                onEdit={(task) => setEditingTask(task)}
-                onView={(task) => setViewTask(task)}
-              />
-            ))}
-          </div>
+            <div className="space-y-3 pb-28">
+              {tasks.map((task) => (
+                <SortableTask
+                  key={task.id}
+                  task={task}
+                  onDelete={(id) => {
+                    setDeleteId(id);
+                    setShowDialog(true);
+                  }}
+                  onEdit={(task) => setEditingTask(task)}
+                  onView={(task) => setViewTask(task)}
+                />
+              ))}
+            </div>
           </div>
         </SortableContext>
       </DndContext>

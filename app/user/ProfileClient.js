@@ -43,10 +43,9 @@ export default function ProfileClient({
     {/* Mobile Sidebar Drawer */}
     {sidebarOpen && (
       <div className="fixed inset-0 z-50 md:hidden">
-
         {/* Overlay */}
         <div
-          className="absolute inset-0 bg-black opacity-50"
+          className="absolute inset-0 bg-black/50"
           onClick={() => setSidebarOpen(false)}
         />
 
@@ -58,7 +57,6 @@ export default function ProfileClient({
             priorityCount={priorityCount}
           />
         </div>
-
       </div>
     )}
 
@@ -66,25 +64,27 @@ export default function ProfileClient({
     <div className="flex-1 flex flex-col">
 
       {/* Top Bar */}
-      <div className="flex items-center justify-between p-4 bg-red-500 dark:bg-red-500 text-white shadow">
+      <div className="flex items-center justify-between px-4 py-3 bg-red-500 text-white shadow-md">
 
         {/* Mobile Hamburger */}
         <div className="md:hidden">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="px-3 py-2 border border-green-200 rounded hover:bg-red-500"
+            className="px-3 py-2 border border-white rounded-md"
           >
             ☰
           </button>
         </div>
 
-        {/* Spacer */}
-        <div></div>
+        {/* Title (optional for better UI) */}
+        <h1 className="text-sm md:text-base font-semibold">
+          Task Dashboard
+        </h1>
 
         {/* Filter */}
-        <div className="relative mr-6">
+        <div className="relative">
           <button
-            className="flex items-center gap-2 px-3 py-1 border border-white rounded hover:bg-red-500"
+            className="flex items-center gap-2 px-3 py-1 border border-white rounded-md"
             onClick={() => setMenuOpen(!menuOpen)}
           >
             <span>Filter</span>
@@ -133,21 +133,26 @@ export default function ProfileClient({
                   </button>
                 </li>
               ))}
-
             </ul>
           )}
         </div>
-
       </div>
 
       {/* Main Section */}
-      <section className="flex-1 p-4 md:p-6 overflow-auto">
-        <h1 className="text-xl font-semibold mb-4">Code Block</h1>
-        <TaskList initialTasks={filteredTasks} />
+      <section className="flex-1 overflow-auto flex justify-center p-4 md:p-6">
+
+        {/* 🔥 CENTERED CONTAINER */}
+        <div className="w-full max-w-2xl">
+          <h1 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
+            Code Block
+          </h1>
+
+          <TaskList initialTasks={filteredTasks} />
+        </div>
+
       </section>
 
     </div>
-
   </div>
 );
 }
