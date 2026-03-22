@@ -7,101 +7,87 @@ import { connectionStr } from "../../lib/mongodb";
 import User from "../../lib/model/User"; // Truecaller
 import NextAuthUser from "../../lib/model/NextAuthUser"; // Google
 
+import { cookies } from "next/headers";
+
 export async function GET() {
   try {
-    console.log("🔥 /api/user called");
+    console.log("🔥 /api/user API HIT");
 
     const session = await getServerSession(authOptions);
 
+    const cookieStore = cookies();
+    const sessionToken = cookieStore.get("taskify_session")?.value;
+
     console.log("🟡 SESSION:", session);
+    console.log("🟡 TRUECALLER TOKEN:", sessionToken);
 
-    // ❌ NO SESSION
-    if (!session) {
-      console.log("❌ No session found");
-      return NextResponse.json(
-        { success: false, message: "Unauthorized - No session" },
-        { status: 401 },
-      );
-    }
-
-    // ❌ SESSION BUT NO USER ID
-    if (!session.user?.id) {
-      console.log("❌ Session exists but no user.id");
-      return NextResponse.json(
-        { success: false, message: "Invalid session user" },
-        { status: 400 },
-      );
-    }
-
-    // 🔌 CONNECT DB
     if (mongoose.connection.readyState === 0) {
-      console.log("🔌 Connecting to DB...");
       await mongoose.connect(connectionStr);
+      console.log("🟢 MongoDB Connected");
     }
 
     let user = null;
 
     // =========================
-    // 🔵 TRY GOOGLE USER
+    // ⭐ PRIORITY 1: TRUECALLER
     // =========================
-    console.log("🔍 Searching in NextAuthUser (Google)...");
+    if (sessionToken) {
+      console.log("🔵 Trying TRUECALLER LOGIN");
 
-    user = await NextAuthUser.findById(session.user.id).select(
-      "name email image",
-    );
+      user = await TruecallerUser.findOne({ sessionToken }).select(
+        "name email image phone"
+      );
 
-    if (user) {
-      console.log("✅ GOOGLE USER FOUND:", user);
-    } else {
-      console.log("⚠️ Not found in Google DB, trying Truecaller...");
-    }
-
-    // =========================
-    // 🔵 TRY TRUECALLER USER
-    // =========================
-    if (!user) {
-      user = await User.findById(session.user.id).select("name email image");
+      console.log("🔵 TRUECALLER USER:", user);
 
       if (user) {
-        console.log("✅ TRUECALLER USER FOUND:", user);
+        return NextResponse.json({
+          success: true,
+          user,
+          source: "truecaller",
+        });
       }
     }
 
-    // ❌ USER NOT FOUND ANYWHERE
-    if (!user) {
-      console.log("❌ User not found in ANY DB");
+    // =========================
+    // ⭐ PRIORITY 2: GOOGLE
+    // =========================
+    if (session?.user?.id) {
+      console.log("🟢 Trying GOOGLE LOGIN:", session.user.id);
 
-      return NextResponse.json(
-        {
-          success: false,
-          message: "User not found",
-          sessionUserId: session.user.id,
-        },
-        { status: 404 },
+      user = await NextAuthUser.findById(session.user.id).select(
+        "name email image"
       );
+
+      console.log("🟢 GOOGLE USER:", user);
+
+      if (user) {
+        return NextResponse.json({
+          success: true,
+          user,
+          source: "google",
+        });
+      }
     }
 
-    // ✅ FINAL RESPONSE
-    console.log("🚀 FINAL USER:", user);
+    // =========================
+    // ❌ NO USER FOUND
+    // =========================
+    console.log("🔴 NO USER FOUND");
 
-    return NextResponse.json({
-      success: true,
-      user: {
-        name: user.name || "",
-        email: user.email || "",
-        image: user.image || "",
-      },
-    });
+    return NextResponse.json(
+      { success: false, message: "User not found" },
+      { status: 404 }
+    );
   } catch (error) {
-    console.log("🔥 ERROR IN /api/user:", error);
+    console.log("🔥 ERROR:", error);
 
     return NextResponse.json(
       { success: false, message: error.message },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
-
 export async function PATCH(req) {
   try {
     const session = await getServerSession(authOptions);
