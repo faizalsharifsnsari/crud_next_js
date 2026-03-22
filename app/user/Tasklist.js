@@ -1,5 +1,6 @@
 "use client";
 import { ClockIcon, PlayIcon, CheckIcon } from "@heroicons/react/24/solid";
+import AddTaskDialog from "../components/AddTaskdialuge";
 
 import {
   DndContext,
@@ -200,6 +201,7 @@ export default function TaskList({ initialTasks }) {
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [showDialog, setShowDialog] = useState(false);
+  const [openAddDialog, setOpenAddDialog] = useState(false);
 
   //dynamic update
   useEffect(() => {
@@ -327,6 +329,10 @@ export default function TaskList({ initialTasks }) {
 
   return (
     <>
+      <AddTaskDialog
+        isOpen={openAddDialog}
+        onClose={() => setOpenAddDialog(false)}
+      />
       <ConfirmDialog
         open={showDialog}
         onClose={() => setShowDialog(false)}
@@ -618,7 +624,7 @@ export default function TaskList({ initialTasks }) {
       </DndContext>
       <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
         <button
-          onClick={() => setEditingTask({})} // or open your add task modal
+          onClick={() => setOpenAddDialog()} // or open your add task modal
           className="
       px-6 py-3 rounded-full
       bg-blue-500 hover:bg-blue-600
