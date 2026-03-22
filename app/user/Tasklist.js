@@ -605,7 +605,7 @@ export default function TaskList({ initialTasks }) {
           items={tasks.map((t) => t.id)}
           strategy={verticalListSortingStrategy}
         >
-          <div className="space-y-3 pb-[96px]">
+          <div className="space-y-3 pb-32">
             {tasks.map((task) => (
               <SortableTask
                 key={task.id}

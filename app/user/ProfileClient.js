@@ -133,9 +133,9 @@ export default function ProfileClient({
         </div>
 
         {/* Main Section */}
-        <section className="flex-1 overflow-auto flex justify-center p-4 md:p-6">
+        <section className="flex-1 overflow-auto flex justify-center items-start p-4 md:p-6">
           {/* 🔥 CENTERED CONTAINER */}
-          <div className="w-[92%] max-w-[420px] mx-auto">
+          <div className="w-full max-w-sm mx-auto">
             <h1 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
               Code Block
             </h1>
