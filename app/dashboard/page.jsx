@@ -3,8 +3,6 @@
 import { signOut } from "next-auth/react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import EditProfileModal from "../components/profile/Editprofiledialuge";
-import ChangeAvatarModal from "../components/profile/ChangeAvatarModal";
 import Link from "next/link";
 
 function CircleStat({ label, percent, count, color }) {
@@ -28,61 +26,69 @@ export default function ProfilePreview() {
   const [tasks, setTasks] = useState([]);
   const [user, setUser] = useState(null);
 
-  const [isAvatarOpen, setIsAvatarOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   // 🔥 DEBUG STATE
   const [debug, setDebug] = useState({
     step: "init",
-    user: null,
-    tasks: null,
+    userRaw: null,
+    taskRaw: null,
     error: null,
   });
 
-  // 🔥 DEBUG FETCH
   useEffect(() => {
-    console.log("🔥 DEBUG START");
+    console.log("🔥 PROFILE DEBUG START");
 
     const runDebug = async () => {
       try {
-        // USER FETCH
-        setDebug((d) => ({ ...d, step: "fetching /api/user" }));
+        // =========================
+        // 🔵 FETCH USER
+        // =========================
+        setDebug((d) => ({ ...d, step: "Fetching /api/user" }));
 
         const userRes = await fetch("/api/user", {
           credentials: "include",
         });
 
         const userData = await userRes.json();
-        console.log("USER API:", userData);
 
-        setDebug((d) => ({ ...d, user: userData }));
+        console.log("🟢 USER API RESPONSE:", userData);
 
-        if (userData.success) {
+        setDebug((d) => ({ ...d, userRaw: userData }));
+
+        if (userData.success && userData.user) {
+          console.log("✅ SETTING USER:", userData.user);
           setUser(userData.user);
+        } else {
+          console.log("❌ USER NOT FOUND OR INVALID:", userData);
         }
 
-        // TASK FETCH
-        setDebug((d) => ({ ...d, step: "fetching /api/products" }));
+        // =========================
+        // 🔵 FETCH TASKS
+        // =========================
+        setDebug((d) => ({ ...d, step: "Fetching /api/products" }));
 
         const taskRes = await fetch("/api/products", {
           credentials: "include",
         });
 
         const taskData = await taskRes.json();
-        console.log("TASK API:", taskData);
+
+        console.log("🟢 TASK API RESPONSE:", taskData);
 
         setDebug((d) => ({
           ...d,
-          tasks: taskData,
+          taskRaw: taskData,
           step: "done",
         }));
 
-        if (taskData.success) {
+        if (taskData.success && taskData.result) {
           setTasks(taskData.result);
+        } else {
+          console.log("❌ TASK FETCH FAILED:", taskData);
         }
       } catch (err) {
-        console.error("DEBUG ERROR:", err);
+        console.error("🔥 DEBUG ERROR:", err);
 
         setDebug((d) => ({
           ...d,
@@ -95,7 +101,9 @@ export default function ProfilePreview() {
     runDebug();
   }, []);
 
-  // ✅ COUNTS
+  // =========================
+  // 📊 COUNTS
+  // =========================
   const statusCount = { notStarted: 0, ongoing: 0, completed: 0 };
   const priorityCount = { high: 0, medium: 0, low: 0 };
 
@@ -112,45 +120,21 @@ export default function ProfilePreview() {
   const getPercent = (value) =>
     tasks.length ? Math.round((value / tasks.length) * 100) : 0;
 
-  // ✅ RECENT ACTIVITY
-  const sortedTasks = [...tasks].sort(
-    (a, b) =>
-      new Date(b.updatedAt || b.createdAt) -
-      new Date(a.updatedAt || a.createdAt),
-  );
-
-  const recentActivities = sortedTasks.slice(0, 3).map((task) => {
-    let text = `➕ Created “${task.title}”`;
-
-    if (task.status === "completed") {
-      text = `✔ Completed “${task.title}”`;
-    } else if (task.updatedAt !== task.createdAt) {
-      text = `✏ Updated “${task.title}”`;
-    }
-
-    return {
-      text,
-      time: task.updatedAt || task.createdAt,
-    };
-  });
-
-  const timeAgo = (date) => {
-    const seconds = Math.floor((Date.now() - new Date(date)) / 1000);
-
-    if (seconds < 60) return "Just now";
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-    return `${Math.floor(seconds / 86400)} days ago`;
-  };
-
   return (
     <main className="min-h-screen bg-green-200 dark:bg-gray-900 pt-20 px-4">
       {/* 🔥 DEBUG PANEL */}
       <div className="bg-black text-green-400 text-xs p-3 mb-4 rounded overflow-auto">
         <p>STEP: {debug.step}</p>
-        <p>USER: {JSON.stringify(debug.user)}</p>
-        <p>TASKS: {JSON.stringify(debug.tasks)}</p>
+        <p>USER RAW: {JSON.stringify(debug.userRaw)}</p>
+        <p>TASK RAW: {JSON.stringify(debug.taskRaw)}</p>
         <p>ERROR: {debug.error}</p>
+
+        <hr className="my-2" />
+
+        {/* 🔴 DIRECT USER VALUES */}
+        <p>NAME: {user?.name}</p>
+        <p>EMAIL: {user?.email}</p>
+        <p>IMAGE: {user?.image}</p>
       </div>
 
       {/* MENU */}
@@ -200,6 +184,7 @@ export default function ProfilePreview() {
           )}
 
           <h2 className="mt-2 font-bold">{user?.name || "No Name"}</h2>
+
           <p className="text-sm text-gray-500">{user?.email || "No Email"}</p>
         </div>
 
@@ -253,6 +238,8 @@ export default function ProfilePreview() {
           </div>
         </div>
       </div>
+
+      {/* LOGOUT */}
       <button
         onClick={() => signOut({ callbackUrl: "/auth/login" })}
         className="w-full py-2 bg-red-600 text-white rounded mt-4"
