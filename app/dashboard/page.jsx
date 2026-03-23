@@ -104,6 +104,32 @@ export default function ProfilePreview() {
     time: task.createdAt || new Date(),
   }));
 
+
+   //for updating the username
+  const handleNameSave = async (newName) => {
+    try {
+      const res = await fetch("/api/user", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: newName }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setUser(data.user);
+        setIsEditModalOpen(false);
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong");
+    }
+  };
+
   return (
     <main className="min-h-screen bg-green-200 dark:bg-gray-900 relative pt-20 px-4 md:px-6 lg:px-8">
       {/* Hamburger Menu */}
