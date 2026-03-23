@@ -9,125 +9,93 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export async function POST(req) {
+export async function PATCH(req) {
   try {
-    console.log("🔥 POST /api/upload HIT");
+    console.log("🔥 PATCH /api/user HIT");
 
-    // =========================
-    // 🔵 READ FORM DATA
-    // =========================
-    const formData = await req.formData();
-    console.log("🟡 FORM DATA RECEIVED");
+    const session = await getServerSession(authOptions);
+    console.log("🟡 SESSION:", session);
 
-    const file = formData.get("file");
-
-    // =========================
-    // ❌ FILE VALIDATION
-    // =========================
-    if (!file) {
-      console.log("❌ NO FILE FOUND IN FORM DATA");
+    if (!session?.user?.id) {
+      console.log("❌ INVALID SESSION");
       return NextResponse.json(
-        { success: false, error: "No file received" },
-        { status: 400 }
+        { success: false, message: "Invalid session" },
+        { status: 401 }
       );
     }
 
-    console.log("🟢 FILE RECEIVED:", {
-      name: file.name,
-      type: file.type,
-      size: file.size,
+    const body = await req.json();
+    console.log("🟡 REQUEST BODY:", body);
+
+    // =========================
+    // 🔵 CONNECT DB
+    // =========================
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(connectionStr);
+      console.log("🟢 DB CONNECTED:", mongoose.connection.name);
+    }
+
+    // =========================
+    // 🔥 DEBUG: CHECK USER EXISTS FIRST
+    // =========================
+    const existingUser = await User.findOne({
+      _id: session.user.id, // 🔥 NO ObjectId conversion
     });
 
-    // =========================
-    // ❌ TYPE VALIDATION
-    // =========================
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    console.log("🔍 EXISTING USER:", existingUser);
 
-    if (!allowedTypes.includes(file.type)) {
-      console.log("❌ INVALID FILE TYPE:", file.type);
+    if (!existingUser) {
+      console.log("❌ USER NOT FOUND IN DB");
+
+      // EXTRA DEBUG
+      const allUsers = await User.find().limit(5);
+      console.log("🧠 SAMPLE USERS FROM DB:", allUsers);
+
       return NextResponse.json(
-        { success: false, error: "Only JPG, PNG, WEBP allowed" },
-        { status: 400 }
+        {
+          success: false,
+          message: "User not found in DB",
+          sessionId: session.user.id,
+        },
+        { status: 404 }
       );
     }
 
     // =========================
-    // ❌ SIZE VALIDATION (2MB)
+    // 🔵 BUILD UPDATE
     // =========================
-    const maxSize = 2 * 1024 * 1024;
+    const updateData = {};
 
-    if (file.size > maxSize) {
-      console.log("❌ FILE TOO LARGE:", file.size);
-      return NextResponse.json(
-        { success: false, error: "File size exceeds 2MB" },
-        { status: 400 }
-      );
+    if (body.name) {
+      updateData.name = body.name.trim();
     }
 
-    // =========================
-    // 🔵 CONVERT TO BUFFER
-    // =========================
-    console.log("🟡 CONVERTING FILE TO BUFFER...");
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    console.log("🟢 BUFFER CREATED:", buffer.length);
-
-    // =========================
-    // 🔵 CLOUDINARY UPLOAD
-    // =========================
-    console.log("🟡 UPLOADING TO CLOUDINARY...");
-
-    const result = await new Promise((resolve, reject) => {
-      cloudinary.uploader
-        .upload_stream(
-          {
-            folder: "profile_avatars",
-            resource_type: "image",
-          },
-          (error, result) => {
-            if (error) {
-              console.log("❌ CLOUDINARY ERROR:", error);
-              reject(error);
-            } else {
-              console.log("🟢 CLOUDINARY SUCCESS:", result);
-              resolve(result);
-            }
-          }
-        )
-        .end(buffer);
-    });
-
-    // =========================
-    // ❌ RESULT VALIDATION
-    // =========================
-    if (!result || !result.secure_url) {
-      console.log("❌ INVALID CLOUDINARY RESPONSE:", result);
-      return NextResponse.json(
-        { success: false, error: "Upload failed - no URL returned" },
-        { status: 500 }
-      );
+    if (body.image) {
+      updateData.image = body.image;
     }
 
-    console.log("🟢 FINAL IMAGE URL:", result.secure_url);
+    console.log("🟡 UPDATE DATA:", updateData);
 
     // =========================
-    // ✅ SUCCESS RESPONSE
+    // 🔵 UPDATE USER
     // =========================
+    const updatedUser = await User.findByIdAndUpdate(
+      session.user.id, // 🔥 IMPORTANT
+      updateData,
+      { new: true }
+    ).select("name email image");
+
+    console.log("🟢 UPDATED USER:", updatedUser);
+
     return NextResponse.json({
       success: true,
-      url: result.secure_url,
+      user: updatedUser,
     });
-
   } catch (error) {
-    console.error("🔥 UPLOAD ERROR:", error);
+    console.error("🔥 PATCH ERROR:", error);
 
     return NextResponse.json(
-      {
-        success: false,
-        error: error.message,
-        stack: error.stack, // 🔥 extra debug
-      },
+      { success: false, message: error.message },
       { status: 500 }
     );
   }
