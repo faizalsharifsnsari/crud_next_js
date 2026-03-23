@@ -1,10 +1,8 @@
 "use client";
-import { signOut, useSession } from "next-auth/react";
+
+import { signOut } from "next-auth/react";
 import Image from "next/image";
-import { useState } from "react";
-import { useEffect } from "react";
-import EditProfileModal from "../components/profile/Editprofiledialuge";
-import ChangeAvatarModal from "../components/profile/ChangeAvatarModal";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 function CircleStat({ label, percent, count, color }) {
@@ -14,7 +12,9 @@ function CircleStat({ label, percent, count, color }) {
         className="relative w-24 h-24 rounded-full flex items-center justify-center"
         style={{ background: color }}
       >
-        <span className="text-lg font-bold text-gray-800">{percent}%</span>
+        <span className="text-lg font-bold text-gray-800">
+          {isNaN(percent) ? 0 : percent}%
+        </span>
       </div>
       <p className="text-sm font-medium text-gray-700">{label}</p>
       <p className="text-xs text-gray-500">{count} tasks</p>
@@ -23,66 +23,87 @@ function CircleStat({ label, percent, count, color }) {
 }
 
 export default function ProfilePreview() {
-  const { data: session } = useSession();
   const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isAvatarOpen, setIsAvatarOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   const [menuOpen, setMenuOpen] = useState(false);
 
-  //for updating the username
-  const handleNameSave = async (newName) => {
-    try {
-      const res = await fetch("/api/user", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name: newName }),
-      });
+  // 🔥 DEBUG STATE
+  const [debug, setDebug] = useState({
+    step: "init",
+    userRaw: null,
+    taskRaw: null,
+    error: null,
+  });
 
-      const data = await res.json();
+  useEffect(() => {
+    console.log("🔥 PROFILE DEBUG START");
 
-      if (data.success) {
-        setUser(data.user);
-        setIsEditModalOpen(false);
-      } else {
-        alert(data.message);
+    const runDebug = async () => {
+      try {
+        // =========================
+        // 🔵 FETCH USER
+        // =========================
+        setDebug((d) => ({ ...d, step: "Fetching /api/user" }));
+
+        const userRes = await fetch("/api/user", {
+          credentials: "include",
+        });
+
+        const userData = await userRes.json();
+
+        console.log("🟢 USER API RESPONSE:", userData);
+
+        setDebug((d) => ({ ...d, userRaw: userData }));
+
+        if (userData.success && userData.user) {
+          console.log("✅ SETTING USER:", userData.user);
+          setUser(userData.user);
+        } else {
+          console.log("❌ USER NOT FOUND OR INVALID:", userData);
+        }
+
+        // =========================
+        // 🔵 FETCH TASKS
+        // =========================
+        setDebug((d) => ({ ...d, step: "Fetching /api/products" }));
+
+        const taskRes = await fetch("/api/products", {
+          credentials: "include",
+        });
+
+        const taskData = await taskRes.json();
+
+        console.log("🟢 TASK API RESPONSE:", taskData);
+
+        setDebug((d) => ({
+          ...d,
+          taskRaw: taskData,
+          step: "done",
+        }));
+
+        if (taskData.success && taskData.result) {
+          setTasks(taskData.result);
+        } else {
+          console.log("❌ TASK FETCH FAILED:", taskData);
+        }
+      } catch (err) {
+        console.error("🔥 DEBUG ERROR:", err);
+
+        setDebug((d) => ({
+          ...d,
+          error: err.message,
+          step: "error",
+        }));
       }
-    } catch (error) {
-      console.error(error);
-      alert("Something went wrong");
-    }
-  };
+    };
 
-  //for fetching the user data
-  useEffect(() => {
-    if (!session) return;
+    runDebug();
+  }, []);
 
-    fetch("/api/user")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setUser(data.user);
-        }
-      });
-  }, [session]);
-
-  //for fetching the products data
-  useEffect(() => {
-    if (!session) return;
-
-    fetch("/api/products") // ← your API route
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setTasks(data.result);
-        }
-        setLoading(false);
-      });
-  }, [session]);
+  // =========================
+  // 📊 COUNTS
+  // =========================
   const statusCount = { notStarted: 0, ongoing: 0, completed: 0 };
   const priorityCount = { high: 0, medium: 0, low: 0 };
 
@@ -95,40 +116,9 @@ export default function ProfilePreview() {
     if (task.priority === "medium") priorityCount.medium++;
     if (task.priority === "low") priorityCount.low++;
   });
-  //this code is for the recent task
-  // 🔥 SORT tasks by latest activity (updatedAt > createdAt)
-  const sortedTasks = [...tasks].sort(
-    (a, b) =>
-      new Date(b.updatedAt || b.createdAt) -
-      new Date(a.updatedAt || a.createdAt),
-  );
 
-  // 🔥 BUILD recent activity list
-  const recentActivities = sortedTasks.slice(0, 3).map((task) => {
-    let text = `➕ Created “${task.title}”`;
-
-    if (task.status === "completed") {
-      text = `✔ Completed “${task.title}”`;
-    } else if (task.updatedAt !== task.createdAt) {
-      text = `✏ Updated “${task.title}”`;
-    }
-
-    return {
-      text,
-      time: task.updatedAt || task.createdAt,
-    };
-  });
-
-  // ⏱ Time formatter
-  const timeAgo = (date) => {
-    const seconds = Math.floor((Date.now() - new Date(date)) / 1000);
-
-    if (seconds < 60) return "Just now";
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-    return `${Math.floor(seconds / 86400)} days ago`;
-  };
-
+  const getPercent = (value) =>
+    tasks.length ? Math.round((value / tasks.length) * 100) : 0;
   return (
     <main className="min-h-screen bg-green-200 dark:bg-gray-900 relative pt-20 px-4 md:px-6 lg:px-8">
       {/* Hamburger Menu */}
