@@ -90,7 +90,6 @@ export async function GET() {
   }
 }
 
-
 export async function PATCH(req) {
   try {
     console.log("🔥 PATCH /api/user HIT");
@@ -105,7 +104,7 @@ export async function PATCH(req) {
       console.log("❌ NO SESSION FOUND");
       return NextResponse.json(
         { success: false, message: "Unauthorized - No session" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -113,7 +112,7 @@ export async function PATCH(req) {
       console.log("❌ SESSION USER ID MISSING");
       return NextResponse.json(
         { success: false, message: "Invalid session user" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -127,7 +126,7 @@ export async function PATCH(req) {
       console.log("❌ EMPTY BODY");
       return NextResponse.json(
         { success: false, message: "No data provided" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -155,7 +154,7 @@ export async function PATCH(req) {
         console.log("❌ NAME NOT STRING");
         return NextResponse.json(
           { success: false, message: "Name must be a string" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -163,7 +162,7 @@ export async function PATCH(req) {
         console.log("❌ NAME EMPTY");
         return NextResponse.json(
           { success: false, message: "Name cannot be empty" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -178,7 +177,7 @@ export async function PATCH(req) {
         console.log("❌ IMAGE NOT STRING");
         return NextResponse.json(
           { success: false, message: "Image must be a string URL" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -190,7 +189,7 @@ export async function PATCH(req) {
       console.log("❌ NO VALID FIELDS TO UPDATE");
       return NextResponse.json(
         { success: false, message: "Nothing to update" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -200,9 +199,9 @@ export async function PATCH(req) {
     // 🔵 UPDATE USER
     // =========================
     const updatedUser = await User.findByIdAndUpdate(
-      session.user.id,
+      new mongoose.Types.ObjectId(session.user.id), // ✅ FIX HERE
       updateData,
-      { new: true }
+      { new: true },
     ).select("name email image");
 
     console.log("🟢 UPDATED USER:", updatedUser);
@@ -211,7 +210,7 @@ export async function PATCH(req) {
       console.log("❌ USER NOT FOUND IN DB");
       return NextResponse.json(
         { success: false, message: "User not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -222,13 +221,12 @@ export async function PATCH(req) {
       success: true,
       user: updatedUser,
     });
-
   } catch (error) {
     console.error("🔥 PATCH ERROR:", error);
 
     return NextResponse.json(
       { success: false, message: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
