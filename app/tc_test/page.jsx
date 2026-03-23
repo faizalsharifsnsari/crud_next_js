@@ -49,8 +49,8 @@ export default function Test() {
 
     console.log("🚀 Triggering Truecaller deep link...");
 
-    window.location.href =
-      "truecallersdk://truesdk/web_verify?type=btmsheet" +
+    window.location.href = s;
+    "truecallersdk://truesdk/web_verify?type=btmsheet" +
       "&requestNonce=" +
       requestId +
       "&partnerKey=p6Zcx4868bc93774f4d97977dd3642db09e60" +

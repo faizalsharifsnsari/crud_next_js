@@ -4,8 +4,8 @@ import { signOut } from "next-auth/react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import ChangeAvatarModal from "../components/profile/ChangeAvatarModal"
-import EditProfileModal from "../components/profile/Editprofiledialuge"
+import ChangeAvatarModal from "../components/profile/ChangeAvatarModal";
+import EditProfileModal from "../components/profile/Editprofiledialuge";
 
 function CircleStat({ label, percent, count, color }) {
   return (
@@ -104,8 +104,7 @@ export default function ProfilePreview() {
     time: task.createdAt || new Date(),
   }));
 
-
-   //for updating the username
+  //for updating the username
   const handleNameSave = async (newName) => {
     try {
       const res = await fetch("/api/user", {
