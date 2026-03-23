@@ -196,27 +196,73 @@ export async function PATCH(req) {
     console.log("🟡 FINAL UPDATE DATA:", updateData);
 
     // =========================
-    // 🔵 UPDATE USER
+    // 🔵 VERIFY USER EXISTS FIRST
+    // =========================
+    const userId = session.user.id;
+
+    console.log("🟡 SESSION USER ID:", userId);
+    console.log("🟡 ID TYPE:", typeof userId);
+
+    let existingUser = null;
+
+    try {
+      existingUser = await User.findOne({
+        _id: new mongoose.Types.ObjectId(userId),
+      });
+    } catch (err) {
+      console.log("❌ INVALID OBJECTID FORMAT:", err.message);
+    }
+
+    console.log("🔍 EXISTING USER:", existingUser);
+
+    // =========================
+    // ❌ FALLBACK IF ID FAILS
+    // =========================
+    if (!existingUser) {
+      console.log("❌ USER NOT FOUND WITH _id");
+
+      const fallbackUser = await User.findOne({
+        email: session.user.email,
+      });
+
+      console.log("🔁 FALLBACK USER BY EMAIL:", fallbackUser);
+
+      if (!fallbackUser) {
+        console.log("❌ USER NOT FOUND BY EMAIL ALSO");
+        return NextResponse.json(
+          { success: false, message: "User not found in DB" },
+          { status: 404 },
+        );
+      }
+
+      console.log("⚠️ USING EMAIL FALLBACK");
+
+      const updatedUser = await User.findByIdAndUpdate(
+        fallbackUser._id,
+        updateData,
+        { new: true },
+      ).select("name email image");
+
+      console.log("🟢 UPDATED VIA EMAIL:", updatedUser);
+
+      return NextResponse.json({
+        success: true,
+        user: updatedUser,
+        note: "Updated using EMAIL fallback (ID mismatch issue)",
+      });
+    }
+
+    // =========================
+    // ✅ NORMAL UPDATE (ID WORKS)
     // =========================
     const updatedUser = await User.findByIdAndUpdate(
-      new mongoose.Types.ObjectId(session.user.id), // ✅ FIX HERE
+      existingUser._id,
       updateData,
       { new: true },
     ).select("name email image");
 
     console.log("🟢 UPDATED USER:", updatedUser);
 
-    if (!updatedUser) {
-      console.log("❌ USER NOT FOUND IN DB");
-      return NextResponse.json(
-        { success: false, message: "User not found" },
-        { status: 404 },
-      );
-    }
-
-    // =========================
-    // ✅ SUCCESS RESPONSE
-    // =========================
     return NextResponse.json({
       success: true,
       user: updatedUser,
