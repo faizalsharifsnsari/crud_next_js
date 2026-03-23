@@ -9,94 +9,74 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export async function PATCH(req) {
+import { v2 as cloudinary } from "cloudinary";
+import { NextResponse } from "next/server";
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+export async function POST(req) {
   try {
-    console.log("🔥 PATCH /api/user HIT");
+    console.log("🔥 POST /api/upload HIT");
 
-    const session = await getServerSession(authOptions);
-    console.log("🟡 SESSION:", session);
-
-    if (!session?.user?.id) {
-      console.log("❌ INVALID SESSION");
-      return NextResponse.json(
-        { success: false, message: "Invalid session" },
-        { status: 401 }
-      );
-    }
-
-    const body = await req.json();
-    console.log("🟡 REQUEST BODY:", body);
-
-    // =========================
-    // 🔵 CONNECT DB
-    // =========================
-    if (mongoose.connection.readyState === 0) {
-      await mongoose.connect(connectionStr);
-      console.log("🟢 DB CONNECTED:", mongoose.connection.name);
-    }
-
-    // =========================
-    // 🔥 DEBUG: CHECK USER EXISTS FIRST
-    // =========================
-    const existingUser = await User.findOne({
-      _id: session.user.id, // 🔥 NO ObjectId conversion
+    console.log("🔐 CLOUDINARY CONFIG:", {
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY ? "EXISTS" : "MISSING",
+      api_secret: process.env.CLOUDINARY_API_SECRET ? "EXISTS" : "MISSING",
     });
 
-    console.log("🔍 EXISTING USER:", existingUser);
+    const formData = await req.formData();
+    console.log("🟡 FORM DATA RECEIVED");
 
-    if (!existingUser) {
-      console.log("❌ USER NOT FOUND IN DB");
+    const file = formData.get("file");
 
-      // EXTRA DEBUG
-      const allUsers = await User.find().limit(5);
-      console.log("🧠 SAMPLE USERS FROM DB:", allUsers);
-
+    if (!file) {
+      console.log("❌ NO FILE FOUND");
       return NextResponse.json(
-        {
-          success: false,
-          message: "User not found in DB",
-          sessionId: session.user.id,
-        },
-        { status: 404 }
+        { success: false, error: "No file received" },
+        { status: 400 },
       );
     }
 
-    // =========================
-    // 🔵 BUILD UPDATE
-    // =========================
-    const updateData = {};
+    console.log("🟢 FILE RECEIVED:", {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+    });
 
-    if (body.name) {
-      updateData.name = body.name.trim();
-    }
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
 
-    if (body.image) {
-      updateData.image = body.image;
-    }
+    console.log("🟢 BUFFER CREATED:", buffer.length);
 
-    console.log("🟡 UPDATE DATA:", updateData);
+    const result = await new Promise((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream({ folder: "profile_avatars" }, (error, result) => {
+          if (error) {
+            console.log("🔥 CLOUDINARY ERROR:", error);
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        })
+        .end(buffer);
+    });
 
-    // =========================
-    // 🔵 UPDATE USER
-    // =========================
-    const updatedUser = await User.findByIdAndUpdate(
-      session.user.id, // 🔥 IMPORTANT
-      updateData,
-      { new: true }
-    ).select("name email image");
-
-    console.log("🟢 UPDATED USER:", updatedUser);
+    console.log("🟢 UPLOAD SUCCESS:", result.secure_url);
 
     return NextResponse.json({
       success: true,
-      user: updatedUser,
+      url: result.secure_url,
     });
   } catch (error) {
-    console.error("🔥 PATCH ERROR:", error);
+    console.error("🔥 UPLOAD ERROR:", error);
 
     return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 500 }
+      { success: false, error: error.message },
+      { status: 500 },
     );
   }
 }
