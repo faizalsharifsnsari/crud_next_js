@@ -1,14 +1,3 @@
-export const runtime = "nodejs";
-
-import { NextResponse } from "next/server";
-import { v2 as cloudinary } from "cloudinary";
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
 import { v2 as cloudinary } from "cloudinary";
 import { NextResponse } from "next/server";
 
@@ -37,7 +26,7 @@ export async function POST(req) {
       console.log("❌ NO FILE FOUND");
       return NextResponse.json(
         { success: false, error: "No file received" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -54,14 +43,17 @@ export async function POST(req) {
 
     const result = await new Promise((resolve, reject) => {
       cloudinary.uploader
-        .upload_stream({ folder: "profile_avatars" }, (error, result) => {
-          if (error) {
-            console.log("🔥 CLOUDINARY ERROR:", error);
-            reject(error);
-          } else {
-            resolve(result);
+        .upload_stream(
+          { folder: "profile_avatars" },
+          (error, result) => {
+            if (error) {
+              console.log("🔥 CLOUDINARY ERROR:", error);
+              reject(error);
+            } else {
+              resolve(result);
+            }
           }
-        })
+        )
         .end(buffer);
     });
 
@@ -76,7 +68,7 @@ export async function POST(req) {
 
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
