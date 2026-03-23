@@ -89,55 +89,146 @@ export async function GET() {
     );
   }
 }
+
+
 export async function PATCH(req) {
   try {
+    console.log("🔥 PATCH /api/user HIT");
+
+    // =========================
+    // 🔵 SESSION CHECK
+    // =========================
     const session = await getServerSession(authOptions);
+    console.log("🟡 SESSION:", session);
 
     if (!session) {
+      console.log("❌ NO SESSION FOUND");
       return NextResponse.json(
-        { success: false, message: "Unauthorized" },
-        { status: 401 },
+        { success: false, message: "Unauthorized - No session" },
+        { status: 401 }
       );
     }
 
-    const body = await req.json();
-
-    if (mongoose.connection.readyState === 0) {
-      await mongoose.connect(connectionStr);
+    if (!session.user?.id) {
+      console.log("❌ SESSION USER ID MISSING");
+      return NextResponse.json(
+        { success: false, message: "Invalid session user" },
+        { status: 400 }
+      );
     }
 
+    // =========================
+    // 🔵 BODY PARSE
+    // =========================
+    const body = await req.json();
+    console.log("🟡 REQUEST BODY:", body);
+
+    if (!body || Object.keys(body).length === 0) {
+      console.log("❌ EMPTY BODY");
+      return NextResponse.json(
+        { success: false, message: "No data provided" },
+        { status: 400 }
+      );
+    }
+
+    // =========================
+    // 🔵 DB CONNECTION
+    // =========================
+    if (mongoose.connection.readyState === 0) {
+      console.log("🟡 CONNECTING TO DB...");
+      await mongoose.connect(connectionStr);
+      console.log("🟢 DB CONNECTED");
+    } else {
+      console.log("🟢 DB ALREADY CONNECTED");
+    }
+
+    // =========================
+    // 🔵 BUILD UPDATE DATA
+    // =========================
     const updateData = {};
 
-    // ✅ Only update fields that exist
+    // 🔹 NAME VALIDATION
     if (body.name !== undefined) {
-      if (body.name.trim() === "") {
+      console.log("🔵 NAME FIELD DETECTED:", body.name);
+
+      if (typeof body.name !== "string") {
+        console.log("❌ NAME NOT STRING");
         return NextResponse.json(
-          { success: false, message: "Name is required" },
-          { status: 400 },
+          { success: false, message: "Name must be a string" },
+          { status: 400 }
         );
       }
+
+      if (body.name.trim() === "") {
+        console.log("❌ NAME EMPTY");
+        return NextResponse.json(
+          { success: false, message: "Name cannot be empty" },
+          { status: 400 }
+        );
+      }
+
       updateData.name = body.name.trim();
     }
 
+    // 🔹 IMAGE VALIDATION
     if (body.image !== undefined) {
+      console.log("🔵 IMAGE FIELD DETECTED:", body.image);
+
+      if (typeof body.image !== "string") {
+        console.log("❌ IMAGE NOT STRING");
+        return NextResponse.json(
+          { success: false, message: "Image must be a string URL" },
+          { status: 400 }
+        );
+      }
+
       updateData.image = body.image;
     }
 
+    // ❌ NOTHING TO UPDATE
+    if (Object.keys(updateData).length === 0) {
+      console.log("❌ NO VALID FIELDS TO UPDATE");
+      return NextResponse.json(
+        { success: false, message: "Nothing to update" },
+        { status: 400 }
+      );
+    }
+
+    console.log("🟡 FINAL UPDATE DATA:", updateData);
+
+    // =========================
+    // 🔵 UPDATE USER
+    // =========================
     const updatedUser = await User.findByIdAndUpdate(
       session.user.id,
       updateData,
-      { new: true },
+      { new: true }
     ).select("name email image");
 
+    console.log("🟢 UPDATED USER:", updatedUser);
+
+    if (!updatedUser) {
+      console.log("❌ USER NOT FOUND IN DB");
+      return NextResponse.json(
+        { success: false, message: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // =========================
+    // ✅ SUCCESS RESPONSE
+    // =========================
     return NextResponse.json({
       success: true,
       user: updatedUser,
     });
+
   } catch (error) {
-    console.error("PATCH ERROR:", error);
+    console.error("🔥 PATCH ERROR:", error);
+
     return NextResponse.json(
       { success: false, message: error.message },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
