@@ -37,7 +37,7 @@ export default function LoginClient() {
         >
           {loading ? "Signing you in…" : "Continue with Google"}
         </button>
-        {/* TRUECALLER LOGIN */}]
+        {/* TRUECALLER LOGIN */}
         <button
           disabled={tcLoading}
           onClick={handleTruecallerLogin}
