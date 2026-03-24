@@ -29,24 +29,21 @@ export default function LoginClient() {
         <h1 className="text-2xl font-bold text-center text-gray-900 dark:text-white">
           Welcome back
         </h1>
-
         {/* GOOGLE LOGIN */}
         <button
-          disabled={loading || status === "loading"}
+          disabled={loading}
           onClick={handleLogin}
           className="w-full py-3 rounded-lg bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white font-semibold transition"
         >
-          {loading || status === "loading"
-            ? "Signing you in…"
-            : "Continue with Google"}
+          {loading ? "Signing you in…" : "Continue with Google"}
         </button>
-
-        {/* TRUECALLER LOGIN */}
+        {/* TRUECALLER LOGIN */}]
         <button
-          onClick={() => router.push("/tc_test")}
+          disabled={tcLoading}
+          onClick={handleTruecallerLogin}
           className="w-full py-3 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white font-semibold transition"
         >
-          Continue with Truecaller
+          {tcLoading ? "Signing you in…" : "Continue with Truecaller"}
         </button>
       </div>
     </main>
