@@ -132,7 +132,7 @@ export default function ProfilePreview() {
   return (
     <main className="h-screen bg-green-200 dark:bg-gray-950 text-gray-900 dark:text-gray-100 relative">
       {/* 🔥 SCROLLABLE CONTENT */}
-      <div className="h-full overflow-y-auto pt-20 px-4 md:px-6 lg:px-8 pb-[20vh]">
+      <div className="h-[80vh] overflow-y-auto pt-20 px-4 md:px-6 lg:px-8">
         {/* Top Section */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Profile */}
