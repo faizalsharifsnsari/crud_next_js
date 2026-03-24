@@ -49,7 +49,7 @@ export default function Test() {
 
     console.log("🚀 Triggering Truecaller deep link...");
 
-    window.location.href = s;
+    window.location.href = 
     "truecallersdk://truesdk/web_verify?type=btmsheet" +
       "&requestNonce=" +
       requestId +
