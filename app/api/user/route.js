@@ -95,38 +95,41 @@ export async function PATCH(req) {
     console.log("🔥 PATCH /api/user HIT");
 
     // =========================
-    // 🔵 SESSION CHECK
+    // 🔵 SESSION
     // =========================
     const session = await getServerSession(authOptions);
-    console.log("🟡 SESSION:", session);
-
-    if (!session) {
-      console.log("❌ NO SESSION FOUND");
-      return NextResponse.json(
-        { success: false, message: "Unauthorized - No session" },
-        { status: 401 },
-      );
-    }
-
-    if (!session.user?.id) {
-      console.log("❌ SESSION USER ID MISSING");
-      return NextResponse.json(
-        { success: false, message: "Invalid session user" },
-        { status: 400 },
-      );
-    }
 
     // =========================
-    // 🔵 BODY PARSE
+    // 🔵 BODY
     // =========================
     const body = await req.json();
-    console.log("🟡 REQUEST BODY:", body);
 
-    if (!body || Object.keys(body).length === 0) {
-      console.log("❌ EMPTY BODY");
+    const updateData = {};
+
+    if (body.name !== undefined) {
+      if (typeof body.name !== "string" || body.name.trim() === "") {
+        return NextResponse.json(
+          { success: false, message: "Invalid name" },
+          { status: 400 }
+        );
+      }
+      updateData.name = body.name.trim();
+    }
+
+    if (body.image !== undefined) {
+      if (typeof body.image !== "string") {
+        return NextResponse.json(
+          { success: false, message: "Invalid image" },
+          { status: 400 }
+        );
+      }
+      updateData.image = body.image;
+    }
+
+    if (Object.keys(updateData).length === 0) {
       return NextResponse.json(
-        { success: false, message: "No data provided" },
-        { status: 400 },
+        { success: false, message: "Nothing to update" },
+        { status: 400 }
       );
     }
 
@@ -134,145 +137,70 @@ export async function PATCH(req) {
     // 🔵 DB CONNECTION
     // =========================
     if (mongoose.connection.readyState === 0) {
-      console.log("🟡 CONNECTING TO DB...");
       await mongoose.connect(connectionStr);
-      console.log("🟢 DB CONNECTED");
-    } else {
-      console.log("🟢 DB ALREADY CONNECTED");
     }
 
-    // =========================
-    // 🔵 BUILD UPDATE DATA
-    // =========================
-    const updateData = {};
-
-    // 🔹 NAME VALIDATION
-    if (body.name !== undefined) {
-      console.log("🔵 NAME FIELD DETECTED:", body.name);
-
-      if (typeof body.name !== "string") {
-        console.log("❌ NAME NOT STRING");
-        return NextResponse.json(
-          { success: false, message: "Name must be a string" },
-          { status: 400 },
-        );
-      }
-
-      if (body.name.trim() === "") {
-        console.log("❌ NAME EMPTY");
-        return NextResponse.json(
-          { success: false, message: "Name cannot be empty" },
-          { status: 400 },
-        );
-      }
-
-      updateData.name = body.name.trim();
-    }
-
-    // 🔹 IMAGE VALIDATION
-    if (body.image !== undefined) {
-      console.log("🔵 IMAGE FIELD DETECTED:", body.image);
-
-      if (typeof body.image !== "string") {
-        console.log("❌ IMAGE NOT STRING");
-        return NextResponse.json(
-          { success: false, message: "Image must be a string URL" },
-          { status: 400 },
-        );
-      }
-
-      updateData.image = body.image;
-    }
-
-    // ❌ NOTHING TO UPDATE
-    if (Object.keys(updateData).length === 0) {
-      console.log("❌ NO VALID FIELDS TO UPDATE");
-      return NextResponse.json(
-        { success: false, message: "Nothing to update" },
-        { status: 400 },
-      );
-    }
-
-    console.log("🟡 FINAL UPDATE DATA:", updateData);
+    let updatedUser = null;
 
     // =========================
-    // 🔵 VERIFY USER EXISTS FIRST
+    // ⭐ PRIORITY 1: TRUECALLER
     // =========================
-    const userId = session.user.id;
+    const cookieStore = await cookies();
+    const sessionToken = cookieStore.get("taskify_session")?.value;
 
-    console.log("🟡 SESSION USER ID:", userId);
-    console.log("🟡 ID TYPE:", typeof userId);
+    if (sessionToken) {
+      console.log("🔵 UPDATING TRUECALLER USER");
 
-    let existingUser = null;
-
-    try {
-      existingUser = await User.findOne({
-        _id: new mongoose.Types.ObjectId(userId),
-      });
-    } catch (err) {
-      console.log("❌ INVALID OBJECTID FORMAT:", err.message);
-    }
-
-    console.log("🔍 EXISTING USER:", existingUser);
-
-    // =========================
-    // ❌ FALLBACK IF ID FAILS
-    // =========================
-    if (!existingUser) {
-      console.log("❌ USER NOT FOUND WITH _id");
-
-      const fallbackUser = await User.findOne({
-        email: session.user.email,
-      });
-
-      console.log("🔁 FALLBACK USER BY EMAIL:", fallbackUser);
-
-      if (!fallbackUser) {
-        console.log("❌ USER NOT FOUND BY EMAIL ALSO");
-        return NextResponse.json(
-          { success: false, message: "User not found in DB" },
-          { status: 404 },
-        );
-      }
-
-      console.log("⚠️ USING EMAIL FALLBACK");
-
-      const updatedUser = await User.findByIdAndUpdate(
-        fallbackUser._id,
+      updatedUser = await TruecallerUser.findOneAndUpdate(
+        { sessionToken },
         updateData,
-        { new: true },
+        { new: true }
       ).select("name email image");
 
-      console.log("🟢 UPDATED VIA EMAIL:", updatedUser);
-
-      return NextResponse.json({
-        success: true,
-        user: updatedUser,
-        note: "Updated using EMAIL fallback (ID mismatch issue)",
-      });
+      if (updatedUser) {
+        return NextResponse.json({
+          success: true,
+          user: updatedUser,
+          source: "truecaller",
+        });
+      }
     }
 
     // =========================
-    // ✅ NORMAL UPDATE (ID WORKS)
+    // ⭐ PRIORITY 2: GOOGLE
     // =========================
-    const updatedUser = await User.findByIdAndUpdate(
-      existingUser._id,
-      updateData,
-      { new: true },
-    ).select("name email image");
+    if (session?.user?.id) {
+      console.log("🟢 UPDATING GOOGLE USER");
 
-    console.log("🟢 UPDATED USER:", updatedUser);
+      updatedUser = await NextAuthUser.findByIdAndUpdate(
+        session.user.id,
+        updateData,
+        { new: true }
+      ).select("name email image");
 
-    return NextResponse.json({
-      success: true,
-      user: updatedUser,
-    });
+      if (updatedUser) {
+        return NextResponse.json({
+          success: true,
+          user: updatedUser,
+          source: "google",
+        });
+      }
+    }
+
+    // =========================
+    // ❌ NO USER FOUND
+    // =========================
+    return NextResponse.json(
+      { success: false, message: "User not found" },
+      { status: 404 }
+    );
+
   } catch (error) {
     console.error("🔥 PATCH ERROR:", error);
 
     return NextResponse.json(
       { success: false, message: error.message },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

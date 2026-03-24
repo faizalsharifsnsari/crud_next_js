@@ -23,22 +23,21 @@ export const authOptions = {
   },
 
   callbacks: {
+    async session({ session }) {
+      if (!session?.user?.email) return session;
 
-    async signIn({ account }) {
+      const dbUser = await clientPromise
+        .then((client) => client.db())
+        .then((db) =>
+          db.collection("users").findOne({
+            email: session.user.email,
+          }),
+        );
 
-      // ✅ If user logs in with Google, remove Truecaller session
-      if (account?.provider === "google") {
-        const cookieStore = await cookies();
-        cookieStore.delete("taskify_session");
+      if (dbUser) {
+        session.user.id = dbUser._id.toString(); // ✅ ALWAYS correct
       }
 
-      return true;
-    },
-
-    async session({ session, user }) {
-      if (session.user && user) {
-        session.user.id = user.id;
-      }
       return session;
     },
   },
