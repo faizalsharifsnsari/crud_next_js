@@ -130,43 +130,30 @@ export default function ProfilePreview() {
   };
 
   return (
-    <main className="min-h-screen bg-green-200 dark:bg-gray-900 relative pt-20 px-4 md:px-6 lg:px-8">
-      {/* Hamburger Menu */}
-      <div className="fixed top-4 left-4 z-50">
-        <div className="bg-red-500 rounded-lg p-1 border border-red-600">
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="p-2 rounded hover:bg-red-600"
-          >
-            <div className="w-6 h-0.5 bg-white mb-1"></div>
-            <div className="w-6 h-0.5 bg-white mb-1"></div>
-            <div className="w-6 h-0.5 bg-white"></div>
-          </button>
-        </div>
+  <main className="h-screen bg-green-200 dark:bg-gray-950 text-gray-900 dark:text-gray-100 relative">
 
-        {menuOpen && (
-          <ul className="absolute left-0 mt-3 w-40 bg-white dark:bg-gray-800 rounded shadow-md">
-            <li>
-              <Link href="/" className="block px-4 py-2 hover:bg-red-100">
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/dashboard"
-                className="block px-4 py-2 hover:bg-red-100"
-              >
-                Profile
-              </Link>
-            </li>
-          </ul>
-        )}
+    {/* Hamburger */}
+    <div className="fixed top-4 left-4 z-50">
+      <div className="bg-red-500 rounded-lg p-1 border border-red-600 shadow-md">
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="p-2 rounded hover:bg-red-600 transition"
+        >
+          <div className="w-6 h-0.5 bg-white mb-1"></div>
+          <div className="w-6 h-0.5 bg-white mb-1"></div>
+          <div className="w-6 h-0.5 bg-white"></div>
+        </button>
       </div>
+    </div>
+
+    {/* 🔥 SCROLLABLE CONTENT */}
+    <div className="h-full overflow-y-auto pt-20 px-4 md:px-6 lg:px-8 pb-[20vh]">
 
       {/* Top Section */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
         {/* Profile */}
-        <div className="lg:col-span-4 bg-white dark:bg-gray-800 rounded-2xl shadow p-6 text-center">
+        <div className="lg:col-span-4 bg-white dark:bg-gray-900 rounded-2xl shadow-md dark:shadow-black/40 p-6 text-center border border-gray-200 dark:border-gray-700">
           {user?.image ? (
             <Image
               src={user.image}
@@ -176,81 +163,58 @@ export default function ProfilePreview() {
               className="rounded-full mx-auto"
             />
           ) : (
-            <div className="w-20 h-20 bg-gray-200 rounded-full mx-auto flex items-center justify-center">
+            <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto flex items-center justify-center text-sm">
               No Image
             </div>
           )}
 
           <h2 className="mt-2 font-bold">{user?.name || "No Name"}</h2>
-          <p className="text-sm text-gray-500">{user?.email || "No Email"}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {user?.email || "No Email"}
+          </p>
         </div>
 
         {/* Stats */}
         <div className="lg:col-span-8 grid sm:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl shadow p-6">
-            <h3 className="mb-4">Task Priority</h3>
+
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md dark:shadow-black/40 p-6 border border-gray-200 dark:border-gray-700">
+            <h3 className="mb-4 font-semibold">Task Priority</h3>
             <div className="flex justify-between">
-              <CircleStat
-                label="High"
-                percent={getPercent(priorityCount.high)}
-                count={priorityCount.high}
-                color="#FEE2E2"
-              />
-              <CircleStat
-                label="Medium"
-                percent={getPercent(priorityCount.medium)}
-                count={priorityCount.medium}
-                color="#FEF3C7"
-              />
-              <CircleStat
-                label="Low"
-                percent={getPercent(priorityCount.low)}
-                count={priorityCount.low}
-                color="#DCFCE7"
-              />
+              <CircleStat label="High" percent={getPercent(priorityCount.high)} count={priorityCount.high} color="#FEE2E2" />
+              <CircleStat label="Medium" percent={getPercent(priorityCount.medium)} count={priorityCount.medium} color="#FEF3C7" />
+              <CircleStat label="Low" percent={getPercent(priorityCount.low)} count={priorityCount.low} color="#DCFCE7" />
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow p-6">
-            <h3 className="mb-4">Task Status</h3>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md dark:shadow-black/40 p-6 border border-gray-200 dark:border-gray-700">
+            <h3 className="mb-4 font-semibold">Task Status</h3>
             <div className="flex justify-between">
-              <CircleStat
-                label="Completed"
-                percent={getPercent(statusCount.completed)}
-                count={statusCount.completed}
-                color="#DCFCE7"
-              />
-              <CircleStat
-                label="Ongoing"
-                percent={getPercent(statusCount.ongoing)}
-                count={statusCount.ongoing}
-                color="#DBEAFE"
-              />
-              <CircleStat
-                label="Not Started"
-                percent={getPercent(statusCount.notStarted)}
-                count={statusCount.notStarted}
-                color="#E5E7EB"
-              />
+              <CircleStat label="Completed" percent={getPercent(statusCount.completed)} count={statusCount.completed} color="#DCFCE7" />
+              <CircleStat label="Ongoing" percent={getPercent(statusCount.ongoing)} count={statusCount.ongoing} color="#DBEAFE" />
+              <CircleStat label="Not Started" percent={getPercent(statusCount.notStarted)} count={statusCount.notStarted} color="#E5E7EB" />
             </div>
           </div>
+
         </div>
       </div>
 
       {/* Activity + Settings */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+
         {/* Activity */}
-        <div className="lg:col-span-8 bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
+        <div className="lg:col-span-8 bg-white dark:bg-gray-900 rounded-2xl shadow-md dark:shadow-black/40 p-6 border border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
 
           <ul className="space-y-3 text-sm">
             {recentActivities.length === 0 ? (
-              <li className="text-gray-400">No recent activity</li>
+              <li className="text-gray-400 dark:text-gray-500">
+                No recent activity
+              </li>
             ) : (
               recentActivities.map((activity, index) => (
                 <li key={index} className="flex justify-between">
                   <span>{activity.text}</span>
-                  <span className="text-gray-400">
+                  <span className="text-gray-400 dark:text-gray-500">
                     {timeAgo(activity.time)}
                   </span>
                 </li>
@@ -260,33 +224,26 @@ export default function ProfilePreview() {
         </div>
 
         {/* Settings */}
-        <div className="lg:col-span-4 bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
+        <div className="lg:col-span-4 bg-white dark:bg-gray-900 rounded-2xl shadow-md dark:shadow-black/40 p-6 border border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold mb-4">Account Settings</h3>
 
           <div className="space-y-3">
-            <button
-              className="w-full py-2 border rounded-lg hover:bg-red-50"
-              onClick={() => setIsEditModalOpen(true)}
-            >
+            <button className="w-full py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-red-50 dark:hover:bg-gray-800 transition"
+              onClick={() => setIsEditModalOpen(true)}>
               Edit Profile
             </button>
 
-            <button
-              className="w-full py-2 border rounded-lg hover:bg-red-50"
-              onClick={() => setIsAvatarOpen(true)}
-            >
+            <button className="w-full py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-red-50 dark:hover:bg-gray-800 transition"
+              onClick={() => setIsAvatarOpen(true)}>
               Change Avatar
             </button>
 
-            <button
-              className="w-full py-2 bg-red-600 text-white rounded-lg"
-              onClick={() => signOut({ callbackUrl: "/" })}
-            >
+            <button className="w-full py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition"
+              onClick={() => signOut({ callbackUrl: "/" })}>
               Logout
             </button>
           </div>
 
-          {/* ✅ MODALS (CLEAN + WORKING) */}
           <EditProfileModal
             isOpen={isEditModalOpen}
             onClose={() => setIsEditModalOpen(false)}
@@ -307,12 +264,11 @@ export default function ProfilePreview() {
                 });
 
                 const data = await res.json();
-
                 if (data.success) setUser(data.user);
-                else alert("Failed to update avatar");
+                else alert("Failed");
+
               } catch (err) {
-                console.error(err);
-                alert("Something went wrong");
+                alert("Error");
               }
 
               setIsAvatarOpen(false);
@@ -320,6 +276,16 @@ export default function ProfilePreview() {
           />
         </div>
       </div>
-    </main>
-  );
+    </div>
+
+    {/* 🔥 FLOATING ACTION BUTTON */}
+    <button
+      className="fixed bottom-8 right-6 z-50 bg-red-600 hover:bg-red-700 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl transition"
+      onClick={() => console.log("FAB Click")}
+    >
+      +
+    </button>
+
+  </main>
+);
 }
