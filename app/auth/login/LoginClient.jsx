@@ -9,6 +9,7 @@ export default function LoginClient() {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
+  const [tcLoading, setTcLoading] = useState(false);
 
   /* -----------------------------------
      🔵 Google Login
@@ -21,6 +22,11 @@ export default function LoginClient() {
     await signIn("google", {
       callbackUrl: "/user", // ✅ redirect after login
     });
+  };
+
+  const handleTruecallerLogin = () => {
+    setTcLoading(true);
+    router.push("/tc_test");
   };
 
   return (
