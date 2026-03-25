@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import ChangeAvatarModal from "../components/profile/ChangeAvatarModal";
 import EditProfileModal from "../components/profile/Editprofiledialuge";
+import { useRouter } from "next/navigation";
 
 function CircleStat({ label, percent, count, color }) {
   return (
@@ -128,6 +129,8 @@ export default function ProfilePreview() {
       alert("Something went wrong");
     }
   };
+  //for the navigation
+  const router = useRouter();
 
   return (
     <main className="h-screen bg-green-200 dark:bg-gray-950 text-gray-900 dark:text-gray-100 relative">
@@ -295,15 +298,15 @@ export default function ProfilePreview() {
 
       {/* 🔥 FLOATING ACTION BUTTON */}
       <button
-      onClick={() => router.push("/")}
-      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 
+        onClick={() => router.push("/user")}
+        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 
                  bg-red-600 hover:bg-red-700 text-white 
                  w-14 h-14 rounded-full shadow-lg 
                  flex items-center justify-center 
                  text-2xl transition"
-    >
-      +
-    </button>
+      >
+        +
+      </button>
     </main>
   );
 }
