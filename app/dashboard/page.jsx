@@ -295,11 +295,15 @@ export default function ProfilePreview() {
 
       {/* 🔥 FLOATING ACTION BUTTON */}
       <button
-        className="fixed bottom-8 right-6 z-50 bg-red-600 hover:bg-red-700 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl transition"
-        onClick={() => console.log("FAB Click")}
-      >
-        +
-      </button>
+      onClick={() => router.push("/")}
+      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 
+                 bg-red-600 hover:bg-red-700 text-white 
+                 w-14 h-14 rounded-full shadow-lg 
+                 flex items-center justify-center 
+                 text-2xl transition"
+    >
+      +
+    </button>
     </main>
   );
 }

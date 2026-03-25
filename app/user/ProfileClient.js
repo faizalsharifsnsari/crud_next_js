@@ -29,10 +29,10 @@ export default function ProfileClient({
   }
 
   return (
-  <div className="flex h-screen overflow-hidden bg-green-200 dark:bg-gray-800">
+  <div className="flex h-screen overflow-hidden bg-green-200 dark:bg-gray-950">
 
     {/* Desktop Sidebar */}
-    <div className="hidden md:block w-64 h-full bg-green-200 dark:bg-gray-800 shadow-md overflow-y-auto">
+    <div className="hidden md:block w-64 h-full bg-green-200 dark:bg-gray-900 shadow-md overflow-y-auto">
       <UserSidebar
         user={sidebar}
         statusCount={statusCount}
@@ -43,7 +43,6 @@ export default function ProfileClient({
     {/* Mobile Sidebar Drawer */}
     {sidebarOpen && (
       <div className="fixed inset-0 z-50 md:hidden">
-
         {/* Overlay */}
         <div
           className="absolute inset-0 bg-black opacity-50"
@@ -51,14 +50,13 @@ export default function ProfileClient({
         />
 
         {/* Drawer */}
-        <div className="fixed top-0 left-0 w-64 h-screen bg-green-200 shadow-md overflow-y-auto">
+        <div className="fixed top-0 left-0 w-64 h-screen bg-green-200 dark:bg-gray-900 shadow-md overflow-y-auto">
           <UserSidebar
             user={sidebar}
             statusCount={statusCount}
             priorityCount={priorityCount}
           />
         </div>
-
       </div>
     )}
 
@@ -66,25 +64,24 @@ export default function ProfileClient({
     <div className="flex-1 flex flex-col">
 
       {/* Top Bar */}
-      <div className="flex items-center justify-between p-4 bg-red-500 dark:bg-red-500 text-white shadow">
+      <div className="flex items-center justify-between p-4 bg-red-500 text-white shadow">
 
         {/* Mobile Hamburger */}
         <div className="md:hidden">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="px-3 py-2 border border-green-200 rounded hover:bg-red-500"
+            className="px-3 py-2 border border-white rounded hover:bg-red-600"
           >
             ☰
           </button>
         </div>
 
-        {/* Spacer */}
         <div></div>
 
         {/* Filter */}
         <div className="relative mr-6">
           <button
-            className="flex items-center gap-2 px-3 py-1 border border-white rounded hover:bg-red-500"
+            className="flex items-center gap-2 px-3 py-1 border border-white rounded hover:bg-red-600"
             onClick={() => setMenuOpen(!menuOpen)}
           >
             <span>Filter</span>
@@ -92,17 +89,17 @@ export default function ProfileClient({
           </button>
 
           {menuOpen && (
-            <ul className="absolute right-0 mt-2 w-56 bg-white border rounded-lg shadow-md z-50 p-2 space-y-2 text-black">
+            <ul className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md z-50 p-2 space-y-2 text-black dark:text-white">
 
               {/* PRIORITY */}
-              <li className="text-xs font-semibold text-gray-500 px-3 pt-1">
+              <li className="text-xs font-semibold text-gray-500 dark:text-gray-400 px-3 pt-1">
                 PRIORITY
               </li>
 
               {["high", "medium", "low"].map((p) => (
                 <li key={p}>
                   <button
-                    className="block w-full text-left px-3 py-2 hover:bg-gray-100 rounded"
+                    className="block w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
                     onClick={() => {
                       setSelectedPriority(p);
                       setMenuOpen(false);
@@ -113,17 +110,17 @@ export default function ProfileClient({
                 </li>
               ))}
 
-              <hr />
+              <hr className="border-gray-300 dark:border-gray-700" />
 
               {/* STATUS */}
-              <li className="text-xs font-semibold text-gray-500 px-3 pt-1">
+              <li className="text-xs font-semibold text-gray-500 dark:text-gray-400 px-3 pt-1">
                 STATUS
               </li>
 
               {["not started", "ongoing", "completed"].map((s) => (
                 <li key={s}>
                   <button
-                    className="block w-full text-left px-3 py-2 hover:bg-gray-100 rounded"
+                    className="block w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
                     onClick={() => {
                       setSelectedStatus(s);
                       setMenuOpen(false);
@@ -133,21 +130,30 @@ export default function ProfileClient({
                   </button>
                 </li>
               ))}
-
             </ul>
           )}
         </div>
-
       </div>
 
-      {/* Main Section */}
-      <section className="flex-1 p-4 md:p-6 overflow-auto">
-        <h1 className="text-xl font-semibold mb-4">Code Block</h1>
-        <TaskList initialTasks={filteredTasks} />
+      {/* 🔥 MAIN SECTION WITH 80/20 SPLIT */}
+      <section className="flex-1 flex flex-col">
+
+        {/* 🔥 SCROLLABLE TASK AREA (80%) */}
+        <div className="h-[80vh] overflow-y-auto p-4 md:p-6">
+          <h1 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">
+            Code Block
+          </h1>
+
+          <TaskList initialTasks={filteredTasks} />
+        </div>
+
+        {/* 🔥 BOTTOM 20% FIXED SPACE */}
+        <div className="h-[20vh] flex items-center justify-center border-t border-gray-200 dark:border-gray-700 bg-white/40 dark:bg-gray-900/40 backdrop-blur-md">
+          {/* Optional: you can move FAB here later if needed */}
+        </div>
+
       </section>
-
     </div>
-
   </div>
 );
 }
