@@ -133,13 +133,13 @@ export default function ProfilePreview() {
   const router = useRouter();
 
   return (
-    <main className="h-screen bg-green-200 dark:bg-gray-950 text-gray-900 dark:text-gray-100 relative">
+    <main className="h-screen bg-green-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 relative">
       {/* 🔥 SCROLLABLE CONTENT */}
       <div className="h-[89vh] overflow-y-auto pt-20 px-4 md:px-6 lg:px-8">
         {/* Top Section */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Profile */}
-          <div className="lg:col-span-4 bg-white dark:bg-gray-900 rounded-2xl shadow-md dark:shadow-black/40 p-6 text-center border border-gray-200 dark:border-gray-700">
+          <div className="lg:col-span-4 bg-green-50 dark:bg-gray-900 rounded-2xl shadow-md dark:shadow-black/40 p-6 text-center border border-green-200 dark:border-gray-700">
             {user?.image ? (
               <Image
                 src={user.image}
@@ -149,7 +149,7 @@ export default function ProfilePreview() {
                 className="rounded-full mx-auto"
               />
             ) : (
-              <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto flex items-center justify-center text-sm">
+              <div className="w-20 h-20 bg-green-200 dark:bg-gray-700 rounded-full mx-auto flex items-center justify-center text-sm">
                 No Image
               </div>
             )}
@@ -162,50 +162,54 @@ export default function ProfilePreview() {
 
           {/* Stats */}
           <div className="lg:col-span-8 grid sm:grid-cols-2 gap-6">
-            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md dark:shadow-black/40 p-6 border border-gray-200 dark:border-gray-700">
+            {/* Priority */}
+            <div className="bg-green-50 dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-green-200 dark:border-gray-700">
               <h3 className="mb-4 font-semibold">Task Priority</h3>
+
               <div className="flex justify-between">
                 <CircleStat
                   label="High"
                   percent={getPercent(priorityCount.high)}
                   count={priorityCount.high}
-                  color="#FEE2E2"
+                  color="#FCA5A5"
                 />
                 <CircleStat
                   label="Medium"
                   percent={getPercent(priorityCount.medium)}
                   count={priorityCount.medium}
-                  color="#FEF3C7"
+                  color="#FDE68A"
                 />
                 <CircleStat
                   label="Low"
                   percent={getPercent(priorityCount.low)}
                   count={priorityCount.low}
-                  color="#DCFCE7"
+                  color="#86EFAC"
                 />
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md dark:shadow-black/40 p-6 border border-gray-200 dark:border-gray-700">
+            {/* Status */}
+            <div className="bg-green-50 dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-green-200 dark:border-gray-700">
               <h3 className="mb-4 font-semibold">Task Status</h3>
+
               <div className="flex justify-between">
                 <CircleStat
                   label="Completed"
                   percent={getPercent(statusCount.completed)}
                   count={statusCount.completed}
-                  color="#DCFCE7"
+                  color="#22C55E"
                 />
                 <CircleStat
                   label="Ongoing"
                   percent={getPercent(statusCount.ongoing)}
                   count={statusCount.ongoing}
-                  color="#DBEAFE"
+                  color="#3B82F6"
                 />
                 <CircleStat
                   label="Not Started"
                   percent={getPercent(statusCount.notStarted)}
                   count={statusCount.notStarted}
-                  color="#E5E7EB"
+                  color="#9CA3AF"
                 />
               </div>
             </div>
@@ -215,7 +219,7 @@ export default function ProfilePreview() {
         {/* Activity + Settings */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
           {/* Activity */}
-          <div className="lg:col-span-8 bg-white dark:bg-gray-900 rounded-2xl shadow-md dark:shadow-black/40 p-6 border border-gray-200 dark:border-gray-700">
+          <div className="lg:col-span-8 bg-green-50 dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-green-200 dark:border-gray-700">
             <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
 
             <ul className="space-y-3 text-sm">
@@ -237,19 +241,19 @@ export default function ProfilePreview() {
           </div>
 
           {/* Settings */}
-          <div className="lg:col-span-4 bg-white dark:bg-gray-900 rounded-2xl shadow-md dark:shadow-black/40 p-6 border border-gray-200 dark:border-gray-700">
+          <div className="lg:col-span-4 bg-green-50 dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-green-200 dark:border-gray-700">
             <h3 className="text-lg font-semibold mb-4">Account Settings</h3>
 
             <div className="space-y-3">
               <button
-                className="w-full py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-red-50 dark:hover:bg-gray-800 transition"
+                className="w-full py-2 border border-green-300 dark:border-gray-600 rounded-lg hover:bg-red-50 dark:hover:bg-gray-800 transition"
                 onClick={() => setIsEditModalOpen(true)}
               >
                 Edit Profile
               </button>
 
               <button
-                className="w-full py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-red-50 dark:hover:bg-gray-800 transition"
+                className="w-full py-2 border border-green-300 dark:border-gray-600 rounded-lg hover:bg-red-50 dark:hover:bg-gray-800 transition"
                 onClick={() => setIsAvatarOpen(true)}
               >
                 Change Avatar
@@ -262,50 +266,20 @@ export default function ProfilePreview() {
                 Logout
               </button>
             </div>
-
-            <EditProfileModal
-              isOpen={isEditModalOpen}
-              onClose={() => setIsEditModalOpen(false)}
-              user={user}
-              onSave={handleNameSave}
-            />
-
-            <ChangeAvatarModal
-              isOpen={isAvatarOpen}
-              onClose={() => setIsAvatarOpen(false)}
-              user={user}
-              onSave={async (newImageUrl) => {
-                try {
-                  const res = await fetch("/api/user", {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ image: newImageUrl }),
-                  });
-
-                  const data = await res.json();
-                  if (data.success) setUser(data.user);
-                  else alert("Failed");
-                } catch (err) {
-                  alert("Error");
-                }
-
-                setIsAvatarOpen(false);
-              }}
-            />
           </div>
         </div>
       </div>
 
-      {/* 🔥 FLOATING ACTION BUTTON */}
+      {/* 🔥 FLOATING HOME BUTTON */}
       <button
         onClick={() => router.push("/user")}
         className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 
                  bg-red-600 hover:bg-red-700 text-white 
                  w-14 h-14 rounded-full shadow-lg 
                  flex items-center justify-center 
-                 text-2xl transition"
+                 transition active:scale-95"
       >
-        +
+        <HomeIcon className="w-6 h-6" />
       </button>
     </main>
   );
