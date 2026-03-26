@@ -607,22 +607,36 @@ export default function TaskList({ initialTasks }) {
           strategy={verticalListSortingStrategy}
         >
           <div className={`${styles.taskList} pb-24`}>
-            {tasks.map((task) => (
-              <SortableTask
-                key={task.id}
-                task={task}
-                onDelete={(id) => {
-                  setDeleteId(id);
-                  setShowDialog(true);
-                }}
-                onEdit={(task) => setEditingTask(task)}
-                onView={(task) => setViewTask(task)}
-              />
-            ))}
+            {tasks.length === 0 ? (
+              <div className="flex flex-col items-center justify-center mt-20 text-center">
+                <div className="text-5xl mb-3">📭</div>
+                <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                  No Tasks Yet
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  You're all set! Click on{" "}
+                  <span className="font-medium text-blue-500">+ Add Task</span>{" "}
+                  to get started.
+                </p>
+              </div>
+            ) : (
+              tasks.map((task) => (
+                <SortableTask
+                  key={task.id}
+                  task={task}
+                  onDelete={(id) => {
+                    setDeleteId(id);
+                    setShowDialog(true);
+                  }}
+                  onEdit={(task) => setEditingTask(task)}
+                  onView={(task) => setViewTask(task)}
+                />
+              ))
+            )}
           </div>
         </SortableContext>
       </DndContext>
-      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+      <div className="fixed bottom-3 left-1/2 transform -translate-x-1/2 z-50">
         <button
           onClick={() => setOpenAddDialog(true)} // or open your add task modal
           className="

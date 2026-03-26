@@ -32,6 +32,7 @@ export default function ProfilePreview() {
   const [tasks, setTasks] = useState([]);
   const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // ✅ Missing states added
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -43,25 +44,37 @@ export default function ProfilePreview() {
   useEffect(() => {
     const runDebug = async () => {
       try {
-        const userRes = await fetch("/api/user", {
-          credentials: "include",
-        });
+        setLoading(true);
+
+        // 🔥 Try cached data first (instant UI)
+        const cachedUser = localStorage.getItem("user");
+        const cachedTasks = localStorage.getItem("tasks");
+
+        if (cachedUser) setUser(JSON.parse(cachedUser));
+        if (cachedTasks) setTasks(JSON.parse(cachedTasks));
+
+        // 🔥 Fetch fresh data
+        const [userRes, taskRes] = await Promise.all([
+          fetch("/api/user", { credentials: "include" }),
+          fetch("/api/products", { credentials: "include" }),
+        ]);
+
         const userData = await userRes.json();
+        const taskData = await taskRes.json();
 
         if (userData.success && userData.user) {
           setUser(userData.user);
+          localStorage.setItem("user", JSON.stringify(userData.user));
         }
-
-        const taskRes = await fetch("/api/products", {
-          credentials: "include",
-        });
-        const taskData = await taskRes.json();
 
         if (taskData.success && taskData.result) {
           setTasks(taskData.result);
+          localStorage.setItem("tasks", JSON.stringify(taskData.result));
         }
       } catch (err) {
         console.error("🔥 ERROR:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -176,7 +189,16 @@ export default function ProfilePreview() {
 
   return (
     <main className="min-h-screen bg-green-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
-      {/* 🔹 HEADER */}
+      {/* 🔙 HOME BUTTON */}
+      <button
+        onClick={() => router.push("/user")}
+        className="absolute left-4 top-4 z-10 
+             bg-white/80 dark:bg-gray-800/80 backdrop-blur-md 
+             p-2 rounded-full shadow 
+             hover:scale-105 transition"
+      >
+        <HomeIcon className="w-5 h-5 text-gray-800 dark:text-white" />
+      </button>
       <div className="pt-16 pb-6 px-4 text-center bg-green-200 dark:bg-gray-900 rounded-b-3xl shadow-md">
         {user?.image ? (
           <Image
