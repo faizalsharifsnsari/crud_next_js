@@ -129,6 +129,45 @@ export default function ProfilePreview() {
   };
   //for the navigation
   const router = useRouter();
+  //icon code
+  function StatusIcon({ status, onClick }) {
+    const base =
+      "w-9 h-9 rounded-full flex items-center justify-center shadow-sm cursor-pointer hover:scale-105 transition";
+  
+    if (status === "completed") {
+      return (
+        <div
+          onClick={onClick}
+          className={`${base} bg-green-500 text-white`}
+          title="Completed - click to view"
+        >
+          <CheckIcon className="w-5 h-5" />
+        </div>
+      );
+    }
+  
+    if (status === "ongoing") {
+      return (
+        <div
+          onClick={onClick}
+          className={`${base} bg-blue-500 text-white`}
+          title="Ongoing - click to view"
+        >
+          <PlayIcon className="w-5 h-5 ml-[1px]" />
+        </div>
+      );
+    }
+  
+    return (
+      <div
+        onClick={onClick}
+        className={`${base} bg-gray-400 text-white`}
+        title="Not started - click to view"
+      >
+        <ClockIcon className="w-5 h-5" />
+      </div>
+    );
+  }
 
   return (
     <main className="h-screen bg-green-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 relative">
