@@ -4,7 +4,12 @@ import { signOut } from "next-auth/react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { HomeIcon } from "@heroicons/react/24/solid";
+import {
+  HomeIcon,
+  CheckIcon,
+  PlayIcon,
+  ClockIcon,
+} from "@heroicons/react/24/solid";
 
 function CircleStat({ label, percent, count, color }) {
   return (
