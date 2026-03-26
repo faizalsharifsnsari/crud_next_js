@@ -175,166 +175,119 @@ export default function ProfilePreview() {
   }
 
   return (
-    <main className="h-screen bg-green-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 relative">
-      <h1 className="text-red-500">TEST UI CHANGE</h1>
-      {/* 🔥 SCROLLABLE CONTENT */}
-      <div className="h-[89vh] overflow-y-auto pt-20 px-4 md:px-6 lg:px-8">
-        {/* Top Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Profile */}
-          <div className="lg:col-span-4 bg-green-50 dark:bg-gray-900 rounded-2xl shadow-md dark:shadow-black/40 p-6 text-center border border-green-200 dark:border-gray-700">
-            {user?.image ? (
-              <Image
-                src={user.image}
-                alt="Profile"
-                width={80}
-                height={80}
-                className="rounded-full mx-auto"
-              />
-            ) : (
-              <div className="w-20 h-20 bg-green-200 dark:bg-gray-700 rounded-full mx-auto flex items-center justify-center text-sm">
-                No Image
-              </div>
-            )}
-
-            <h2 className="mt-2 font-bold">{user?.name || "No Name"}</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {user?.email || "No Email"}
-            </p>
+    <main className="min-h-screen bg-green-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
+      {/* 🔹 HEADER */}
+      <div className="pt-16 pb-6 px-4 text-center bg-green-200 dark:bg-gray-900 rounded-b-3xl shadow-md">
+        {user?.image ? (
+          <Image
+            src={user.image}
+            alt="Profile"
+            width={90}
+            height={90}
+            className="rounded-full mx-auto border-4 border-white dark:border-gray-800"
+          />
+        ) : (
+          <div className="w-24 h-24 bg-green-300 dark:bg-gray-700 rounded-full mx-auto flex items-center justify-center">
+            No Image
           </div>
+        )}
 
-          {/* Stats */}
-          <div className="lg:col-span-8 grid sm:grid-cols-2 gap-6">
-            {/* Priority */}
-            <div className="bg-green-50 dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-green-200 dark:border-gray-700">
-              <h3 className="mb-4 font-semibold">Task Priority</h3>
+        <h2 className="mt-3 text-lg font-bold">{user?.name || "No Name"}</h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          {user?.email || "No Email"}
+        </p>
+      </div>
 
-              <div className="flex justify-between">
-                <CircleStat
-                  label="High"
-                  percent={getPercent(priorityCount.high)}
-                  count={priorityCount.high}
-                  color="#EF4444" // 🔴 red-500
-                />
-                <CircleStat
-                  label="Medium"
-                  percent={getPercent(priorityCount.medium)}
-                  count={priorityCount.medium}
-                  color="#FACC15" // 🟡 yellow-400
-                />
-                <CircleStat
-                  label="Low"
-                  percent={getPercent(priorityCount.low)}
-                  count={priorityCount.low}
-                  color="#22C55E" // 🟢 green-500
-                />
-              </div>
+      {/* 🔹 CONTENT */}
+      <div className="px-4 mt-6 space-y-6">
+        {/* 📊 TASK SUMMARY */}
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 shadow-md">
+          <h3 className="font-semibold mb-3">Task Summary</h3>
+
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span>🔴 High Priority</span>
+              <span>{priorityCount.high}</span>
             </div>
-
-            {/* Status */}
-            <div className="bg-green-50 dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-green-200 dark:border-gray-700">
-              <h3 className="mb-4 font-semibold">Task Status</h3>
-              <div className="flex justify-between items-center">
-                {/* Completed */}
-                <div className="flex flex-col items-center gap-2">
-                  <StatusIcon status="completed" />
-                  <p className="text-sm font-semibold">
-                    {statusCount.completed}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Completed
-                  </p>
-                </div>
-
-                {/* Ongoing */}
-                <div className="flex flex-col items-center gap-2">
-                  <StatusIcon status="ongoing" />
-                  <p className="text-sm font-semibold">{statusCount.ongoing}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Ongoing
-                  </p>
-                </div>
-
-                {/* Not Started */}
-                <div className="flex flex-col items-center gap-2">
-                  <StatusIcon status="not started" />
-                  <p className="text-sm font-semibold">
-                    {statusCount.notStarted}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Not Started
-                  </p>
-                </div>
-              </div>
+            <div className="flex justify-between">
+              <span>🟡 Medium Priority</span>
+              <span>{priorityCount.medium}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>🟢 Low Priority</span>
+              <span>{priorityCount.low}</span>
             </div>
           </div>
         </div>
 
-        {/* Activity + Settings */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
-          {/* Activity */}
-          <div className="lg:col-span-8 bg-green-50 dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-green-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
+        {/* 📌 STATUS */}
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 shadow-md">
+          <h3 className="font-semibold mb-3">Task Status</h3>
 
-            <ul className="space-y-3 text-sm">
-              {recentActivities.length === 0 ? (
-                <li className="text-gray-400 dark:text-gray-500">
-                  No recent activity
-                </li>
-              ) : (
-                recentActivities.map((activity, index) => (
-                  <li key={index} className="flex justify-between">
-                    <span>{activity.text}</span>
-                    <span className="text-gray-400 dark:text-gray-500">
-                      {timeAgo(activity.time)}
-                    </span>
-                  </li>
-                ))
-              )}
-            </ul>
-          </div>
-
-          {/* Settings */}
-          <div className="lg:col-span-4 bg-green-50 dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-green-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold mb-4">Account Settings</h3>
-
-            <div className="space-y-3">
-              <button
-                className="w-full py-2 border border-green-300 dark:border-gray-600 rounded-lg hover:bg-red-50 dark:hover:bg-gray-800 transition"
-                onClick={() => setIsEditModalOpen(true)}
-              >
-                Edit Profile
-              </button>
-
-              <button
-                className="w-full py-2 border border-green-300 dark:border-gray-600 rounded-lg hover:bg-red-50 dark:hover:bg-gray-800 transition"
-                onClick={() => setIsAvatarOpen(true)}
-              >
-                Change Avatar
-              </button>
-
-              <button
-                className="w-full py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition"
-                onClick={() => signOut({ callbackUrl: "/" })}
-              >
-                Logout
-              </button>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span>✅ Completed</span>
+              <span>{statusCount.completed}</span>
             </div>
+            <div className="flex justify-between">
+              <span>⏳ Ongoing</span>
+              <span>{statusCount.ongoing}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>📝 Not Started</span>
+              <span>{statusCount.notStarted}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 🕒 RECENT ACTIVITY */}
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 shadow-md">
+          <h3 className="font-semibold mb-3">Recent Activity</h3>
+
+          {recentActivities.length === 0 ? (
+            <p className="text-gray-400 text-sm">No recent activity</p>
+          ) : (
+            <ul className="space-y-2 text-sm">
+              {recentActivities.map((activity, index) => (
+                <li key={index} className="flex justify-between">
+                  <span className="truncate">{activity.text}</span>
+                  <span className="text-gray-400 text-xs">
+                    {timeAgo(activity.time)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* ⚙️ SETTINGS */}
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 shadow-md">
+          <h3 className="font-semibold mb-3">Account Settings</h3>
+
+          <div className="space-y-3">
+            <button
+              className="w-full py-2 rounded-lg border dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
+              onClick={() => setIsEditModalOpen(true)}
+            >
+              Edit Profile
+            </button>
+
+            <button
+              className="w-full py-2 rounded-lg border dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
+              onClick={() => setIsAvatarOpen(true)}
+            >
+              Change Avatar
+            </button>
+
+            <button
+              className="w-full py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+              onClick={() => signOut({ callbackUrl: "/" })}
+            >
+              Logout
+            </button>
           </div>
         </div>
       </div>
-
-      {/* 🔥 FLOATING HOME BUTTON */}
-      <button
-        onClick={() => router.push("/user")}
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 
-                 bg-red-600 hover:bg-red-700 text-white 
-                 w-14 h-14 rounded-full shadow-lg 
-                 flex items-center justify-center 
-                 transition active:scale-95"
-      >
-        <HomeIcon className="w-6 h-6" />
-      </button>
     </main>
   );
 }
