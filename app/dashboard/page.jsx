@@ -132,6 +132,7 @@ export default function ProfilePreview() {
 
   return (
     <main className="h-screen bg-green-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 relative">
+      <h1 className="text-red-500">TEST UI CHANGE</h1>
       {/* 🔥 SCROLLABLE CONTENT */}
       <div className="h-[89vh] overflow-y-auto pt-20 px-4 md:px-6 lg:px-8">
         {/* Top Section */}
