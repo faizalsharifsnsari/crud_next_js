@@ -3,10 +3,8 @@
 import { signOut } from "next-auth/react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import ChangeAvatarModal from "../components/profile/ChangeAvatarModal";
-import EditProfileModal from "../components/profile/Editprofiledialuge";
 import { useRouter } from "next/navigation";
+import { HomeIcon } from "@heroicons/react/24/solid";
 
 function CircleStat({ label, percent, count, color }) {
   return (
@@ -171,19 +169,19 @@ export default function ProfilePreview() {
                   label="High"
                   percent={getPercent(priorityCount.high)}
                   count={priorityCount.high}
-                  color="#FCA5A5"
+                  color="#EF4444" // 🔴 red-500
                 />
                 <CircleStat
                   label="Medium"
                   percent={getPercent(priorityCount.medium)}
                   count={priorityCount.medium}
-                  color="#FDE68A"
+                  color="#FACC15" // 🟡 yellow-400
                 />
                 <CircleStat
                   label="Low"
                   percent={getPercent(priorityCount.low)}
                   count={priorityCount.low}
-                  color="#86EFAC"
+                  color="#22C55E" // 🟢 green-500
                 />
               </div>
             </div>
@@ -191,26 +189,37 @@ export default function ProfilePreview() {
             {/* Status */}
             <div className="bg-green-50 dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-green-200 dark:border-gray-700">
               <h3 className="mb-4 font-semibold">Task Status</h3>
+              <div className="flex justify-between items-center">
+                {/* Completed */}
+                <div className="flex flex-col items-center gap-2">
+                  <StatusIcon status="completed" />
+                  <p className="text-sm font-semibold">
+                    {statusCount.completed}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Completed
+                  </p>
+                </div>
 
-              <div className="flex justify-between">
-                <CircleStat
-                  label="Completed"
-                  percent={getPercent(statusCount.completed)}
-                  count={statusCount.completed}
-                  color="#22C55E"
-                />
-                <CircleStat
-                  label="Ongoing"
-                  percent={getPercent(statusCount.ongoing)}
-                  count={statusCount.ongoing}
-                  color="#3B82F6"
-                />
-                <CircleStat
-                  label="Not Started"
-                  percent={getPercent(statusCount.notStarted)}
-                  count={statusCount.notStarted}
-                  color="#9CA3AF"
-                />
+                {/* Ongoing */}
+                <div className="flex flex-col items-center gap-2">
+                  <StatusIcon status="ongoing" />
+                  <p className="text-sm font-semibold">{statusCount.ongoing}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Ongoing
+                  </p>
+                </div>
+
+                {/* Not Started */}
+                <div className="flex flex-col items-center gap-2">
+                  <StatusIcon status="not started" />
+                  <p className="text-sm font-semibold">
+                    {statusCount.notStarted}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Not Started
+                  </p>
+                </div>
               </div>
             </div>
           </div>
