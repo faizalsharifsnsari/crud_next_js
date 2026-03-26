@@ -133,7 +133,7 @@ export default function ProfilePreview() {
   function StatusIcon({ status, onClick }) {
     const base =
       "w-9 h-9 rounded-full flex items-center justify-center shadow-sm cursor-pointer hover:scale-105 transition";
-  
+
     if (status === "completed") {
       return (
         <div
@@ -145,7 +145,7 @@ export default function ProfilePreview() {
         </div>
       );
     }
-  
+
     if (status === "ongoing") {
       return (
         <div
@@ -157,7 +157,7 @@ export default function ProfilePreview() {
         </div>
       );
     }
-  
+
     return (
       <div
         onClick={onClick}
