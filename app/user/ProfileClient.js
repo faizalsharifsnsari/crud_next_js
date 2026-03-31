@@ -68,7 +68,7 @@ export default function ProfileClient({
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* 🔥 Top Bar */}
-        <div className="sticky top-0 z-40 flex items-center justify-between px-6 h-20 bg-red-500 text-white shadow-md">
+        <div className="sticky top-0 z-40 flex items-center justify-between px-6 h-40 bg-red-500 text-white shadow-md">
           {/* LEFT */}
           <div className="flex items-center gap-3">
             <button
@@ -176,7 +176,7 @@ export default function ProfileClient({
         <section className="flex-1 flex flex-col">
           {/* ✅ TASK CONTAINER */}
           <div className="h-[80vh] overflow-y-auto p-4 md:p-6">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-4 md:p-6">
+            <div className="bg-green-100 dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-4 md:p-6">
               <h1 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
                 Tasks
               </h1>
@@ -186,20 +186,20 @@ export default function ProfileClient({
           </div>
 
           {/* ✅ BOTTOM SECTION */}
-          <div className="h-[20vh] flex items-start justify-center pt-6 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800">
-  <button
-    className="
+          <div className="h-[20vh] flex items-start justify-center pt-6 border-t border-green-100 dark:border-gray-800 bg-green-100 dark:bg-gray-800">
+            <button
+              className="
       px-5 py-2.5 rounded-full
       bg-green-500 hover:bg-green-600
       text-white text-sm font-medium
       shadow-md hover:shadow-lg
       transition-all
     "
-    onClick={() => setOpenAddDialog(true)}
-  >
-    + Add Task
-  </button>
-</div>
+              onClick={() => setOpenAddDialog(true)}
+            >
+              + Add Task
+            </button>
+          </div>
         </section>
       </div>
     </div>
