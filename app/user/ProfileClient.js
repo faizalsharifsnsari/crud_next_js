@@ -31,7 +31,7 @@ export default function ProfileClient({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
+    <div className="flex h-screen overflow-hidden bg-white dark:bg-gray-950">
       {/* ADD TASK MODAL */}
       <AddTaskDialog
         isOpen={openAddDialog}
@@ -194,14 +194,14 @@ export default function ProfileClient({
       <button
         onClick={() => setOpenAddDialog(true)}
         className={`
-          fixed bottom-6 right-6
-          px-5 py-3 rounded-full
-          bg-green-500 hover:bg-green-600
-          text-white text-sm font-medium
-          shadow-lg hover:shadow-xl
-          transition-all duration-300
-          ${sidebarOpen ? "opacity-0 scale-90 pointer-events-none" : "opacity-100 scale-100"}
-        `}
+    fixed bottom-6 left-1/2 -translate-x-1/2
+    px-5 py-3 rounded-full
+    bg-green-500 hover:bg-green-600
+    text-white text-sm font-medium
+    shadow-lg hover:shadow-xl
+    transition-all duration-300
+    ${sidebarOpen ? "opacity-0 scale-90 pointer-events-none" : "opacity-100 scale-100"}
+  `}
       >
         + Add Task
       </button>
