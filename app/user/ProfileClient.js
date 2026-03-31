@@ -188,12 +188,14 @@ export default function ProfileClient({
           <div className="border-t border-gray-200 dark:border-gray-700 p-4 flex justify-center bg-white dark:bg-gray-900">
             <button
               className="
-              px-5 py-2.5 rounded-full
-              bg-blue-500 hover:bg-blue-600
-              text-white text-sm font-medium
-              shadow-md hover:shadow-lg
-              transition-all
-            "
+    fixed bottom-6 left-1/2 -translate-x-1/2
+    px-5 py-3 rounded-full
+    bg-blue-500 hover:bg-blue-600
+    text-white text-sm font-medium
+    shadow-lg hover:shadow-xl
+    transition-all
+    z-50
+  "
               onClick={() => setOpenAddDialog(true)}
             >
               + Add Task
