@@ -54,7 +54,7 @@ export default function UserSidebar({ user, statusCount, priorityCount }) {
       {/* ✅ Profile Section */}
       <div className="flex flex-col items-center text-center">
         {/* 🔥 FIXED IMAGE */}
-        <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
+        <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 relative">
           {user?.image ? (
             <Image
               src={user.image}
