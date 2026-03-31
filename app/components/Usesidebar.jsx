@@ -39,7 +39,7 @@ function StatusIcon({ status, size = "md" }) {
 }
 
 export default function UserSidebar({ user, statusCount, priorityCount }) {
-    console.log("User object:", user);
+  console.log("User object:", user);
   console.log("User image:", user?.image);
 
   const [open, setOpen] = useState(false);
@@ -48,108 +48,118 @@ export default function UserSidebar({ user, statusCount, priorityCount }) {
   const router = useRouter();
 
   return (
-    <aside className="w-full h-full bg-green-200 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 px-5 py-6 flex flex-col relative">
-     
-
-      {/* Add Task Dialog */}
+    <aside className="w-full h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 px-5 py-6 flex flex-col">
       <AddTaskDialog isOpen={open} onClose={() => setOpen(false)} />
 
-      {/* Profile Section */}
-      <div className="flex flex-col items-center text-center mt-10">
-        {user?.image && (
-          <Image
-            src={user.image}
-            alt="Profile"
-            width={80}
-            height={80}
-            className="rounded-full object-cover"
-          />
-        )}
+      {/* ✅ Profile Section */}
+      <div className="flex flex-col items-center text-center">
+        {/* 🔥 FIXED IMAGE */}
+        <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
+          {user?.image ? (
+            <Image
+              src={user.image}
+              alt="Profile"
+              fill
+              className="object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-sm text-gray-500">
+              N/A
+            </div>
+          )}
+        </div>
 
-        <p className="mt-3 text-lg font-extrabold tracking-wide text-emerald-600 font-serif">
-          Hello Mr. {user?.name?.split(" ")[0]}!!!
+        <p className="mt-3 text-base font-semibold text-gray-800 dark:text-white">
+          Hello, {user?.name?.split(" ")[0]}
         </p>
       </div>
 
       {/* Divider */}
       <div className="w-full h-px bg-gray-200 dark:bg-gray-700 my-6" />
 
-      {/* Status & Priority Counters */}
-      <div className="space-y-6 text-sm flex-1 flex flex-col text-gray-800 dark:text-gray-200">
-        {/* Task Status */}
-        <div>
-          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-3">
-            Task Status
-          </p>
+      {/* ✅ Content */}
+      <div className="flex-1 flex flex-col justify-between text-sm text-gray-800 dark:text-gray-200">
+        {/* 🔹 Top Section */}
+        <div className="space-y-6">
+          {/* Task Status */}
+          <div>
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-3">
+              Task Status
+            </p>
 
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <StatusIcon status="not started" size="sm" />
-                <span>Not Started</span>
-              </div>
-              <span className="font-semibold">{statusCount.notStarted}</span>
+            <div className="space-y-3">
+              {[
+                {
+                  label: "Not Started",
+                  key: "notStarted",
+                  status: "not started",
+                },
+                { label: "Ongoing", key: "ongoing", status: "ongoing" },
+                { label: "Completed", key: "completed", status: "completed" },
+              ].map((item) => (
+                <div
+                  key={item.key}
+                  className="flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <StatusIcon status={item.status} size="sm" />
+                    <span>{item.label}</span>
+                  </div>
+                  <span className="font-semibold">{statusCount[item.key]}</span>
+                </div>
+              ))}
             </div>
+          </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <StatusIcon status="ongoing" size="sm" />
-                <span>Ongoing</span>
-              </div>
-              <span className="font-semibold">{statusCount.ongoing}</span>
-            </div>
+          {/* Priority */}
+          <div>
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-3">
+              Priority
+            </p>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <StatusIcon status="completed" size="sm" />
-                <span>Completed</span>
-              </div>
-              <span className="font-semibold">{statusCount.completed}</span>
+            <div className="space-y-3">
+              {[
+                {
+                  label: "High",
+                  color: "bg-rose-400",
+                  value: priorityCount.high,
+                },
+                {
+                  label: "Medium",
+                  color: "bg-amber-400",
+                  value: priorityCount.medium,
+                },
+                {
+                  label: "Low",
+                  color: "bg-emerald-400",
+                  value: priorityCount.low,
+                },
+              ].map((p) => (
+                <div
+                  key={p.label}
+                  className="flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className={`w-3 h-3 rounded-sm ${p.color}`} />
+                    <span>{p.label}</span>
+                  </div>
+                  <span className="font-semibold">{p.value}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Priority */}
-        <div>
-          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-3">
-            Priority
-          </p>
-
-          <div className="space-y-3 flex-1 flex flex-col justify-end">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="w-3 h-3 rounded-sm bg-rose-300" />
-                <span>High</span>
-              </div>
-              <span className="font-semibold">{priorityCount.high}</span>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="w-3 h-3 rounded-sm bg-amber-300" />
-                <span>Medium</span>
-              </div>
-              <span className="font-semibold">{priorityCount.medium}</span>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="w-3 h-3 rounded-sm bg-emerald-300" />
-                <span>Low</span>
-              </div>
-              <span className="font-semibold">{priorityCount.low}</span>
-            </div>
-
-            {/* Add Task Button */}
-            <div className="mt-6">
-              <button
-                onClick={() => router.push("/dashboard")}
-                className="w-full py-2.5 rounded-md text-sm font-medium text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-black/5 dark:hover:bg-gray-700 transition"
-              >
-                Profile
-              </button>
-            </div>
-          </div>
+        {/* 🔹 Bottom Section */}
+        <div className="mt-6">
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="w-full py-2.5 rounded-lg text-sm font-medium 
+          text-white bg-blue-500 hover:bg-blue-600 
+          transition shadow-sm hover:shadow-md"
+          >
+            Profile
+          </button>
         </div>
       </div>
     </aside>
