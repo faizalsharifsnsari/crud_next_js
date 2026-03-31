@@ -1,58 +1,77 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Test() {
   const router = useRouter();
-
   const [verified, setVerified] = useState(false);
-  const requestId = crypto.randomUUID();
+
+  // ✅ FIX 1: Stable requestId (never changes)
+  const requestIdRef = useRef(crypto.randomUUID());
 
   useEffect(() => {
+    const requestId = requestIdRef.current;
+
     console.log("✅ TC_TEST PAGE MOUNTED");
+    console.log("📌 Request ID:", requestId);
 
-    // Redirect if user never opened Truecaller
+    // ✅ FIX 2: Increase timeout (avoid premature exit)
     const timeout = setTimeout(() => {
-      console.log("❌ Truecaller not opened. Redirecting home.");
+      console.log("❌ Timeout. Redirecting home.");
       router.push("/");
-    }, 12000);
+    }, 20000);
 
-    // Poll backend
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch(
-          `/api/truecaller/status?requestId=${requestId}`,
-        );
-        const data = await res.json();
+    let successCount = 0;
+    let interval;
 
-        console.log("🔄 Polling backend status:", data);
+    // ✅ FIX 3: Polling function
+    const startPolling = () => {
+      interval = setInterval(async () => {
+        try {
+          const res = await fetch(
+            `/api/truecaller/status?requestId=${requestId}`
+          );
+          const data = await res.json();
 
-        if (data.status === "verified") {
-          console.log("✅ Truecaller verification complete");
+          console.log("🔄 Polling:", data);
 
-          clearTimeout(timeout);
-          clearInterval(interval);
+          if (data.status === "verified") {
+            successCount++;
 
-          document.cookie = `taskify_session=${data.sessionToken}; path=/; max-age=604800`;
+            // ✅ FIX 4: Double confirmation (avoid race condition)
+            if (successCount >= 2) {
+              console.log("✅ VERIFIED (confirmed)");
 
-          setVerified(true);
+              clearInterval(interval);
+              clearTimeout(timeout);
 
-          setTimeout(() => {
-            router.push("/user");
-          }, 2000);
+              // ✅ Save session
+              document.cookie = `taskify_session=${data.sessionToken}; path=/; max-age=604800`;
+
+              setVerified(true);
+
+              // Smooth redirect
+              setTimeout(() => {
+                router.push("/user");
+              }, 1500);
+            }
+          }
+        } catch (err) {
+          console.log("Polling error:", err);
         }
-      } catch (err) {
-        console.log("Polling error:", err);
-      }
-    }, 2000);
+      }, 2000);
+    };
 
-    console.log("🚀 Triggering Truecaller deep link...");
+    // ✅ FIX 5: Delay polling (important!)
+    setTimeout(startPolling, 1500);
 
-    window.location.href = 
-    "truecallersdk://truesdk/web_verify?type=btmsheet" +
-      "&requestNonce=" +
-      requestId +
+    // ✅ Trigger Truecaller
+    console.log("🚀 Triggering Truecaller...");
+
+    window.location.href =
+      "truecallersdk://truesdk/web_verify?type=btmsheet" +
+      "&requestNonce=" + requestId +
       "&partnerKey=p6Zcx4868bc93774f4d97977dd3642db09e60" +
       "&partnerName=Taskify%20otpless%20login" +
       "&lang=en" +
@@ -66,22 +85,29 @@ export default function Test() {
       "&ctaTextColor=%23ffffff" +
       "&btnShape=round" +
       "&skipOption=manualdetails" +
-      "&ttl=10000";
+      "&ttl=20000"; // ✅ increased TTL
 
     return () => {
       clearInterval(interval);
       clearTimeout(timeout);
     };
-  }, [router, requestId]);
+  }, [router]);
 
+  // 🔄 Loading state
   if (!verified) {
-    return <main className="min-h-screen bg-green-200 dark:bg-gray-900"></main>;
+    return (
+      <main className="min-h-screen bg-green-200 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-gray-700 dark:text-gray-300 text-sm">
+          Waiting for Truecaller verification...
+        </div>
+      </main>
+    );
   }
 
+  // ✅ Success UI
   return (
     <main className="min-h-screen flex items-center justify-center bg-green-200 dark:bg-gray-900 px-4">
       <div className="flex flex-col items-center space-y-6">
-        {/* Spinner */}
         <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
 
         <div className="text-center">
