@@ -14,6 +14,7 @@ export default function ProfileClient({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedPriority, setSelectedPriority] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [openAddDialog, setOpenAddDialog] = useState(false); // ✅ FIX
 
   let filteredTasks = tasksWithColors;
 
