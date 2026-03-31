@@ -155,7 +155,7 @@ export default function UserSidebar({ user, statusCount, priorityCount }) {
           <button
             onClick={() => router.push("/dashboard")}
             className="w-full py-2.5 rounded-lg text-sm font-medium 
-          text-white bg-blue-500 hover:bg-blue-600 
+          text-white bg-green-500 hover:bg-green-600
           transition shadow-sm hover:shadow-md"
           >
             Profile

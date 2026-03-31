@@ -14,7 +14,7 @@ export default function ProfileClient({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedPriority, setSelectedPriority] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
-  const [openAddDialog, setOpenAddDialog] = useState(false); // ✅ FIX
+  const [openAddDialog, setOpenAddDialog] = useState(false);
 
   let filteredTasks = tasksWithColors;
 
@@ -31,14 +31,15 @@ export default function ProfileClient({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
+    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
+      {/* ADD TASK MODAL */}
       <AddTaskDialog
         isOpen={openAddDialog}
         onClose={() => setOpenAddDialog(false)}
       />
 
-      {/* ✅ Desktop Sidebar */}
-      <div className="hidden md:block w-64 h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+      {/* DESKTOP SIDEBAR */}
+      <div className="hidden md:block w-64 h-full bg-white dark:bg-gray-900 shadow-sm overflow-y-auto">
         <UserSidebar
           user={sidebar}
           statusCount={statusCount}
@@ -46,15 +47,15 @@ export default function ProfileClient({
         />
       </div>
 
-      {/* ✅ Mobile Sidebar */}
+      {/* MOBILE SIDEBAR */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => setSidebarOpen(false)}
           />
 
-          <div className="fixed top-0 left-0 w-64 h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+          <div className="fixed top-0 left-0 w-64 h-full bg-white dark:bg-gray-900 shadow-lg overflow-y-auto">
             <UserSidebar
               user={sidebar}
               statusCount={statusCount}
@@ -64,10 +65,14 @@ export default function ProfileClient({
         </div>
       )}
 
-      {/* ✅ Main */}
+      {/* MAIN */}
       <div className="flex-1 flex flex-col">
-        {/* 🔥 Top Bar (FIXED) */}
-        <div className="sticky top-0 z-40 flex items-center justify-between px-6 h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+        {/* TOP BAR */}
+        <div
+          className="sticky top-0 z-40 flex items-center justify-between px-6 h-16 
+        bg-white/80 dark:bg-gray-900/80 backdrop-blur-md 
+        border-b border-gray-100 dark:border-gray-800"
+        >
           {/* LEFT */}
           <div className="flex items-center gap-3">
             <button
@@ -85,19 +90,21 @@ export default function ProfileClient({
           {/* RIGHT */}
           <div className="relative">
             <button
-              className="flex items-center gap-2 px-4 py-2 text-sm 
-            bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700
-            rounded-lg transition"
               onClick={() => setMenuOpen(!menuOpen)}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium
+              bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700
+              rounded-full transition"
             >
-              <span>Filter</span>
-              <span>▾</span>
+              Filter ▾
             </button>
 
             {menuOpen && (
-              <div className="absolute right-0 mt-3 w-64 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 overflow-hidden text-black dark:text-white">
+              <div
+                className="absolute right-0 mt-3 w-64 bg-white dark:bg-gray-900 
+              rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 overflow-hidden"
+              >
                 {/* HEADER */}
-                <div className="px-4 py-2 text-xs font-semibold text-gray-500 border-b">
+                <div className="px-4 py-2 text-xs font-semibold text-gray-500 border-b dark:border-gray-800">
                   Filters
                 </div>
 
@@ -115,11 +122,11 @@ export default function ProfileClient({
                         setMenuOpen(false);
                       }}
                       className={`w-full flex justify-between px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800
-                    ${
-                      selectedPriority === p
-                        ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
-                        : ""
-                    }`}
+                      ${
+                        selectedPriority === p
+                          ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
+                          : ""
+                      }`}
                     >
                       {p.charAt(0).toUpperCase() + p.slice(1)}
                       {selectedPriority === p && "✓"}
@@ -127,7 +134,7 @@ export default function ProfileClient({
                   ))}
                 </div>
 
-                <div className="border-t" />
+                <div className="border-t border-gray-100 dark:border-gray-800" />
 
                 {/* STATUS */}
                 <div className="py-2">
@@ -141,11 +148,11 @@ export default function ProfileClient({
                         setMenuOpen(false);
                       }}
                       className={`w-full flex justify-between px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800
-                    ${
-                      selectedStatus === s
-                        ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
-                        : ""
-                    }`}
+                      ${
+                        selectedStatus === s
+                          ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
+                          : ""
+                      }`}
                     >
                       {s.charAt(0).toUpperCase() + s.slice(1)}
                       {selectedStatus === s && "✓"}
@@ -154,14 +161,14 @@ export default function ProfileClient({
                 </div>
 
                 {/* CLEAR */}
-                <div className="border-t">
+                <div className="border-t border-gray-100 dark:border-gray-800">
                   <button
                     onClick={() => {
                       setSelectedPriority("all");
                       setSelectedStatus("all");
                       setMenuOpen(false);
                     }}
-                    className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                    className="w-full px-4 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
                   >
                     Clear Filters
                   </button>
@@ -171,38 +178,33 @@ export default function ProfileClient({
           </div>
         </div>
 
-        {/* 🔥 Content */}
-        <section className="flex-1 flex flex-col">
-          {/* ✅ Task Area */}
-          <div className="flex-1 overflow-y-auto p-4 md:p-6">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 md:p-6">
-              <h1 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
-                Tasks
-              </h1>
+        {/* CONTENT */}
+        <section className="flex-1 overflow-y-auto p-5 md:p-8">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-5 md:p-6">
+            <h1 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
+              Tasks
+            </h1>
 
-              <TaskList initialTasks={filteredTasks} />
-            </div>
-          </div>
-
-          {/* ✅ Bottom Action */}
-          <div className="border-t border-gray-200 dark:border-gray-700 p-4 flex justify-center bg-white dark:bg-gray-900">
-            <button
-              className="
-    fixed bottom-6 left-1/2 -translate-x-1/2
-    px-5 py-3 rounded-full
-    bg-blue-500 hover:bg-blue-600
-    text-white text-sm font-medium
-    shadow-lg hover:shadow-xl
-    transition-all
-    z-50
-  "
-              onClick={() => setOpenAddDialog(true)}
-            >
-              + Add Task
-            </button>
+            <TaskList initialTasks={filteredTasks} />
           </div>
         </section>
       </div>
+
+      {/* FLOATING ACTION BUTTON */}
+      <button
+        onClick={() => setOpenAddDialog(true)}
+        className={`
+          fixed bottom-6 right-6
+          px-5 py-3 rounded-full
+          bg-green-500 hover:bg-green-600
+          text-white text-sm font-medium
+          shadow-lg hover:shadow-xl
+          transition-all duration-300
+          ${sidebarOpen ? "opacity-0 scale-90 pointer-events-none" : "opacity-100 scale-100"}
+        `}
+      >
+        + Add Task
+      </button>
     </div>
   );
 }
