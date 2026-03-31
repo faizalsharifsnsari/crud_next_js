@@ -69,9 +69,15 @@ export default function UserSidebar({ user, statusCount, priorityCount }) {
           )}
         </div>
 
-        <p className="mt-3 text-base font-semibold text-gray-800 dark:text-white">
-          Hello, {user?.name?.split(" ")[0]}
-        </p>
+        <div>
+          <p className="text-xs text-gray-400 dark:text-gray-500">
+            Welcome back 👋
+          </p>
+
+          <h2 className="mt-1 text-xl font-bold text-gray-900 dark:text-white tracking-tight">
+            {user?.name?.split(" ")[0]}
+          </h2>
+        </div>
       </div>
 
       {/* Divider */}

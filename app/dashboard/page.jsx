@@ -206,7 +206,7 @@ export default function ProfilePreview() {
             alt="Profile"
             width={90}
             height={90}
-            className="rounded-full mx-auto border-4 border-white dark:border-gray-800"
+            className="w-24 h-24 rounded-full object-cover mx-auto border-4 border-white dark:border-gray-800"
           />
         ) : (
           <div className="w-24 h-24 bg-green-300 dark:bg-gray-700 rounded-full mx-auto flex items-center justify-center">
@@ -214,10 +214,25 @@ export default function ProfilePreview() {
           </div>
         )}
 
-        <h2 className="mt-3 text-lg font-bold">{user?.name || "No Name"}</h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          {user?.email || "No Email"}
-        </p>
+        <div className="mt-4 space-y-1 text-center">
+          <p className="text-sm">
+            <span className="text-gray-500 dark:text-gray-400 font-medium">
+              Name:
+            </span>{" "}
+            <span className="text-gray-900 dark:text-white font-semibold">
+              {user?.name || "No Name"}
+            </span>
+          </p>
+
+          <p className="text-sm">
+            <span className="text-gray-500 dark:text-gray-400 font-medium">
+              Email:
+            </span>{" "}
+            <span className="text-gray-700 dark:text-gray-300 font-medium">
+              {user?.email || "No Email"}
+            </span>
+          </p>
+        </div>
       </div>
 
       {/* 🔹 CONTENT */}
