@@ -78,9 +78,7 @@ export default function ProfileClient({
               ☰
             </button>
 
-            <h1 className="text-xl font-semibold tracking-wide">
-              Task Dashboard
-            </h1>
+            
           </div>
 
           {/* RIGHT */}
@@ -176,7 +174,7 @@ export default function ProfileClient({
         <section className="flex-1 flex flex-col">
           {/* ✅ TASK CONTAINER */}
           <div className="h-[80vh] overflow-y-auto p-4 md:p-6">
-            <div className="bg-green-100 dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-4 md:p-6">
+            <div className="bg-green-100 dark:bg-gray-800 rounded-xl shadow-sm border border-green-100 dark:border-gray-800 p-4 md:p-6">
               <h1 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
                 Tasks
               </h1>
