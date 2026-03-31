@@ -31,7 +31,7 @@ export default function ProfileClient({
   return (
     <div className="flex h-screen overflow-hidden bg-green-100 dark:bg-gray-800">
       {/* Desktop Sidebar */}
-      <div className="hidden md:block w-64 h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+      <div className="hidden md:block w-64 h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
         <UserSidebar
           user={sidebar}
           statusCount={statusCount}
@@ -89,47 +89,95 @@ export default function ProfileClient({
             </button>
 
             {menuOpen && (
-              <ul className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md z-50 p-2 space-y-2 text-black dark:text-white">
-                {/* PRIORITY */}
-                <li className="text-xs font-semibold text-gray-500 dark:text-gray-400 px-3 pt-1">
-                  PRIORITY
-                </li>
+              <div
+                className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-900 
+  border border-gray-200 dark:border-gray-700 
+  rounded-xl shadow-xl z-50 overflow-hidden"
+              >
+                {/* HEADER */}
+                <div className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                  Filters
+                </div>
 
-                {["high", "medium", "low"].map((p) => (
-                  <li key={p}>
+                {/* PRIORITY */}
+                <div className="py-2">
+                  <div className="px-4 text-xs font-medium text-gray-400 mb-1">
+                    PRIORITY
+                  </div>
+
+                  {["high", "medium", "low"].map((p) => (
                     <button
-                      className="block w-full text-left px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                      key={p}
                       onClick={() => {
                         setSelectedPriority(p);
                         setMenuOpen(false);
                       }}
+                      className={`w-full flex items-center justify-between px-4 py-2 text-sm transition
+          hover:bg-gray-100 dark:hover:bg-gray-800
+          ${
+            selectedPriority === p
+              ? "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400"
+              : "text-gray-700 dark:text-gray-300"
+          }`}
                     >
                       {p.charAt(0).toUpperCase() + p.slice(1)}
-                    </button>
-                  </li>
-                ))}
 
-                <hr className="border-gray-200 dark:border-gray-700" />
+                      {/* Active Indicator */}
+                      {selectedPriority === p && (
+                        <span className="text-xs font-semibold">✓</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                {/* DIVIDER */}
+                <div className="border-t border-gray-200 dark:border-gray-700" />
 
                 {/* STATUS */}
-                <li className="text-xs font-semibold text-gray-500 dark:text-gray-400 px-3 pt-1">
-                  STATUS
-                </li>
+                <div className="py-2">
+                  <div className="px-4 text-xs font-medium text-gray-400 mb-1">
+                    STATUS
+                  </div>
 
-                {["not started", "ongoing", "completed"].map((s) => (
-                  <li key={s}>
+                  {["not started", "ongoing", "completed"].map((s) => (
                     <button
-                      className="block w-full text-left px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                      key={s}
                       onClick={() => {
                         setSelectedStatus(s);
                         setMenuOpen(false);
                       }}
+                      className={`w-full flex items-center justify-between px-4 py-2 text-sm transition
+          hover:bg-gray-100 dark:hover:bg-gray-800
+          ${
+            selectedStatus === s
+              ? "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400"
+              : "text-gray-700 dark:text-gray-300"
+          }`}
                     >
                       {s.charAt(0).toUpperCase() + s.slice(1)}
+
+                      {/* Active Indicator */}
+                      {selectedStatus === s && (
+                        <span className="text-xs font-semibold">✓</span>
+                      )}
                     </button>
-                  </li>
-                ))}
-              </ul>
+                  ))}
+                </div>
+
+                {/* CLEAR FILTERS */}
+                <div className="border-t border-gray-200 dark:border-gray-700">
+                  <button
+                    onClick={() => {
+                      setSelectedPriority("all");
+                      setSelectedStatus("all");
+                      setMenuOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -138,7 +186,7 @@ export default function ProfileClient({
         <section className="flex-1 flex flex-col">
           {/* ✅ TASK CONTAINER */}
           <div className="h-[80vh] overflow-y-auto p-4 md:p-6">
-            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 md:p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-4 md:p-6">
               <h1 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
                 Tasks
               </h1>
@@ -148,20 +196,6 @@ export default function ProfileClient({
           </div>
 
           {/* ✅ BOTTOM SECTION */}
-          <div className="h-[20vh] flex items-center justify-center border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-            {/* ✅ Add Task Button */}
-            <button
-              className="
-              px-5 py-2.5 rounded-full
-              bg-green-500 hover:bg-green-600
-              text-white text-sm font-medium
-              shadow-md hover:shadow-lg
-              transition-all
-              "
-            >
-              + Add Task
-            </button>
-          </div>
         </section>
       </div>
     </div>
