@@ -29,131 +29,141 @@ export default function ProfileClient({
   }
 
   return (
-  <div className="flex h-screen overflow-hidden bg-green-200 dark:bg-gray-950">
-
-    {/* Desktop Sidebar */}
-    <div className="hidden md:block w-64 h-full bg-green-200 dark:bg-gray-900 shadow-md overflow-y-auto">
-      <UserSidebar
-        user={sidebar}
-        statusCount={statusCount}
-        priorityCount={priorityCount}
-      />
-    </div>
-
-    {/* Mobile Sidebar Drawer */}
-    {sidebarOpen && (
-      <div className="fixed inset-0 z-50 md:hidden">
-        {/* Overlay */}
-        <div
-          className="absolute inset-0 bg-black opacity-50"
-          onClick={() => setSidebarOpen(false)}
+    <div className="flex h-screen overflow-hidden bg-green-100 dark:bg-gray-800">
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block w-64 h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+        <UserSidebar
+          user={sidebar}
+          statusCount={statusCount}
+          priorityCount={priorityCount}
         />
+      </div>
 
-        {/* Drawer */}
-        <div className="fixed top-0 left-0 w-64 h-screen bg-green-200 dark:bg-gray-900 shadow-md overflow-y-auto">
-          <UserSidebar
-            user={sidebar}
-            statusCount={statusCount}
-            priorityCount={priorityCount}
+      {/* Mobile Sidebar Drawer */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          {/* Overlay */}
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setSidebarOpen(false)}
           />
+
+          {/* Drawer */}
+          <div className="fixed top-0 left-0 w-64 h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+            <UserSidebar
+              user={sidebar}
+              statusCount={statusCount}
+              priorityCount={priorityCount}
+            />
+          </div>
         </div>
-      </div>
-    )}
+      )}
 
-    {/* Main Content */}
-    <div className="flex-1 flex flex-col">
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* 🔥 Top Bar */}
+        <div className="flex items-center justify-between px-4 h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+          {/* Mobile Hamburger */}
+          <div className="md:hidden">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+            >
+              ☰
+            </button>
+          </div>
 
-      {/* Top Bar */}
-      <div className="flex items-center justify-between p-4 bg-red-500 text-white shadow">
+          <div></div>
 
-        {/* Mobile Hamburger */}
-        <div className="md:hidden">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="px-3 py-2 border border-white rounded hover:bg-red-600"
-          >
-            ☰
-          </button>
-        </div>
+          {/* Filter */}
+          <div className="relative">
+            <button
+              className="flex items-center gap-2 px-3 py-1.5 text-sm 
+              bg-gray-100 dark:bg-gray-800 
+              border border-gray-300 dark:border-gray-700 
+              rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+              onClick={() => setMenuOpen(!menuOpen)}
+            >
+              <span>Filter</span>
+              <span>▾</span>
+            </button>
 
-        <div></div>
-
-        {/* Filter */}
-        <div className="relative mr-6">
-          <button
-            className="flex items-center gap-2 px-3 py-1 border border-white rounded hover:bg-red-600"
-            onClick={() => setMenuOpen(!menuOpen)}
-          >
-            <span>Filter</span>
-            <span>▾</span>
-          </button>
-
-          {menuOpen && (
-            <ul className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md z-50 p-2 space-y-2 text-black dark:text-white">
-
-              {/* PRIORITY */}
-              <li className="text-xs font-semibold text-gray-500 dark:text-gray-400 px-3 pt-1">
-                PRIORITY
-              </li>
-
-              {["high", "medium", "low"].map((p) => (
-                <li key={p}>
-                  <button
-                    className="block w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
-                    onClick={() => {
-                      setSelectedPriority(p);
-                      setMenuOpen(false);
-                    }}
-                  >
-                    {p.charAt(0).toUpperCase() + p.slice(1)}
-                  </button>
+            {menuOpen && (
+              <ul className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md z-50 p-2 space-y-2 text-black dark:text-white">
+                {/* PRIORITY */}
+                <li className="text-xs font-semibold text-gray-500 dark:text-gray-400 px-3 pt-1">
+                  PRIORITY
                 </li>
-              ))}
 
-              <hr className="border-gray-300 dark:border-gray-700" />
+                {["high", "medium", "low"].map((p) => (
+                  <li key={p}>
+                    <button
+                      className="block w-full text-left px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                      onClick={() => {
+                        setSelectedPriority(p);
+                        setMenuOpen(false);
+                      }}
+                    >
+                      {p.charAt(0).toUpperCase() + p.slice(1)}
+                    </button>
+                  </li>
+                ))}
 
-              {/* STATUS */}
-              <li className="text-xs font-semibold text-gray-500 dark:text-gray-400 px-3 pt-1">
-                STATUS
-              </li>
+                <hr className="border-gray-200 dark:border-gray-700" />
 
-              {["not started", "ongoing", "completed"].map((s) => (
-                <li key={s}>
-                  <button
-                    className="block w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
-                    onClick={() => {
-                      setSelectedStatus(s);
-                      setMenuOpen(false);
-                    }}
-                  >
-                    {s.charAt(0).toUpperCase() + s.slice(1)}
-                  </button>
+                {/* STATUS */}
+                <li className="text-xs font-semibold text-gray-500 dark:text-gray-400 px-3 pt-1">
+                  STATUS
                 </li>
-              ))}
-            </ul>
-          )}
+
+                {["not started", "ongoing", "completed"].map((s) => (
+                  <li key={s}>
+                    <button
+                      className="block w-full text-left px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                      onClick={() => {
+                        setSelectedStatus(s);
+                        setMenuOpen(false);
+                      }}
+                    >
+                      {s.charAt(0).toUpperCase() + s.slice(1)}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
+
+        {/* 🔥 MAIN SECTION */}
+        <section className="flex-1 flex flex-col">
+          {/* ✅ TASK CONTAINER */}
+          <div className="h-[80vh] overflow-y-auto p-4 md:p-6">
+            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 md:p-6">
+              <h1 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
+                Tasks
+              </h1>
+
+              <TaskList initialTasks={filteredTasks} />
+            </div>
+          </div>
+
+          {/* ✅ BOTTOM SECTION */}
+          <div className="h-[20vh] flex items-center justify-center border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+            {/* ✅ Add Task Button */}
+            <button
+              className="
+              px-5 py-2.5 rounded-full
+              bg-green-500 hover:bg-green-600
+              text-white text-sm font-medium
+              shadow-md hover:shadow-lg
+              transition-all
+              "
+            >
+              + Add Task
+            </button>
+          </div>
+        </section>
       </div>
-
-      {/* 🔥 MAIN SECTION WITH 80/20 SPLIT */}
-      <section className="flex-1 flex flex-col">
-
-        {/* 🔥 SCROLLABLE TASK AREA (80%) */}
-        <div className="h-[80vh] overflow-y-auto p-4 md:p-6">
-          <h1 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">
-            Code Block
-          </h1>
-
-          <TaskList initialTasks={filteredTasks} />
-        </div>
-
-        {/* 🔥 BOTTOM 20% FIXED SPACE */}
-        <div className="h-[20vh] flex items-center justify-center border-t border-gray-200 dark:border-gray-700 bg-white/40 dark:bg-gray-900/40 backdrop-blur-md">
-          {/* Optional: you can move FAB here later if needed */}
-        </div>
-
-      </section>
     </div>
-  </div>
-);
+  );
 }

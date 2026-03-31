@@ -49,42 +49,7 @@ export default function UserSidebar({ user, statusCount, priorityCount }) {
 
   return (
     <aside className="w-full h-full bg-green-200 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 px-5 py-6 flex flex-col relative">
-      {/* Hamburger Menu at Top-Left */}
-      <div className="absolute top-4 left-4">
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
-          aria-label="Menu"
-        >
-          {/* Hamburger icon */}
-          <div className="w-6 h-0.5 bg-gray-800 dark:bg-gray-200 mb-1"></div>
-          <div className="w-6 h-0.5 bg-gray-800 dark:bg-gray-200 mb-1"></div>
-          <div className="w-6 h-0.5 bg-gray-800 dark:bg-gray-200"></div>
-        </button>
-
-        {menuOpen && (
-          <ul className="absolute left-0 mt-2 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-md z-50">
-            <li>
-              <Link
-                href="/"
-                className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={() => setMenuOpen(false)}
-              >
-                Go to Home
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/dashboard"
-                className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={() => setMenuOpen(false)}
-              >
-                Go to Profile
-              </Link>
-            </li>
-          </ul>
-        )}
-      </div>
+     
 
       {/* Add Task Dialog */}
       <AddTaskDialog isOpen={open} onClose={() => setOpen(false)} />
