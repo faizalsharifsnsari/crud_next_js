@@ -2,6 +2,7 @@
 import { useState } from "react";
 import UserSidebar from "../components/Usesidebar";
 import TaskList from "./Tasklist";
+import AddTaskDialog from "../components/AddTaskdialuge";
 
 export default function ProfileClient({
   sidebar,
@@ -30,6 +31,10 @@ export default function ProfileClient({
 
   return (
     <div className="flex h-screen overflow-hidden bg-green-100 dark:bg-gray-800">
+      <AddTaskDialog
+        isOpen={openAddDialog}
+        onClose={() => setOpenAddDialog(false)}
+      />
       {/* Desktop Sidebar */}
       <div className="hidden md:block w-64 h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
         <UserSidebar
@@ -196,6 +201,21 @@ export default function ProfileClient({
           </div>
 
           {/* ✅ BOTTOM SECTION */}
+          <div className="h-[20vh] flex items-center justify-center border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800">
+            {/* ✅ Add Task Button */}
+            <button
+              className="
+              px-5 py-2.5 rounded-full
+              bg-green-500 hover:bg-green-600
+              text-white text-sm font-medium
+              shadow-md hover:shadow-lg
+              transition-all
+              "
+              onClick={() => setOpenAddDialog(true)}
+            >
+              + Add Task
+            </button>
+          </div>
         </section>
       </div>
     </div>

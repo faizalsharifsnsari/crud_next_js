@@ -201,7 +201,6 @@ export default function TaskList({ initialTasks }) {
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [showDialog, setShowDialog] = useState(false);
-  const [openAddDialog, setOpenAddDialog] = useState(false);
 
   //dynamic update
   useEffect(() => {
@@ -329,10 +328,6 @@ export default function TaskList({ initialTasks }) {
 
   return (
     <>
-      <AddTaskDialog
-        isOpen={openAddDialog}
-        onClose={() => setOpenAddDialog(false)}
-      />
       <ConfirmDialog
         open={showDialog}
         onClose={() => setShowDialog(false)}
@@ -636,21 +631,6 @@ export default function TaskList({ initialTasks }) {
           </div>
         </SortableContext>
       </DndContext>
-      <div className="h-[20vh] flex items-center justify-center border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800">
-        {/* ✅ Add Task Button */}
-        <button
-          className="
-              px-5 py-2.5 rounded-full
-              bg-green-500 hover:bg-green-600
-              text-white text-sm font-medium
-              shadow-md hover:shadow-lg
-              transition-all
-              "
-          onClick={() => setOpenAddDialog(true)}
-        >
-          + Add Task
-        </button>
-      </div>
     </>
   );
 }
